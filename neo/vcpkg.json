@@ -1,0 +1,14 @@
+{
+  "name": "d3moddingkit",
+  "version": "0.0.1",
+  "dependencies": [
+    "zlib",
+    "curl",
+    "openal-soft",
+    "sdl2",
+    {
+		"name": "libbacktrace",
+		"platform": "!windows"
+	}
+  ]
+}

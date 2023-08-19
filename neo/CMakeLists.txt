@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.6...3.22 FATAL_ERROR)
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
 project(dhewm3)
 
 # TODO
