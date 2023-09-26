@@ -32,15 +32,9 @@ If you have questions concerning this license or the applicable additional terms
 
 int		c_active_brushes;
 
-int		c_nodes;
-
 // if a brush just barely pokes onto the other side,
 // let it slide by without chopping
 #define	PLANESIDE_EPSILON	0.001
-//0.1
-
-
-
 
 /*
 ================
@@ -151,32 +145,6 @@ uBrush_t *CopyBrush (uBrush_t *brush)
 
 	return newbrush;
 }
-
-
-/*
-================
-DrawBrushList
-================
-*/
-void DrawBrushList (uBrush_t *brush)
-{
-	int		i;
-	side_t	*s;
-
-	GLS_BeginScene ();
-	for ( ; brush ; brush=brush->next)
-	{
-		for (i=0 ; i<brush->numsides ; i++)
-		{
-			s = &brush->sides[i];
-			if (!s->winding)
-				continue;
-			GLS_Winding (s->winding, 0);
-		}
-	}
-	GLS_EndScene ();
-}
-
 
 /*
 =============

@@ -293,7 +293,6 @@ uBrush_t *AllocBrush (int numsides);
 void FreeBrush (uBrush_t *brushes);
 void FreeBrushList (uBrush_t *brushes);
 uBrush_t *CopyBrush (uBrush_t *brush);
-void DrawBrushList (uBrush_t *brush);
 void PrintBrush (uBrush_t *brush);
 bool BoundBrush (uBrush_t *brush);
 bool CreateBrushWindings (uBrush_t *brush);
@@ -317,23 +316,6 @@ void		FreeDMapFile( void );
 
 //=============================================================================
 
-// draw.cpp -- draw debug views either directly, or through glserv.exe
-
-void Draw_ClearWindow( void );
-void DrawWinding( const idWinding *w );
-void DrawAuxWinding( const idWinding *w );
-
-void DrawLine( idVec3 v1, idVec3 v2, int color );
-
-void GLS_BeginScene( void );
-void GLS_Winding( const idWinding *w, int code );
-void GLS_Triangle( const mapTri_t *tri, int code );
-void GLS_EndScene( void );
-
-
-
-//=============================================================================
-
 // portals.cpp
 
 #define	MAX_INTER_AREA_PORTALS	1024
@@ -351,13 +333,6 @@ void FillOutside( uEntity_t *e );
 void FloodAreas( uEntity_t *e );
 void MakeTreePortals( tree_t *tree );
 void FreePortal( uPortal_t *p );
-
-//=============================================================================
-
-// glfile.cpp -- write a debug file to be viewd with glview.exe
-
-void OutputWinding( idWinding *w, idFile *glview );
-void WriteGLView( tree_t *tree, char *source );
 
 //=============================================================================
 
@@ -385,9 +360,7 @@ tree_t		*FaceBSP( bspface_t *list );
 
 // surface.cpp
 
-mapTri_t *CullTrisInOpaqueLeafs( mapTri_t *triList, tree_t *tree );
 void	ClipSidesByTree( uEntity_t *e );
-void	SplitTrisToSurfaces( mapTri_t *triList, tree_t *tree );
 void	PutPrimitivesInAreas( uEntity_t *e );
 void	Prelight( uEntity_t *e );
 
@@ -462,7 +435,6 @@ mapTri_t	*CopyMapTri( const mapTri_t *tri );
 float		MapTriArea( const mapTri_t *tri );
 mapTri_t	*RemoveBadTris( const mapTri_t *tri );
 void		BoundTriList( const mapTri_t *list, idBounds &b );
-void		DrawTri( const mapTri_t *tri );
 void		FlipTriList( mapTri_t *tris );
 void		TriVertsFromOriginal( mapTri_t *tri, const mapTri_t *original );
 void		PlaneForTri( const mapTri_t *tri, idPlane &plane );
@@ -482,6 +454,3 @@ void WriteOutputFile( void );
 // shadowopt.cpp
 
 srfTriangles_t *CreateLightShadow( optimizeGroup_t *shadowerGroups, const mapLight_t *light );
-void		FreeBeamTree( struct beamTree_s *beamTree );
-
-void		CarveTriByBeamTree( const struct beamTree_s *beamTree, const mapTri_t *tri, mapTri_t **lit, mapTri_t **unLit );

@@ -591,8 +591,6 @@ add_globbed_headers(src_cm "cm")
 set(src_dmap
 	tools/compilers/dmap/dmap.cpp
 	tools/compilers/dmap/facebsp.cpp
-	tools/compilers/dmap/gldraw.cpp
-	tools/compilers/dmap/glfile.cpp
 	tools/compilers/dmap/leakfile.cpp
 	tools/compilers/dmap/map.cpp
 	tools/compilers/dmap/optimize.cpp
