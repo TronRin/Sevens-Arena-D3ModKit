@@ -145,8 +145,7 @@ idCVar idConsoleLocal::con_noPrint( "con_noPrint", "0", CVAR_BOOL|CVAR_SYSTEM|CV
 #else
 idCVar idConsoleLocal::con_noPrint( "con_noPrint", "1", CVAR_BOOL|CVAR_SYSTEM|CVAR_NOCHEAT, "print on the console but not onscreen when console is pulled up" );
 #endif
-idCVar idConsoleLocal::con_size( "con_size", "0.5", CVAR_SYSTEM|CVAR_FLOAT|CVAR_NOCHEAT, "screen size of console" );
-
+idCVar idConsoleLocal::con_size( "con_size", "0.5", CVAR_SYSTEM|CVAR_FLOAT|CVAR_NOCHEAT|CVAR_ARCHIVE, "screen size of console" );
 
 
 /*
@@ -461,7 +460,7 @@ void idConsoleLocal::Clear() {
 	int		i;
 
 	for ( i = 0 ; i < CON_TEXTSIZE ; i++ ) {
-		text[i] = (idStr::ColorIndex(C_COLOR_CYAN)<<8) | ' ';
+		text[i] = (idStr::ColorIndex(C_COLOR_WHITE)<<8) | ' ';
 	}
 
 	Bottom();		// go to end
@@ -905,7 +904,7 @@ void idConsoleLocal::Linefeed() {
 	}
 	current++;
 	for ( i = 0; i < LINE_WIDTH; i++ ) {
-		text[(current%TOTAL_LINES)*LINE_WIDTH+i] = (idStr::ColorIndex(C_COLOR_CYAN)<<8) | ' ';
+		text[(current%TOTAL_LINES)*LINE_WIDTH+i] = (idStr::ColorIndex(C_COLOR_WHITE)<<8) | ' ';
 	}
 }
 
@@ -930,12 +929,12 @@ void idConsoleLocal::Print( const char *txt ) {
 	}
 #endif
 
-	color = idStr::ColorIndex( C_COLOR_CYAN );
+	color = idStr::ColorIndex( C_COLOR_WHITE );
 
 	while ( (c = *(const unsigned char*)txt) != 0 ) {
 		if ( idStr::IsColor( txt ) ) {
 			if ( *(txt+1) == C_COLOR_DEFAULT ) {
-				color = idStr::ColorIndex( C_COLOR_CYAN );
+				color = idStr::ColorIndex( C_COLOR_WHITE );
 			} else {
 				color = idStr::ColorIndex( *(txt+1) );
 			}
@@ -1032,7 +1031,7 @@ void idConsoleLocal::DrawInput() {
 		}
 	}
 
-	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_CYAN ) );
+	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_WHITE ) );
 
 	renderSystem->DrawSmallChar( 1 * SMALLCHAR_WIDTH, y, ']', localConsole.charSetShader );
 
@@ -1090,7 +1089,7 @@ void idConsoleLocal::DrawNotify() {
 		v += SMALLCHAR_HEIGHT;
 	}
 
-	renderSystem->SetColor( colorCyan );
+	renderSystem->SetColor( colorWhite );
 }
 
 /*
@@ -1126,13 +1125,13 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, y, 0, 1.0f - displayFrac, 1, 1, consoleShader );
 	}
 
-	renderSystem->SetColor( colorCyan );
+	renderSystem->SetColor( colorRed );
 	renderSystem->DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, whiteShader );
 	renderSystem->SetColor( colorWhite );
 
 	// draw the version number
 
-	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_CYAN ) );
+	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_RED ) );
 
 	idStr version = va("%s.%i", ENGINE_VERSION, BUILD_NUMBER);
 	i = version.Length();
@@ -1153,14 +1152,14 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 	// draw from the bottom up
 	if ( display != current ) {
 		// draw arrows to show the buffer is backscrolled
-		renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_CYAN ) );
+		renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_RED ) );
 		for ( x = 0; x < LINE_WIDTH; x += 4 ) {
 			renderSystem->DrawSmallChar( (x+1)*SMALLCHAR_WIDTH, idMath::FtoiFast( y ), '^', localConsole.charSetShader );
 		}
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
-
+	
 	row = display;
 
 	if ( x == 0 ) {
@@ -1176,7 +1175,7 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 		}
 		if ( current - row >= TOTAL_LINES ) {
 			// past scrollback wrap point
-			continue;
+			continue;	
 		}
 
 		text_p = text + (row % TOTAL_LINES)*LINE_WIDTH;
@@ -1197,7 +1196,7 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 	// draw the input prompt, user text, and cursor if desired
 	DrawInput();
 
-	renderSystem->SetColor( colorCyan );
+	renderSystem->SetColor( colorWhite );
 }
 
 
