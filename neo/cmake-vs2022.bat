@@ -1,6 +1,6 @@
 @ECHO OFF
 @ECHO --------------------------------------------------------------------------------
-@ECHO 		  			DOOM 3 MODDING KIT
+@ECHO 				DOOM 3 MODDING KIT
 @ECHO			   VS 2022 PROJECT GENERATION FOR x86 - x64
 @ECHO --------------------------------------------------------------------------------
 pause
