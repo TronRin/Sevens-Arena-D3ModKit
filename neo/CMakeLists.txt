@@ -638,6 +638,12 @@ set(src_renderbump
 
 add_globbed_headers(src_renderbump "tools/compilers/renderbump")
 
+set(src_matbuild
+	tools/compilers/matbuild/matbuild.cpp
+)
+
+add_globbed_headers(src_matbuild "tools/compilers/matbuild")
+
 set(src_snd
 	sound/snd_cache.cpp
 	sound/snd_decoder.cpp
@@ -907,6 +913,7 @@ set(src_core
 	${src_aas}
 	${src_roq}
 	${src_renderbump}
+	${src_matbuild}
 	${src_snd}
 	${src_ui}
 	${src_tools}

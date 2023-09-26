@@ -54,4 +54,7 @@ void RunReach_f( const idCmdArgs &args );
 // video file encoding
 void RoQFileEncode_f( const idCmdArgs &args );
 
+// builds materials for a given directory.
+void MatBuildDir_f( const idCmdArgs& args );
+
 #endif	/* !__COMPILER_PUBLIC_H__ */

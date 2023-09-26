@@ -2309,6 +2309,7 @@ void idCommonLocal::InitCommands( void ) {
 	cmdSystem->AddCommand( "runAASDir", RunAASDir_f, CMD_FL_TOOL, "compiles AAS files for all maps in a folder", idCmdSystem::ArgCompletion_MapName );
 	cmdSystem->AddCommand( "runReach", RunReach_f, CMD_FL_TOOL, "calculates reachability for an AAS file", idCmdSystem::ArgCompletion_MapName );
 	cmdSystem->AddCommand( "roq", RoQFileEncode_f, CMD_FL_TOOL, "encodes a roq file" );
+	cmdSystem->AddCommand( "MatbuildDir", MatBuildDir_f, CMD_FL_TOOL, "builds interaction materials for a given directory.", idCmdSystem::ArgCompletion_MapName );
 #endif
 
 #ifdef ID_ALLOW_TOOLS
