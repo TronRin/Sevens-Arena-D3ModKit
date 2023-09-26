@@ -232,6 +232,69 @@ typedef enum {
 	SO_SIL_OPTIMIZE		// 5
 } shadowOptLevel_t;
 
+class dmapTimingStats
+{
+public:
+	dmapTimingStats() {
+		Reset();
+	}
+
+	void Reset() {
+		num = 0;
+		sum = 0;
+		min = 0;
+		max = 0;
+	}
+
+	void Start() {
+		start_ms = Sys_Milliseconds();
+	}
+
+	void Stop() {
+		int ms = Sys_Milliseconds() - start_ms;
+
+		sum += ms;
+
+		if ( ms < min )
+			min = ms;
+
+		if ( ms > max )
+			max = ms;
+
+		++num;
+	}
+
+	int Min() const {
+		return min;
+	}
+
+	int Max() const {
+		return max;
+	}
+
+	int Num() const {
+		return num;
+	}
+
+	int Sum() const {
+		return sum;
+	}
+
+	float Avg() const {
+		if ( num <= 0 )
+			return 0.0f;
+
+		return static_cast<float>(sum) / num;
+	}
+
+private:
+	int start_ms;
+	int sum;
+	int min;
+	int max;
+	int num;
+};
+
 typedef struct {
 	// mapFileBase will contain the qpath without any extension: "maps/test_box"
 	char		mapFileBase[1024];
@@ -249,7 +312,6 @@ typedef struct {
 
 	bool	verbose;
 
-	bool	glview;
 	bool	noOptimize;
 	bool	verboseentities;
 	bool	noCurves;
@@ -268,6 +330,18 @@ typedef struct {
 
 	int		totalShadowTriangles;
 	int		totalShadowVerts;
+
+	// Time stats
+	dmapTimingStats timingMakeStructural;
+	dmapTimingStats timingMakeTreePortals;
+	dmapTimingStats timingFilterBrushesIntoTree;
+	dmapTimingStats timingFloodAndFill;
+	dmapTimingStats timingClipSidesByTree;
+	dmapTimingStats timingFloodAreas;
+	dmapTimingStats timingPutPrimitivesInAreas;
+	dmapTimingStats timingPreLight;
+	dmapTimingStats timingOptimize;
+	dmapTimingStats timingFixTJunctions;
 } dmapGlobals_t;
 
 extern dmapGlobals_t dmapGlobals;
