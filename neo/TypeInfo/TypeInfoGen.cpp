@@ -28,9 +28,9 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sys/platform.h"
 
-#include "TypeInfo/TypeInfoGen.h"
+#include "TypeInfoGen.h"
 
-#define TYPE_INFO_GEN_VERSION		"1.0"
+#define TYPE_INFO_GEN_VERSION		"1.1"
 
 /*
 ================
@@ -407,11 +407,17 @@ void idTypeInfoGen::ParseScope( const char *scope, bool isTemplate, idParser &sr
 	idStr varType;
 	bool isConst = false;
 	bool isStatic = false;
+	bool classValid = false;
+	bool forceIgnore = false;
 
 	indent = 1;
 	while( indent ) {
 		if ( !src.ReadToken( &token ) ) {
 			break;
+		}
+
+		if ( token == "Invoke" ) {
+			classValid = true;
 		}
 
 		if ( token == "{" ) {
@@ -425,7 +431,9 @@ void idTypeInfoGen::ParseScope( const char *scope, bool isTemplate, idParser &sr
 				varType += token + " ";
 			} while( indent > 1 && src.ReadToken( &token ) );
 
-		} else if ( token == "}" ) {
+		} else if ( token == "TYPEINFO_IGNORE" ) {
+			forceIgnore = true;
+		}else if ( token == "}" ) {
 
 			assert( indent == 1 );
 			indent--;
@@ -448,10 +456,11 @@ void idTypeInfoGen::ParseScope( const char *scope, bool isTemplate, idParser &sr
 			isStatic = false;
 
 		} else if ( token == "public" || token == "protected" || token == "private" ) {
-
+			/*
 			if ( !src.ExpectTokenString( ":" ) ) {
 				break;
 			}
+			*/
 			varType = "";
 			isConst = false;
 			isStatic = false;
@@ -645,13 +654,39 @@ void idTypeInfoGen::ParseScope( const char *scope, bool isTemplate, idParser &sr
 
 			// if this is a class method
 			if ( src.CheckTokenString( "(" ) ) {
+				idClassFunctionInfo function = { };
+				function.returnType = varType;
+				function.isConst = isConst;
+				function.isStatic = isStatic;
+				function.name = token;
 
+				if ( function.returnType[0] == ':' ) {
+					function.returnType = function.returnType.c_str() + 1;
+				}
+
+				if ( classValid == false ) {
+					function.isValidFunction = false;
+				} else {
+					function.isValidFunction = true;
+				}
 				indent++;
+
+				//idClassFunctionParamInfo paramInfo = { };
+				//idStr lastToken;
 				while( indent > 1 && src.ReadToken( &token ) ) {
 					if ( token == "(" ) {
 						indent++;
 					} else if ( token == ")" ) {
 						indent--;
+					}
+					else if ( token == "void" ) {
+
+					} else if( token == "stateParms_t" ) {
+						function.paramStateInput = "stateParms_t";
+						src.ReadToken( &token ); // *
+						src.ReadToken( &token ); // variable name
+					} else {
+						function.isValidFunction = false;
 					}
 				}
 
@@ -684,7 +719,12 @@ void idTypeInfoGen::ParseScope( const char *scope, bool isTemplate, idParser &sr
 					}
 				}
 
+				if ( classValid  && !forceIgnore ) {
+					typeInfo->functions.Append( function );
+				}
+
 				varType = "";
+				forceIgnore = false;
 				isConst = false;
 				isStatic = false;
 
@@ -799,41 +839,36 @@ idTypeInfoGen::CreateTypeInfo
 void idTypeInfoGen::CreateTypeInfo( const char *path ) {
 	int i, j, inheritance;
 	idStr fileName;
-	idFileList *files;
 	idParser src;
 
-	common->Printf( "Type Info Generator v"TYPE_INFO_GEN_VERSION" (c) 2004 id Software\n" );
+	common->Printf( "Type Info Generator v" TYPE_INFO_GEN_VERSION " (c) 2004 - 2011 id Software\n" );
 	common->Printf( "%s\n", path );
 
-	files = fileSystem->ListFilesTree( path, ".cpp" );
+	// Change the direcotry base uppon the game that's being build uppon
+#ifdef _D3XP
+	fileName = "neo/d3xp/game_precompiled.cpp";
+#else
+	fileName = "neo/game/game_precompiled.cpp";
+#endif // _D3XP
 
-	for ( i = 0; i < files->GetNumFiles(); i++ ) {
+	common->Printf( "processing '%s' for type info...\n", fileName.c_str() );
 
-		fileName = fileSystem->RelativePathToOSPath( files->GetFile( i ) );
-
-		common->Printf( "processing '%s' for type info...\n", fileName.c_str() );
-
-		if ( !src.LoadFile( fileName, true ) ) {
-			common->Warning( "couldn't load %s", fileName.c_str() );
-			continue;
-		}
-
-		src.SetFlags( LEXFL_NOBASEINCLUDES );
-
-		for ( j = 0; j < defines.Num(); j++ ) {
-			src.AddDefine( defines[j] );
-		}
-
-		idClassTypeInfo *typeInfo = new idClassTypeInfo;
-		ParseScope( "", false, src, typeInfo );
-		delete typeInfo;
-
-		src.FreeSource();
-
-		break;
+	if ( !src.LoadFile( fileName, true ) ) {
+		common->Warning( "couldn't load %s", fileName.c_str() );
+		return;
 	}
 
-	fileSystem->FreeFileList( files );
+	src.SetFlags( LEXFL_NOBASEINCLUDES );
+
+	for ( j = 0; j < defines.Num(); j++ ) {
+		src.AddDefine( defines[j] );
+	}
+
+	idClassTypeInfo *typeInfo = new idClassTypeInfo;
+	ParseScope( "", false, src, typeInfo );
+	delete typeInfo;
+
+	src.FreeSource();
 
 	numTemplates = 0;
 	for ( i = 0; i < classes.Num(); i++ ) {
@@ -880,15 +915,27 @@ idTypeInfoGen::WriteTypeInfo
 void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 	int i, j;
 	idStr path, define;
-	idFile *file;
+	idFile* file, *filecpp;
 
-	path = fileSystem->RelativePathToOSPath( fileName );
+	path = fileSystem->RelativePathToOSPath( va( "%s.cpp", fileName ) );
+	filecpp = fileSystem->OpenExplicitFileWrite( path );
+	if ( !filecpp ) {
+		common->Warning( "couldn't open %s", path.c_str() );
+		return;
+	}
 
+	path = fileSystem->RelativePathToOSPath( va( "%s.h", fileName ) );
 	file = fileSystem->OpenExplicitFileWrite( path );
 	if ( !file ) {
 		common->Warning( "couldn't open %s", path.c_str() );
 		return;
 	}
+
+	filecpp->WriteFloatString( "// This file has been autogenerated by the Type Info Generator\n\n" );
+	filecpp->WriteFloatString( "#pragma warning(disable : 4189)\n" );
+	filecpp->WriteFloatString( "#pragma warning(disable : 4505)\n" );
+	filecpp->WriteFloatString( "#include \"precompiled.h\"\n" );
+	filecpp->WriteFloatString( "#include \"../Game_local.h\"\n" );
 
 	common->Printf( "writing %s...\n", path.c_str() );
 
@@ -904,7 +951,7 @@ void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 		"/*\n"
 		"===================================================================================\n"
 		"\n"
-		"\tThis file has been generated with the Type Info Generator v"TYPE_INFO_GEN_VERSION" (c) 2004 id Software\n"
+		"\tThis file has been generated with the Type Info Generator v" TYPE_INFO_GEN_VERSION " (c) 2004 - 2011 id Software\n"
 		"\n"
 		"\t%d constants\n"
 		"\t%d enums\n"
@@ -937,7 +984,7 @@ void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 		"typedef struct {\n"
 		"\t"	"const char * type;\n"
 		"\t"	"const char * name;\n"
-		"\t"	"int offset;\n"
+		"\t"	"intptr_t offset;\n"
 		"\t"	"int size;\n"
 		"} classVariableInfo_t;\n"
 		"\n"
@@ -1007,16 +1054,204 @@ void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 		idStr typeInfoName = typeName;
 		CleanName( typeInfoName );
 
+		// were the hell is this coming from?
+		if( typeInfoName == "class_25_class_25" ) {
+			continue;
+		}
+
+		if ( strstr( typeName.c_str(), "<" ) ) {
+			continue;
+		}
+
+		if ( info->functions.Num() > 0 ) {
+			filecpp->WriteFloatString( "intptr_t %s::Invoke(const char *functionName, void *param1) {\n", typeInfoName.c_str(), typeName.c_str() );
+			//file->WriteFloatString("\tTypeInfoVariableArgs();\n");
+			filecpp->WriteFloatString( "\tint functionNameHash = idStr::Hash(functionName);\n" );
+
+			for ( j = 0; j < info->functions.Num(); j++ ) {
+				//const char* varType = info->functions[j].returnType.c_str();
+				const char* varName = info->functions[j].name.c_str();
+
+				if ( info->functions[j].name[0] == '(' ) {
+					continue;
+				}
+
+				if ( info->functions[j].name[0] == ':' ) {
+					continue;
+				}
+
+				if ( !info->functions[j].isValidFunction ) {
+					continue;
+				}
+
+				idStr tempName = info->functions[j].name;
+				tempName.Replace( "_s", "_t" );
+
+				// constructors/deconstrctors
+				if ( typeName == info->functions[j].name ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "idMenuDataSource" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "idMenuScreen" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "doomLeaderboard_t" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "optionData_t" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if( strstr( varName, "rididBodyIState_s" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "simulatedProjectile_t" ) ) {
+					continue;
+				}
+
+				if ( typeName == tempName ) {
+					continue;
+				}
+
+				if ( info->functions[j].isStatic ) {
+					continue;
+				}
+
+				int hash = idStr::Hash( varName );
+				filecpp->WriteFloatString( "\tif(functionNameHash == %d) { // %s\n", hash, varName );
+
+				idStr functionCall = varName;
+				if ( info->functions[j].paramStateInput != "" ) {
+					functionCall += va( "((%s *)param1)", info->functions[j].paramStateInput.c_str() );
+				} else {
+					functionCall += "()";
+				}
+
+				if ( !strstr( info->functions[j].returnType.c_str(), "*" ) && info->functions[j].returnType != "stateResult_t " && info->functions[j].returnType != "int " && info->functions[j].returnType != "short " && info->functions[j].returnType != "bool " ) {
+					filecpp->WriteFloatString( "\t\t%s;\n", functionCall.c_str() );
+					filecpp->WriteFloatString( "\t\treturn 0;\n", varName );
+				} else {
+					filecpp->WriteFloatString( "\t\treturn (intptr_t)%s;\n", functionCall.c_str() );
+				}
+				filecpp->WriteFloatString( "\t};\n" );
+			}
+
+			if ( typeInfoName == "idClass" ) {
+				filecpp->WriteFloatString( "\treturn 0;\n\n" );
+			} else {
+				filecpp->WriteFloatString( "\treturn __super::Invoke(functionName, param1);\n\n" );
+			}
+			filecpp->WriteFloatString( "};\n\n" );
+		}
+
+		if ( info->functions.Num() > 0 ) {
+			filecpp->WriteFloatString( "bool %s::HasNativeFunction(const char *functionName) {\n", typeInfoName.c_str(), typeName.c_str() );
+			//file->WriteFloatString("\tTypeInfoVariableArgs();\n");
+			filecpp->WriteFloatString( "\tint functionNameHash = idStr::Hash(functionName);\n" );
+
+			for ( j = 0; j < info->functions.Num(); j++ ) {
+				//const char* varType = info->functions[j].returnType.c_str();
+				const char* varName = info->functions[j].name.c_str();
+
+				if ( info->functions[j].name[0] == '(' ) {
+					continue;
+				}
+
+				if ( info->functions[j].name[0] == ':' ) {
+					continue;
+				}
+
+				if ( !info->functions[j].isValidFunction ) {
+					continue;
+				}
+
+				idStr tempName = info->functions[j].name;
+				tempName.Replace( "_s", "_t" );
+
+				// constructors/deconstrctors
+				if ( typeName == info->functions[j].name ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "idMenuDataSource" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "idMenuScreen" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "doomLeaderboard_t" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "optionData_t" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "rididBodyIState_s" ) ) {
+					continue;
+				}
+
+				// HACK!
+				if ( strstr( varName, "simulatedProjectile_t" ) ) {
+					continue;
+				}
+
+				if( typeName == tempName ) {
+					continue;
+				}
+
+				if ( info->functions[j].isStatic ) {
+					continue;
+				}
+
+				int hash = idStr::Hash( varName );
+				filecpp->WriteFloatString( "\tif(functionNameHash == %d) { // %s\n", hash, varName );
+				filecpp->WriteFloatString( "\t\treturn true;\n" );
+				filecpp->WriteFloatString( "\t};\n" );
+			}
+
+			if ( typeInfoName == "idClass" ) {
+				filecpp->WriteFloatString( "\treturn false;\n\n" );
+			} else {
+				filecpp->WriteFloatString( "\treturn __super::HasNativeFunction(functionName);\n\n" );
+			}
+			filecpp->WriteFloatString( "};\n\n" );
+		}
+
 		file->WriteFloatString( "static classVariableInfo_t %s_typeInfo[] = {\n", typeInfoName.c_str() );
 
 		for ( j = 0; j < info->variables.Num(); j++ ) {
 			const char *varName = info->variables[j].name.c_str();
 			const char *varType = info->variables[j].type.c_str();
 
+			if ( info->variables[j].name == "override" ) {
+				continue;
+			}
+
 			if ( info->unnamed || info->isTemplate || info->variables[j].bits != 0 ) {
 				file->WriteFloatString( "//" );
 			}
-			file->WriteFloatString( "\t{ \"%s\", \"%s\", (int)(&((%s *)0)->%s), sizeof( ((%s *)0)->%s ) },\n",
+			file->WriteFloatString( "\t{ \"%s\", \"%s\", (intptr_t)(&((%s *)0)->%s), sizeof( ((%s *)0)->%s ) },\n",
 									varType, varName, typeName.c_str(), varName, typeName.c_str(), varName );
 		}
 

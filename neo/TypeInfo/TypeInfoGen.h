@@ -29,6 +29,12 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __TYPEINFOGEN_H__
 #define __TYPEINFOGEN_H__
 
+#include "idlib/Str.h"
+#include "idlib/Parser.h"
+#include "idlib/containers/List.h"
+#include "idlib/containers/StrList.h"
+#include "framework/FileSystem.h"
+
 /*
 ===================================================================================
 
@@ -70,6 +76,16 @@ public:
 	int							bits;
 };
 
+class idClassFunctionInfo {
+public:
+	idStr						returnType;
+	idStr						name;
+	bool						isConst;
+	bool						isStatic;
+	idStr						paramStateInput;
+	bool						isValidFunction;
+};
+
 class idClassTypeInfo {
 public:
 	idStr						typeName;
@@ -78,6 +94,7 @@ public:
 	bool						unnamed;
 	bool						isTemplate;
 	idList<idClassVariableInfo>	variables;
+	idList<idClassFunctionInfo> functions;
 };
 
 class idTypeInfoGen {

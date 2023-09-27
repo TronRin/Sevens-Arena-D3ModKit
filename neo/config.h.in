@@ -11,6 +11,9 @@
 
 #cmakedefine HAVE_JPEG_MEM_SRC
 
-#cmakedefine ID_ENABLE_CURL
+// Console tools doesn't use Curl
+#ifndef ID_CONSOLE_TOOLS
+	#cmakedefine ID_ENABLE_CURL
+#endif // ID_CONSOLE_TOOLS
 
 #endif

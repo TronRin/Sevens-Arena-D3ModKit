@@ -52,8 +52,9 @@ option(CORE			"Build the core" ON)
 option(BASE			"Build the base game code" ON)
 option(D3XP			"Build the d3xp game code" ON)
 if(MSVC)
-	option(TOOLS		"Build the tools game code (Visual Studio+SDL2 only)" ON) # OFF
+	option(TOOLS			"Build the tools game code (Visual Studio+SDL2 only)" ON) # OFF
 endif()
+option(TYPEINFOGEN	"Build the TypeInfoGen tool (useful for C++ only mods/games)" ON)
 option(DEDICATED	"Build the dedicated server" ON) # OFF
 option(ONATIVE		"Optimize for the host CPU" OFF)
 option(SDL2			"Use SDL2 instead of SDL1.2" ON)
@@ -1016,6 +1017,30 @@ else()
 	)
 endif()
 
+# Generate the TypeInfoGen
+if (TYPEINFOGEN)
+	set(src_typeinfogen 
+		"TypeInfo/main.cpp"
+		"TypeInfo/TypeInfoGen.cpp"
+		"TypeInfo/TypeInfoGen.h"
+	)
+
+	set (src_toolsupportsrc 
+		framework/CmdSystem.cpp
+		framework/CVarSystem.cpp
+		framework/File.cpp
+		framework/FileSystem.cpp
+		framework/minizip/ioapi.c
+		framework/minizip/ioapi.h
+		framework/minizip/MiniZip64_info.txt
+		framework/minizip/unzip.cpp
+		framework/minizip/unzip.h
+	)
+	
+	set (src_enginestub 
+		tools/tool_idcommon_stub.cpp
+	)
+endif()
 
 if(AROS)
 	set(DHEWM3BINARY "ADoom3")
@@ -1229,6 +1254,34 @@ endif()
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS ${DHEWM3BINARY}ded
+				RUNTIME DESTINATION "${bindir}"
+				LIBRARY DESTINATION "${libdir}"
+				ARCHIVE DESTINATION "${libdir}"
+		)
+	endif()
+endif()
+
+# Generate the TypeInfoGen
+if (TYPEINFOGEN)
+	add_executable(TypeInfoGen
+		${src_typeinfogen}
+		${src_toolsupportsrc}
+		${src_enginestub}
+	)
+
+	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_typeinfogen} ${src_toolsupportsrc} ${src_enginestub})
+
+if(HARDLINK_GAME)
+	set_target_properties(TypeInfoGen PROPERTIES COMPILE_DEFINITIONS "ID_TYPEINFO;ID_CONSOLE_TOOLS")
+	target_include_directories(TypeInfoGen PRIVATE ${game_includes})
+else()
+	set_target_properties(TypeInfoGen PROPERTIES COMPILE_DEFINITIONS "ID_TYPEINFO;ID_CONSOLE_TOOLS;__DOOM_DLL__")
+endif()
+	set_target_properties(TypeInfoGen PROPERTIES LINK_FLAGS "${ldflags}")
+	target_link_libraries(TypeInfoGen idlib ZLIB::ZLIB )
+
+	if(NOT APPLE AND NOT WIN32)
+		install(TARGETS TypeInfoGen
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
