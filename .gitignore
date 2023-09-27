@@ -1,4 +1,8 @@
 /build*
+/output/*.exe
+/output/*.dll
+/output/*.lib
+/output/*.exp
 *~
 .*.swp
 *.pyc
