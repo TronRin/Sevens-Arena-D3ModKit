@@ -719,6 +719,7 @@ idMapFile::Parse
 bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 	// no string concatenation for epairs and allow path names for materials
 	idLexer src( LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
+	idLexer entitiessrc( LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
 	idToken token;
 	idStr fullName;
 	idMapEntity *mapEnt;
@@ -760,6 +761,16 @@ bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 			break;
 		}
 		entities.Append( mapEnt );
+	}
+
+	if ( entitiessrc.IsLoaded() ) {
+		while( 1 ) {
+			mapEnt = idMapEntity::Parse( entitiessrc, false, version );
+			if ( !mapEnt ) {
+				break;
+			}
+			entities.Append( mapEnt );
+		}
 	}
 
 	SetGeometryCRC();
@@ -833,20 +844,27 @@ bool idMapFile::Write( const char *fileName, const char *ext, bool fromBasePath 
 	int i;
 	idStr qpath;
 	idFile *fp;
+	idStr entitiesqpath;
+	idFile* entitiesfp;
 
 	qpath = fileName;
 	qpath.SetFileExtension( ext );
+
+	entitiesqpath = fileName;
+	entitiesqpath.SetFileExtension( "entities" );
 
 	idLib::common->Printf( "writing %s...\n", qpath.c_str() );
 
 	if ( fromBasePath ) {
 		fp = idLib::fileSystem->OpenFileWrite( qpath, "fs_devpath" );
+		entitiesfp = idLib::fileSystem->OpenFileWrite( entitiesqpath, "fs_devpath" );
 	}
 	else {
 		fp = idLib::fileSystem->OpenExplicitFileWrite( qpath );
+		entitiesfp = idLib::fileSystem->OpenExplicitFileWrite( entitiesqpath );
 	}
 
-	if ( !fp ) {
+	if ( !fp || !entitiesfp ) {
 		idLib::common->Warning( "Couldn't open %s\n", qpath.c_str() );
 		return false;
 	}
@@ -854,10 +872,15 @@ bool idMapFile::Write( const char *fileName, const char *ext, bool fromBasePath 
 	fp->WriteFloatString( "Version %f\n", (float) CURRENT_MAP_VERSION );
 
 	for ( i = 0; i < entities.Num(); i++ ) {
-		entities[i]->Write( fp, i );
+		if ( i == 0 ) {
+			entities[i]->Write( fp, i );
+		} else {
+			entities[i]->Write( entitiesfp, i - 1 );
+		}
 	}
 
 	idLib::fileSystem->CloseFile( fp );
+	idLib::fileSystem->CloseFile( entitiesfp );
 
 	return true;
 }
