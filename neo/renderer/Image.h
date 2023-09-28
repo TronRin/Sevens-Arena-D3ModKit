@@ -144,9 +144,11 @@ typedef enum {
 } textureType_t;
 
 typedef enum {
-	CF_2D,			// not a cube map
-	CF_NATIVE,		// _px, _nx, _py, etc, directly sent to GL
-	CF_CAMERA		// _forward, _back, etc, rotated and flipped as needed before sending to GL
+	CF_2D,				// not a cube map
+	CF_NATIVE,			// _px, _nx, _py, etc, directly sent to GL
+	CF_CAMERA,			// _forward, _back, etc, rotated and flipped as needed before sending to GL
+	CF_CAMERA_ALT,		// motorsep 12-30-2022; to use with cubemaps created from equirectangular panoramas in Bixorama (or perhaps any other similar software)
+	CF_CAMERA_SOURCE	// Source Engine style cubemap system
 } cubeFiles_t;
 
 #define	MAX_IMAGE_NAME	256

@@ -970,6 +970,16 @@ void idMaterial::ParseFragmentMap( idLexer &src, newShaderStage_t *newStage ) {
 			cubeMap = CF_CAMERA;
 			continue;
 		}
+		// motorsep 12-30-2022; to use with cubemaps created from equirectangular panoramas in Bixorama (or perhaps any other similar software)
+		if ( !token.Icmp( "cameraCubeSky" ) ) {
+			cubeMap = CF_CAMERA_ALT;
+			continue;
+		}
+		// Source engine style skybox
+		if ( !token.Icmp( "skybox" ) ) {
+			cubeMap = CF_CAMERA_SOURCE;
+			continue;
+		}
 		if ( !token.Icmp( "nearest" ) ) {
 			tf = TF_NEAREST;
 			continue;
@@ -1225,6 +1235,22 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 			str = R_ParsePastImageProgram( src );
 			idStr::Copynz( imageName, str, sizeof( imageName ) );
 			cubeMap = CF_CAMERA;
+			continue;
+		}
+
+		// motorsep 12-30-2022; to use with cubemaps created from equirectangular panoramas in Bixorama (or perhaps any other similar software)
+		if ( !token.Icmp("cameraCubeSky" ) ) {
+			str = R_ParsePastImageProgram( src );
+			idStr::Copynz( imageName, str, sizeof( imageName ) );
+			cubeMap = CF_CAMERA_ALT;
+			continue;
+		}
+
+		// Source engine style skybox
+		if ( !token.Icmp( "skybox" ) ) {
+			str = R_ParsePastImageProgram( src );
+			idStr::Copynz( imageName, str, sizeof( imageName ) );
+			cubeMap = CF_CAMERA_SOURCE;
 			continue;
 		}
 
