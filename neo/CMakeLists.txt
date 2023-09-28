@@ -7,6 +7,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../output)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/../output)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/../output)
 
+# Enable folder groups
+set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER  "" )
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
+
 # TODO
 
 # osx: place game .dylib's in the bundle (next to the binary)
@@ -1165,11 +1169,15 @@ endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_idlib})
 
+set_target_properties(idlib PROPERTIES FOLDER "libs")
+
 # RBMIKKT_TANGENT...
 
 add_library(mikktspace STATIC ${src_mikktspace})
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_mikktspace})
+
+set_target_properties(mikktspace PROPERTIES FOLDER "libs")
 
 # ...RBMIKKT_TANGENT
 
@@ -1210,6 +1218,7 @@ else()
 endif()
 	set_target_properties(${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
+	set_target_properties(${DHEWM3BINARY} PROPERTIES FOLDER "exes")
 
 	target_link_libraries(${DHEWM3BINARY}
 		idlib
@@ -1248,6 +1257,8 @@ else()
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__")
 endif()
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}")
+	set_target_properties(${DHEWM3BINARY}ded PROPERTIES FOLDER "exes")
+
 	target_link_libraries(${DHEWM3BINARY}ded
 		idlib
 		mikktspace # RBMIKKT_TANGENT
@@ -1284,6 +1295,7 @@ else()
 endif()
 	set_target_properties(TypeInfoGen PROPERTIES LINK_FLAGS "${ldflags}")
 	target_link_libraries(TypeInfoGen idlib ZLIB::ZLIB )
+	set_target_properties(TypeInfoGen PROPERTIES FOLDER "exes")
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS TypeInfoGen
@@ -1314,6 +1326,7 @@ if(BASE AND NOT HARDLINK_GAME)
 	else()
 		target_link_libraries(base idlib)
 	endif()
+	set_target_properties(base PROPERTIES FOLDER "dlls")
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS base
@@ -1342,6 +1355,7 @@ if(D3XP AND NOT HARDLINK_GAME)
 	else()
 		target_link_libraries(d3xp idlib)
 	endif()
+	set_target_properties(d3xp PROPERTIES FOLDER "dlls")
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS d3xp
