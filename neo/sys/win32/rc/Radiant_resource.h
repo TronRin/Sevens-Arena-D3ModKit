@@ -82,9 +82,8 @@ If you have questions concerning this license or the applicable additional terms
 #define IDR_RADIANTYPE                           10053
 #define IDR_SHADERFRAME                          10054
 #define IDR_SHADERTYPE                           10055
-#define IDR_TOOLBAR1                             10056
 #define IDR_TOOLBAR_SCALELOCK                    10057
-#define IDR_TOOLBAR_ADVANCED                     10058
+#define IDR_TOOLBAR								10058
 #define IDR_MENU_DROP                            10059
 #define IDR_MENU_QUAKE3                          10060
 #define IDR_MENU_EV                              10061
@@ -148,21 +147,12 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_EDIT_NAME                            10235
 #define IDC_RUN                                  10236
 #define IDC_LIST_COMMANDS                        10237
-#define IDC_CHECK_FACE                           10238
-#define IDC_CHECK_RIGHTCLICK                     10239
-#define IDC_CHECK_TEXTUREWINDOW                  10240
-#define IDC_CHECK_TEXTURETOOLBAR                 10241
 #define IDC_CHECK_LIGHTDRAW                      10242
 #define IDC_CHECK_SNAPT                          10243
-#define IDC_CHECK_TEXTURESCROLLBAR               10244
-#define IDC_CHECK_RUNQUAKE                       10245
-#define IDC_CHECK_SETGAME                        10246
-#define IDC_CHECK_DISPLAYLISTS                   10247
 #define IDC_EDIT_AUTOSAVE                        10248
 #define IDC_CHK_FLAT                             10249
 #define IDC_CHECK_NEWMAPFORMAT                   10250
 #define IDC_BTN_APPLYTEXTURESTUFF                10251
-#define IDC_CHECK_QE4PAINTING                    10252
 #define IDC_BTN_PLAY                             10253
 #define IDC_BTN_ADD                              10254
 #define IDC_BTN_TEXTURE                          10255
@@ -243,7 +233,6 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_SLIDER_CAMSPEED                      10330
 #define IDC_G_EDIT                               10331
 #define IDC_STATIC_FIELD3                        10332
-#define IDC_CHECK_CAMXYUPDATE                    10333
 #define IDC_STATIC_KEY                           10334
 #define IDC_FIND_BRUSH                           10335
 #define IDC_EDIT_FIELD3                          10336
@@ -285,7 +274,6 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_CMD_LIST                             10372
 #define IDC_CHECK_DLLENTITIES                    10373
 #define IDC_PRJBASEPATH                          10374
-#define IDC_CHECK_WIDETOOLBAR                    10375
 #define IDC_CMDCOMMAND                           10376
 #define IDC_CHECK_BUGGYICD                       10377
 #define IDC_CMDMENUTEXT                          10378
@@ -317,7 +305,6 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_BTN_AXIAL                            10404
 #define IDC_BTN_ASSIGNMODEL                      10405
 #define IDC_BTN_FACEFIT                          10406
-#define IDC_SLIDER_TEXTUREQUALITY                10407
 #define IDC_LIST1                                10408
 #define IDC_BTN_BRUSHFIT                         10409
 #define IDC_LIST_EVENTS                          10410
@@ -334,7 +321,6 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_EDIT_HEIGHT                          10421
 #define IDC_SPIN_WIDTH                           10422
 #define IDC_SPIN_HEIGHT                          10423
-#define IDC_COMBO_SHADERS                        10424
 #define IDC_TREE_GROUP                           10425
 #define IDC_CHECK_NOSTIPPLE                      10426
 #define IDC_TAB_MODE                             10427
@@ -465,6 +451,12 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_FIND                                 10552
 #define IDC_PROMPT                               10553
 #define IDC_CHECK_SELECTALLMATCHING              10554
+#define IDD_DIALOG_CAMERA						 10555
+#define IDD_DIALOG_XY							 10556
+#define IDD_DIALOG_XZ							 10557
+#define IDD_DIALOG_YZ							 10558
+#define IDD_DIALOG_Z							 10559
+#define ID_VIEW_INSPECTOR						 10560
 
 #define ID_COLOR_SUPERMAL                        30000
 #define ID_Menu                                  30001
@@ -761,9 +753,9 @@ If you have questions concerning this license or the applicable additional terms
 #define ID_TEXTUREBK                             30292
 #define ID_COLORS_XYBK                           30293
 #define ID_FILE_ABOUT                            30294
-#define ID_VIEW_CONSOLE                          30295
-#define ID_VIEW_ENTITY                           30296
-#define ID_VIEW_TEXTURE                          30297
+#define ID_INSPECTOR_CONSOLE                     30295
+#define ID_INSPECTOR_ENTITY                      30296
+#define ID_INSPECTOR_TEXTURE                     30297
 #define ID_COLORS_MAJOR                          30298
 #define ID_COLORS_MINOR                          30299
 #define ID_SELECTION_CONNECT                     30300
@@ -782,7 +774,6 @@ If you have questions concerning this license or the applicable additional terms
 #define ID_BRUSH_ARBITRARYSIDED                  30313
 #define ID_SELECTION_UNGROUPENTITY               30314
 #define ID_MISC_SELECTENTITYCOLOR                30315
-#define ID_MISC_PRINTXY                          30316
 #define ID_HELP_ABOUT                            30317
 #define ID_EDIT_COPYBRUSH                        30318
 #define ID_EDIT_PASTEBRUSH                       30319
@@ -860,7 +851,7 @@ If you have questions concerning this license or the applicable additional terms
 #define ID_GRID_32                               30391
 #define ID_GRID_64                               30392
 #define ID_GRID_END                              30393
-#define ID_VIEW_MEDIABROWSER                     30394
+#define ID_INSPECTOR_MEDIABROWSER                30394
 #define ID_VIEW_GAME                             30395
 #define ID_PATCH_NATURALIZEALT                   30396
 #define ID_VIEW_SHOWTRIGGERS                     30397

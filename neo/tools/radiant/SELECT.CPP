@@ -432,7 +432,6 @@ void Select_Deselect(bool bDeselectFaces) {
 
 	g_pParentWnd->ActiveXY()->UndoClear();
 
-	g_qeglobals.d_workcount++;
 	g_qeglobals.d_select_count = 0;
 	g_qeglobals.d_num_move_points = 0;
 	b = selected_brushes.next;
@@ -1950,19 +1949,6 @@ void Select_Invert(void) {
 	Sys_UpdateWindows(W_ALL);
 
 	Sys_Status("done.\n");
-}
-
-/*
- =======================================================================================================================
-	Select_Name
- =======================================================================================================================
- */
-void Select_Name(const char *pName) {
-	if (g_qeglobals.m_bBrushPrimitMode) {
-		for (brush_t * b = selected_brushes.next; b && b != &selected_brushes; b = b->next) {
-			Brush_SetEpair(b, "Name", pName);
-		}
-	}
 }
 
 /*

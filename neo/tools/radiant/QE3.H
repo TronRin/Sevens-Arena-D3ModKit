@@ -35,6 +35,11 @@ If you have questions concerning this license or the applicable additional terms
 #define DEBUG_NEW new
 #endif
 
+#pragma comment (lib, "Msimg32")
+#include <Vsstyle.h>
+#include <uxtheme.h> 
+#pragma comment(lib, "UxTheme")
+
 // this define to use HTREEITEM and MFC stuff in the headers
 #define QERTYPES_USE_MFC
 #include "qertypes.h"
@@ -160,8 +165,6 @@ typedef struct
 
 	SavedInfo_t  d_savedinfo;
 
-	int          d_workcount;
-
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
 	brush_t		*d_select_order[MAX_MAP_ENTITIES];
@@ -209,12 +212,11 @@ typedef struct
 
 
 void Pointfile_Delete (void);
-void WINAPI Pointfile_Check (void);
+void Pointfile_Check (void);
 void Pointfile_Next (void);
 void Pointfile_Prev (void);
 void Pointfile_Clear (void);
 void Pointfile_Draw( void );
-void Pointfile_Load( void );
 
 //
 // drag.c
@@ -241,18 +243,6 @@ void SelectEdgeByRay (idVec3 org, idVec3 dir);
 void SelectVertexByRay (idVec3 org, idVec3 dir);
 
 void ConnectEntities (void);
-
-extern	int	update_bits;
-
-extern	int	screen_width;
-extern	int	screen_height;
-
-extern	HANDLE	bsp_process;
-extern HANDLE g_hBSPOutput;
-extern HANDLE g_hBSPInput;
-
-
-char	*TranslateString (char *buf);
 
 void ProjectDialog (void);
 
@@ -416,24 +406,17 @@ extern idCVar radiant_entityMode;
 
 // externs
 extern void AddSlash(CString&);
-extern void DLLBuildDone();
 extern void CleanUpEntities();
 extern void QE_CountBrushesAndUpdateStatusBar();
 extern void	QE_CheckAutoSave();
-extern qtexture_t	*notexture;
-extern qtexture_t	*current_texture;
 extern bool SaveWindowState(HWND hWnd, const char *pszName);
 extern void Map_Snapshot();
-extern void WXY_Print();
-extern void AddProp( void );
-extern int inspector_mode;
 extern bool g_bRotateMode;
 extern bool g_bClipMode;
 extern bool g_bScaleMode;
 extern int g_nScaleHow;
 extern bool g_bPathMode;
 extern void RunScript(char* pBuffer);
-extern HINSTANCE g_hOpenGL32;
 
 extern void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected, bool bForce);
 extern void DoProjectSettings();
@@ -441,7 +424,6 @@ extern bool region_active;
 extern void	Texture_ShowDirectory (char* pPath, bool Linked = false);
 extern void Map_ImportFile (char *filename);
 extern void Map_SaveSelected(char* pFilename);
-extern bool g_bNewFace;
 extern bool g_bSwitch;
 extern brush_t g_brFrontSplits;
 extern brush_t g_brBackSplits;
@@ -455,7 +437,6 @@ extern SCommandInfo g_Commands[];
 extern int g_nCommandCount;
 extern SKeyInfo g_Keys[];
 extern int g_nKeyCount;
-extern int inspector_mode;
 extern const char	*bsp_commands[256];
 extern void HandlePopup(CWnd* pWindow, unsigned int uId);
 extern z_t z;
@@ -467,6 +448,8 @@ extern bool WriteFileString( FILE *fp, char *string, ... );
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
 extern void SaveWindowPlacement(HWND hwnd, const char* pName);
 extern bool LoadWindowPlacement(HWND hwnd, const char* pName);
+
+void SaveDialogPlacement(CDialog* dlg, const char* pName);
 extern bool ConfirmModified (void);
 extern void DoPatchInspector();
 void UpdatePatchInspector();

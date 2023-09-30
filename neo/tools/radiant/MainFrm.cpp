@@ -73,7 +73,6 @@ CString			g_strAppPath;						// holds the full path of the executable
 CMainFrame		*g_pParentWnd = NULL;				// used to precast to CMainFrame
 CPrefsDlg		g_Preferences;						// global prefs instance
 CPrefsDlg		&g_PrefsDlg = g_Preferences;		// reference used throughout
-int				g_nUpdateBits = 0;					// window update flags
 bool			g_bScreenUpdates = true;			// whether window painting is active, used in a few places
 
 //
@@ -225,10 +224,10 @@ SCommandInfo	g_Commands[] = {
 	{ "CameraClip_ZoomIn",        VK_OEM_5, RAD_CONTROL, ID_VIEW_CUBEIN },
 	{ "CameraClip_Toggle",        VK_OEM_6, RAD_CONTROL, ID_VIEW_CUBICCLIPPING },
 
-	{ "ViewTab_EntityInfo",     'N', 0, ID_VIEW_ENTITY },
-	{ "ViewTab_Console",        'O', 0, ID_VIEW_CONSOLE },
-	{ "ViewTab_Textures",       'T', 0, ID_VIEW_TEXTURE },
-	{ "ViewTab_MediaBrowser",   'M', 0, ID_VIEW_MEDIABROWSER },
+	{ "ViewTab_EntityInfo",     'N', 0, ID_INSPECTOR_ENTITY },
+	{ "ViewTab_Console",        'O', 0, ID_INSPECTOR_CONSOLE },
+	{ "ViewTab_Textures",       'T', 0, ID_INSPECTOR_TEXTURE },
+	{ "ViewTab_MediaBrowser",   'M', 0, ID_INSPECTOR_MEDIABROWSER },
 
 	{ "Window_SurfaceInspector",'S', 0, ID_TEXTURES_INSPECTOR },
 	{ "Window_PatchInspector",  'S', RAD_SHIFT, ID_PATCH_INSPECTOR },
@@ -351,9 +350,6 @@ const int		CMD_TEXTUREWAD_END = CMD_TEXTUREWAD + 127;
 const int		CMD_BSPCOMMAND_END = CMD_BSPCOMMAND + 127;
 const int		IDMRU_END = IDMRU + 9;
 
-const int		g_msgBSPDone = RegisterWindowMessage(DMAP_DONE);
-const int		g_msgBSPStatus = RegisterWindowMessage(DMAP_MSGID);
-
 IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd)
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 //{{AFX_MSG_MAP(CMainFrame)
@@ -371,18 +367,18 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_NEW, OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_FILE_POINTFILE, OnFilePointfile)
-	ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, OnFilePrintPreview)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_COMMAND(ID_FILE_SAVEAS, OnFileSaveas)
 	ON_COMMAND(D3XP_ID_FILE_SAVE_COPY, OnFileSaveCopy)
 	ON_COMMAND(D3XP_ID_SHOW_MODELS, OnViewShowModels )
+	ON_COMMAND(ID_INSPECTOR_CONSOLE, OnInspectorConsole)
+	ON_COMMAND(ID_INSPECTOR_ENTITY, OnInspectorEntity)
+	ON_COMMAND(ID_INSPECTOR_MEDIABROWSER, OnInspectorMediaBrowser)
+	ON_COMMAND(ID_INSPECTOR_TEXTURE, OnInspectorTexture)
+	ON_COMMAND(ID_VIEW_INSPECTOR, OnViewInspector)
 	ON_COMMAND(ID_VIEW_100, OnView100)
 	ON_COMMAND(ID_VIEW_CENTER, OnViewCenter)
-	ON_COMMAND(ID_VIEW_CONSOLE, OnViewConsole)
 	ON_COMMAND(ID_VIEW_DOWNFLOOR, OnViewDownfloor)
-	ON_COMMAND(ID_VIEW_ENTITY, OnViewEntity)
-	ON_COMMAND(ID_VIEW_MEDIABROWSER, OnViewMediaBrowser)
 	ON_COMMAND(ID_VIEW_FRONT, OnViewFront)
 	ON_COMMAND(ID_VIEW_SHOWBLOCKS, OnViewShowblocks)
 	ON_COMMAND(ID_VIEW_SHOWCLIP, OnViewShowclip)
@@ -395,7 +391,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_SHOWCOMBATNODES, OnViewShowCombatNodes)
 	ON_COMMAND(ID_VIEW_SHOWWATER, OnViewShowwater)
 	ON_COMMAND(ID_VIEW_SHOWWORLD, OnViewShowworld)
-	ON_COMMAND(ID_VIEW_TEXTURE, OnViewTexture)
 	ON_COMMAND(ID_VIEW_UPFLOOR, OnViewUpfloor)
 	ON_COMMAND(ID_VIEW_XY, OnViewXy)
 	ON_COMMAND(ID_VIEW_Z100, OnViewZ100)
@@ -410,7 +405,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_MISC_GAMMA, OnMiscGamma)
 	ON_COMMAND(ID_MISC_NEXTLEAKSPOT, OnMiscNextleakspot)
 	ON_COMMAND(ID_MISC_PREVIOUSLEAKSPOT, OnMiscPreviousleakspot)
-	ON_COMMAND(ID_MISC_PRINTXY, OnMiscPrintxy)
 	ON_COMMAND(ID_MISC_SELECTENTITYCOLOR, OnMiscSelectentitycolor)
 	ON_COMMAND(ID_MISC_FINDORREPLACEENTITY, OnMiscFindOrReplaceEntity)
 	ON_COMMAND(ID_MISC_FINDNEXTENT, OnMiscFindNextEntity)
@@ -705,11 +699,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND_RANGE(IDMRU, IDMRU_END, OnMru)
 	ON_COMMAND_RANGE(ID_VIEW_NEAREST, ID_TEXTURES_FLATSHADE, OnViewNearest)
 	ON_COMMAND_RANGE(ID_GRID_POINT0625, ID_GRID_64, OnGrid1)
-#if _MSC_VER < 1300
-	ON_REGISTERED_MESSAGE(g_msgBSPDone, OnBSPDone)
-	ON_REGISTERED_MESSAGE(g_msgBSPStatus, OnBSPStatus)
-	ON_MESSAGE(WM_DISPLAYCHANGE, OnDisplayChange)
-#endif
 	ON_COMMAND(ID_AUTOCAULK, OnAutocaulk)
 	ON_UPDATE_COMMAND_UI(ID_AUTOCAULK, OnUpdateAutocaulk)
 	ON_COMMAND(ID_SELECT_ALLTARGETS, OnSelectAlltargets)
@@ -824,7 +813,6 @@ void CMainFrame::SetButtonMenuStates() {
 		pMenu->CheckMenuItem(ID_VIEW_SHOWCOORDINATES, MF_BYCOMMAND | MF_CHECKED);
 		pMenu->CheckMenuItem(ID_VIEW_SHOWLIGHTS, MF_BYCOMMAND | MF_CHECKED);
 		pMenu->CheckMenuItem(ID_VIEW_SHOWCOMBATNODES, MF_BYCOMMAND | MF_CHECKED);
-		pMenu->CheckMenuItem(ID_VIEW_ENTITY, MF_BYCOMMAND | MF_CHECKED);
 		pMenu->CheckMenuItem(ID_VIEW_SHOWPATH, MF_BYCOMMAND | MF_CHECKED);
 		pMenu->CheckMenuItem(ID_VIEW_SHOWWATER, MF_BYCOMMAND | MF_CHECKED);
 		pMenu->CheckMenuItem(ID_VIEW_SHOWWORLD, MF_BYCOMMAND | MF_CHECKED);
@@ -853,7 +841,7 @@ void CMainFrame::SetButtonMenuStates() {
 		}
 
 		if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_ENT) {
-			pMenu->CheckMenuItem(ID_VIEW_ENTITY, MF_BYCOMMAND | MF_UNCHECKED);
+			pMenu->CheckMenuItem(ID_VIEW_SHOWENT, MF_BYCOMMAND | MF_UNCHECKED);
 		}
 
 		if (g_qeglobals.d_savedinfo.exclude & EXCLUDE_PATHS) {
@@ -1106,10 +1094,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 		return -1;
 	}
 
-	UINT	nID = (g_PrefsDlg.m_bWideToolbar) ? IDR_TOOLBAR_ADVANCED : IDR_TOOLBAR1;
-
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
-		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) || !m_wndToolBar.LoadToolBar(nID)) {
+		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) || !m_wndToolBar.LoadToolBar(IDR_TOOLBAR)) {
 		TRACE0("Failed to create toolbar\n");
 		return -1;	// fail to create
 	}
@@ -1154,7 +1140,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	ShowMenuItemKeyBindings(pMenu);
 
 	CFont	*pFont = new CFont();
-	pFont->CreatePointFont(g_PrefsDlg.m_nStatusSize * 10, "Arial");
+	pFont->CreatePointFont(g_PrefsDlg.m_nStatusSize * 10, "MS Shell Dlg");
 	m_wndStatusBar.SetFont(pFont);
 
 
@@ -1185,6 +1171,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	SetActiveXY(m_pXYWnd);
 	m_pXYWnd->SetFocus();
 
+	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows7));
+	CDockingManager::SetDockingMode(DT_SMART);
+
 	PostMessage(WM_KEYDOWN, 'O', NULL);
 
 	if ( radiant_entityMode.GetBool() ) {
@@ -1192,6 +1181,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	}
 
 	Sys_UpdateWindows ( W_ALL );
+
+
+	#define IDI_ICON1 4001
+	SetIcon(AfxGetApp()->LoadIcon(IDI_ICON1), false);
+
+	SetWindowTheme(GetSafeHwnd(), L"EXPLORER", NULL);
 	return 0;
 }
 
@@ -1368,12 +1363,6 @@ void CMainFrame::RoutineProcessing() {
 		if (m_pCamWnd) {
 			m_pCamWnd->Cam_MouseControl(delta);
 		}
-
-		if (g_PrefsDlg.m_bQE4Painting && g_nUpdateBits) {
-			int nBits = g_nUpdateBits;	// this is done to keep this routine from being
-			g_nUpdateBits = 0;			// re-entered due to the paint process.. only
-			UpdateWindows(nBits);		// happens in rare cases but causes a stack overflow
-		}
 	}
 }
 
@@ -1468,6 +1457,18 @@ void SaveWindowPlacement(HWND hwnd, const char *pName) {
  =======================================================================================================================
  =======================================================================================================================
  */
+void SaveDialogPlacement(CDialog* dlg, const char* pName) {
+	WINDOWPLACEMENT wp;
+	wp.length = sizeof(WINDOWPLACEMENT);
+	if (dlg->GetWindowPlacement(&wp)) {
+		SaveRegistryInfo(pName, &wp, sizeof(wp));
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
 void CMainFrame::OnDestroy() {
 	KillTimer(QE_TIMER0);
 
@@ -1481,12 +1482,6 @@ void CMainFrame::OnDestroy() {
 	SaveRegistryInfo("radiant_SavedInfo", &g_qeglobals.d_savedinfo, sizeof(g_qeglobals.d_savedinfo));
 
 	SaveWindowPlacement(GetSafeHwnd(), "radiant_MainWindowPlace");
-
-	SaveWindowPlacement(m_pXYWnd->GetSafeHwnd(), "radiant_xywindow");
-	SaveWindowPlacement(m_pXZWnd->GetSafeHwnd(), "radiant_xzwindow");
-	SaveWindowPlacement(m_pYZWnd->GetSafeHwnd(), "radiant_yzwindow");
-	SaveWindowPlacement(m_pCamWnd->GetSafeHwnd(), "radiant_camerawindow");
-	SaveWindowPlacement(m_pZWnd->GetSafeHwnd(), "radiant_zwindow");
 	SaveWindowState(g_Inspectors->texWnd.GetSafeHwnd(), "radiant_texwindow");
 
 	if (m_pXYWnd->GetSafeHwnd()) {
@@ -1735,21 +1730,21 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext *pContext) {
 	GetClientRect(rctParent);
 
 	m_pCamWnd = new CCamWnd();
-	m_pCamWnd->Create(CAMERA_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1234);
+	m_pCamWnd->Create(IDD_DIALOG_CAMERA, this);
 
 	m_pZWnd = new CZWnd();
-	m_pZWnd->Create(Z_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1238);
+	m_pZWnd->Create(IDD_DIALOG_Z, this);
 
 	m_pXYWnd = new CXYWnd();
-	m_pXYWnd->Create(XY_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1235);
+	m_pXYWnd->Create(IDD_DIALOG_XY, this); // XY_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1235);
 	m_pXYWnd->SetViewType(XY);
 
 	m_pXZWnd = new CXYWnd();
-	m_pXZWnd->Create(XY_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1236);
+	m_pXZWnd->Create(IDD_DIALOG_XZ, this);
 	m_pXZWnd->SetViewType(XZ);
 
 	m_pYZWnd = new CXYWnd();
-	m_pYZWnd->Create(XY_WINDOW_CLASS, "", QE3_CHILDSTYLE, rect, this, 1237);
+	m_pYZWnd->Create(IDD_DIALOG_YZ, this);
 	m_pYZWnd->SetViewType(YZ);
 
 	m_pCamWnd->SetXYFriend(m_pXYWnd);
@@ -1898,20 +1893,6 @@ void CMainFrame::OnFilePointfile() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnFilePrint() {
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnFilePrintPreview() {
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::OnFileSave() {
 	if (!strcmp(currentmap, "unnamed.map")) {
 		SaveAsDialog(false);
@@ -2022,14 +2003,6 @@ void CMainFrame::OnViewCenter() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnViewConsole() {
-	g_Inspectors->SetMode(W_CONSOLE);
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::OnViewDownfloor() {
 	m_pCamWnd->Cam_ChangeFloor(false);
 }
@@ -2038,15 +2011,48 @@ void CMainFrame::OnViewDownfloor() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnViewEntity() {
+void CMainFrame::OnViewInspector() {
+	if (g_Inspectors && g_Inspectors->GetSafeHwnd()) {
+		if (g_Inspectors->IsWindowVisible()) {
+			g_Inspectors->ShowWindow(SW_HIDE);
+		}
+		else {
+			g_Inspectors->ShowWindow(SW_SHOW);
+		}
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CMainFrame::OnInspectorConsole() {
+	g_Inspectors->SetMode(W_CONSOLE);
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CMainFrame::OnInspectorEntity() {
 	g_Inspectors->SetMode(W_ENTITY);
 }
 
-void CMainFrame::OnViewMediaBrowser() {
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CMainFrame::OnInspectorMediaBrowser() {
 	g_Inspectors->SetMode(W_MEDIA);
 }
 
-
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CMainFrame::OnInspectorTexture() {
+	g_Inspectors->SetMode(W_TEXTURE);
+}
 
 /*
  =======================================================================================================================
@@ -2387,14 +2393,6 @@ void CMainFrame::OnViewShowworld() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnViewTexture() {
-	g_Inspectors->SetMode(W_TEXTURE);
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::OnViewUpfloor() {
 	m_pCamWnd->Cam_ChangeFloor(true);
 }
@@ -2632,14 +2630,6 @@ void CMainFrame::OnMiscNextleakspot() {
  */
 void CMainFrame::OnMiscPreviousleakspot() {
 	Pointfile_Prev();
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnMiscPrintxy() {
-	WXY_Print();
 }
 
 /*
@@ -3673,8 +3663,7 @@ void CMainFrame::OnCameraAngleup() {
 void CMainFrame::OnCameraBack() {
 	VectorMA(m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3693,8 +3682,7 @@ void CMainFrame::OnCameraDown() {
 void CMainFrame::OnCameraForward() {
 	VectorMA(m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().forward, m_pCamWnd->Camera().origin);
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3704,8 +3692,7 @@ void CMainFrame::OnCameraForward() {
 void CMainFrame::OnCameraLeft() {
 	m_pCamWnd->Camera().angles[1] += SPEED_TURN;
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3715,8 +3702,7 @@ void CMainFrame::OnCameraLeft() {
 void CMainFrame::OnCameraRight() {
 	m_pCamWnd->Camera().angles[1] -= SPEED_TURN;
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3726,8 +3712,7 @@ void CMainFrame::OnCameraRight() {
 void CMainFrame::OnCameraStrafeleft() {
 	VectorMA(m_pCamWnd->Camera().origin, -SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3737,8 +3722,7 @@ void CMainFrame::OnCameraStrafeleft() {
 void CMainFrame::OnCameraStraferight() {
 	VectorMA(m_pCamWnd->Camera().origin, SPEED_MOVE, m_pCamWnd->Camera().right, m_pCamWnd->Camera().origin);
 
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 }
 
 /*
@@ -3764,13 +3748,8 @@ void CMainFrame::OnGridToggle() {
  =======================================================================================================================
  */
 void CMainFrame::OnPrefs() {
-	BOOL	bToolbar = g_PrefsDlg.m_bWideToolbar;
 	g_PrefsDlg.LoadPrefs();
 	if (g_PrefsDlg.DoModal() == IDOK) {
-		if (g_PrefsDlg.m_bWideToolbar != bToolbar) {
-			MessageBox("You need to restart Q3Radiant for the view changes to take place.");
-		}
-
 		g_Inspectors->texWnd.UpdatePrefs();
 
 		CMenu	*pMenu = GetMenu();
@@ -3778,14 +3757,6 @@ void CMainFrame::OnPrefs() {
 			pMenu->CheckMenuItem(ID_SNAPTOGRID, MF_BYCOMMAND | (!g_PrefsDlg.m_bNoClamp) ? MF_CHECKED : MF_UNCHECKED);
 		}
 	}
-}
-
-//
-// =======================================================================================================================
-//    0 = radiant styel 1 = qe4 style
-// =======================================================================================================================
-//
-void CMainFrame::SetWindowStyle(int nStyle) {
 }
 
 /*
@@ -4019,10 +3990,7 @@ void CMainFrame::UpdateWindows(int nBits) {
  =======================================================================================================================
  */
 void WINAPI Sys_UpdateWindows(int nBits) {
-	if (g_PrefsDlg.m_bQE4Painting) {
-		g_nUpdateBits |= nBits;
-	}
-	else if ( g_pParentWnd ) {
+	if ( g_pParentWnd ) {
 		g_pParentWnd->UpdateWindows(nBits);
 	}
 }
@@ -5336,7 +5304,7 @@ void CMainFrame::OnSelectBrushesOnly() {
 void CMainFrame::OnDynamicLighting() {
 	CCamWnd *pCam = new CCamWnd();
 	CRect	rect(100, 100, 300, 300);
-	pCam->Create(CAMERA_WINDOW_CLASS, "", WS_OVERLAPPEDWINDOW, rect, GetDesktopWindow(), 12345);
+	pCam->Create(IDD_DIALOG_CAMERA, this);
 	pCam->ShowWindow(SW_SHOW);
 }
 
@@ -6630,6 +6598,9 @@ void CMainFrame::OnShowDoom()
 		g_Inspectors->SetMode(W_TEXTURE);
 	}
 	::ShowWindow(win32.hWnd, show);
+
+	cmdSystem->BufferCommandText(CMD_EXEC_NOW, "disconnect");
+	cmdSystem->BufferCommandText(CMD_EXEC_NOW, va("devmap %s", fileSystem->OSPathToRelativePath(currentmap) + strlen("maps\\")));
 }
 
 void CMainFrame::OnViewRendermode()

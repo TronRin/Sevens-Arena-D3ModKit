@@ -152,35 +152,7 @@ LONG_PTR WINAPI CamWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 // =======================================================================================================================
 //
 BOOL CCamWnd::PreCreateWindow(CREATESTRUCT &cs) {
-	WNDCLASS	wc;
-	HINSTANCE	hInstance = AfxGetInstanceHandle();
-	if (::GetClassInfo(hInstance, CAMERA_WINDOW_CLASS, &wc) == FALSE) {
-		// Register a new class
-		memset(&wc, 0, sizeof(wc));
-
-		// wc.style = CS_NOCLOSE | CS_OWNDC;
-		wc.style = CS_NOCLOSE;
-		wc.lpszClassName = CAMERA_WINDOW_CLASS;
-		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wc.lpfnWndProc = CamWndProc;
-		if (AfxRegisterClass(&wc) == FALSE) {
-			Error("CCamWnd RegisterClass: failed");
-		}
-	}
-
-	cs.lpszClass = CAMERA_WINDOW_CLASS;
-	cs.lpszName = "CAM";
-	if (cs.style != QE3_CHILDSTYLE) {
-		cs.style = QE3_SPLITTER_STYLE;
-	}
-
-	BOOL	bResult = CWnd::PreCreateWindow(cs);
-
-	//
-	// See if the class already exists and if not then we need to register our new
-	// window class.
-	//
-	return bResult;
+	return CWnd::PreCreateWindow( cs );
 }
 
 /*
@@ -232,6 +204,7 @@ void CCamWnd::SetXYFriend(CXYWnd *pWnd) {
  =======================================================================================================================
  */
 void CCamWnd::OnDestroy() {
+	SaveDialogPlacement(this, "radiant_camerawindow");
 	CWnd::OnDestroy();
 }
 
@@ -388,6 +361,8 @@ int CCamWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 
 	// indicate start of glyph display lists
 	qglListBase(g_qeglobals.d_font_list);
+
+	SetWindowTheme(GetSafeHwnd(), L"DarkMode_Explorer", NULL);
 
 	// report OpenGL information
 	common->Printf("GL_VENDOR: %s\n", qglGetString(GL_VENDOR));
@@ -609,8 +584,7 @@ void CCamWnd::Cam_MouseControl(float dtime) {
 	}
 
 	Cam_BuildMatrix();
-	int nUpdate = (g_PrefsDlg.m_bCamXYUpdate) ? (W_CAMERA | W_XY) : (W_CAMERA);
-	Sys_UpdateWindows(nUpdate);
+	Sys_UpdateWindows(W_CAMERA | W_XY);
 	g_pParentWnd->PostMessage(WM_TIMER, 0, 0);
 }
 

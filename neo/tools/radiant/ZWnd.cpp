@@ -96,6 +96,8 @@ int CZWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CZWnd::OnDestroy()
 {
+	SaveDialogPlacement(this, "radiant_zwindow");
+
 	if (m_pZClip)
 	{
 		delete m_pZClip;

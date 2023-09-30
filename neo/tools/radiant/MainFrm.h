@@ -107,7 +107,6 @@ public:
 	void UpdateWindows(int nBits);
 	void SetStatusText(int nPane, const char* pText);
 	void UpdateStatusText();
-	void SetWindowStyle(int nStyle);
 	bool GetNurbMode() {
 		return nurbMode;
 	}
@@ -193,25 +192,26 @@ public:
 	afx_msg void OnFileNew();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFilePointfile();
-	afx_msg void OnFilePrint();
-	afx_msg void OnFilePrintPreview();
 	afx_msg void OnFileSave();
 	afx_msg void OnFileSaveas();
 	afx_msg void OnFileSaveCopy();
+
+	afx_msg void OnInspectorConsole();
+	afx_msg void OnInspectorEntity();
+	afx_msg void OnInspectorMediaBrowser();
+	afx_msg void OnInspectorTexture();
 
 	/* Begin SS2 Changes */
 	afx_msg void OnSetViewTop();
 	afx_msg void OnSetViewSide();
 	afx_msg void OnSetViewFront();
 	/* end SS2 Changes */
-	
+
+	afx_msg void OnViewInspector();
 	afx_msg void OnViewShowModels();
 	afx_msg void OnView100();
 	afx_msg void OnViewCenter();
-	afx_msg void OnViewConsole();
 	afx_msg void OnViewDownfloor();
-	afx_msg void OnViewEntity();
-	afx_msg void OnViewMediaBrowser();
 	afx_msg void OnViewFront();
 	afx_msg void OnViewShowblocks();
 	afx_msg void OnViewShowclip();
@@ -224,7 +224,6 @@ public:
 	afx_msg void OnViewShowCombatNodes();
 	afx_msg void OnViewShowwater();
 	afx_msg void OnViewShowworld();
-	afx_msg void OnViewTexture();
 	afx_msg void OnViewUpfloor();
 	afx_msg void OnViewXy();
 	afx_msg void OnViewZ100();
@@ -239,7 +238,6 @@ public:
 	afx_msg void OnMiscGamma();
 	afx_msg void OnMiscNextleakspot();
 	afx_msg void OnMiscPreviousleakspot();
-	afx_msg void OnMiscPrintxy();
 	afx_msg void OnMiscSelectentitycolor();
 	afx_msg void OnMiscFindOrReplaceEntity();
 	afx_msg void OnMiscFindNextEntity();

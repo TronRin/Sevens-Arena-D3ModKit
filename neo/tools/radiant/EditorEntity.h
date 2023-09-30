@@ -28,7 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 
 void		Eclass_InitForSourceDirectory( const char *path );
 eclass_t *	Eclass_ForName( const char *name, bool has_brushes );
-bool		Eclass_hasModel(eclass_t *e, idVec3 &vMin, idVec3 &vMax);
 
 typedef struct entity_s {
 	struct entity_s	*prev, *next;
@@ -40,7 +39,6 @@ typedef struct entity_s {
 	idSoundEmitter *soundEmitter;
 	eclass_t *	eclass;
 	idDict		epairs;
-	eclass_t *	md3Class;
 	idMat3		rotation;
 	idVec3		lightOrigin;		// for lights that have been combined with models
 	idMat3		lightRotation;		// ''
@@ -71,7 +69,6 @@ void		Entity_Free (entity_t *e);
 void		Entity_FreeEpairs(entity_t *e);
 int			Entity_MemorySize(entity_t *e);
 entity_t *	Entity_Parse (bool onlypairs, brush_t* pList = NULL);
-void		Entity_Write (entity_t *e, FILE *f, bool use_region);
 void		Entity_WriteSelected(entity_t *e, FILE *f);
 void		Entity_WriteSelected(entity_t *e, CMemFile*);
 entity_t *	Entity_Create (eclass_t *c, bool forceFixed = false);
@@ -86,9 +83,6 @@ entity_t *	FindEntity(const char *pszKey, const char *pszValue);
 entity_t *	FindEntityInt(const char *pszKey, int iValue);
 entity_t *	Entity_New();
 void		Entity_SetName(entity_t *e, const char *name);
-
-int			GetUniqueTargetId(int iHint);
-eclass_t *	GetCachedModel(entity_t *pEntity, const char *pName, idVec3 &vMin, idVec3 &vMax);
 
 //Timo : used for parsing epairs in brush primitive
 void		Entity_Name(entity_t *e, bool force);

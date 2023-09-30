@@ -684,68 +684,6 @@ static void WXY_InitPixelFormat(PIXELFORMATDESCRIPTOR *pPFD) {
  =======================================================================================================================
  =======================================================================================================================
  */
-void WXY_Print(void) {
-	DOCINFO		di;
-
-	PRINTDLG	pd;
-
-	/* initialize the PRINTDLG struct and execute it */
-	memset(&pd, 0, sizeof(pd));
-	pd.lStructSize = sizeof(pd);
-	pd.hwndOwner = g_pParentWnd->GetXYWnd()->GetSafeHwnd();
-	pd.Flags = PD_RETURNDC;
-	pd.hInstance = 0;
-	if (!PrintDlg(&pd) || !pd.hDC) {
-		g_pParentWnd->MessageBox("Could not PrintDlg()", "QE4 Print Error", MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	/* StartDoc */
-	memset(&di, 0, sizeof(di));
-	di.cbSize = sizeof(di);
-	di.lpszDocName = "QE4";
-	if (StartDoc(pd.hDC, &di) <= 0) {
-		g_pParentWnd->MessageBox("Could not StartDoc()", "QE4 Print Error", MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	/* StartPage */
-	if (StartPage(pd.hDC) <= 0) {
-		g_pParentWnd->MessageBox("Could not StartPage()", "QE4 Print Error", MB_OK | MB_ICONERROR);
-		return;
-	} { /* read pixels from the XY window */
-		int		bmwidth = 320, bmheight = 320;
-		int		pwidth, pheight;
-
-		RECT	r;
-
-		GetWindowRect(g_pParentWnd->GetXYWnd()->GetSafeHwnd(), &r);
-
-		bmwidth = r.right - r.left;
-		bmheight = r.bottom - r.top;
-
-		pwidth = GetDeviceCaps(pd.hDC, PHYSICALWIDTH) - GetDeviceCaps(pd.hDC, PHYSICALOFFSETX);
-		pheight = GetDeviceCaps(pd.hDC, PHYSICALHEIGHT) - GetDeviceCaps(pd.hDC, PHYSICALOFFSETY);
-
-		StretchBlt(pd.hDC, 0, 0, pwidth, pheight, s_hdcXY, 0, 0, bmwidth, bmheight, SRCCOPY);
-	}
-
-	/* EndPage and EndDoc */
-	if (EndPage(pd.hDC) <= 0) {
-		g_pParentWnd->MessageBox("QE4 Print Error", "Could not EndPage()", MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	if (EndDoc(pd.hDC) <= 0) {
-		g_pParentWnd->MessageBox("QE4 Print Error", "Could not EndDoc()", MB_OK | MB_ICONERROR);
-		return;
-	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 int CXYWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	if (CWnd::OnCreate(lpCreateStruct) == -1) {
 		return -1;
@@ -2122,9 +2060,6 @@ bool MergeMenu(CMenu * pMenuDestination, const CMenu * pMenuAdd, bool bTopLevel 
  =======================================================================================================================
  */
 void CXYWnd::HandleDrop() {
-	if (g_PrefsDlg.m_bRightClick == false) {
-		return;
-	}
 
 	if (!m_mnuDrop.GetSafeHmenu()) {		// first time, load it up
 		m_mnuDrop.CreatePopupMenu();
@@ -3533,12 +3468,7 @@ extern void DrawBrushEntityName(brush_t *b);
  =======================================================================================================================
  */
 void CXYWnd::XY_Draw() {
-	brush_t		*brush;
-	float		w, h;
-	entity_t	*e;
-	idVec3		mins, maxs;
-	int			drawn, culled;
-	int			i;
+	idVec3 mins, maxs;
 
 	if (!active_brushes.next) {
 		return; // not valid yet
@@ -3566,11 +3496,11 @@ void CXYWnd::XY_Draw() {
 	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity();
 
-	w = m_nWidth / 2 / m_fScale;
-	h = m_nHeight / 2 / m_fScale;
+	const float w = m_nWidth / 2 / m_fScale;
+	const float h = m_nHeight / 2 / m_fScale;
 
-	int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	int nDim2 = (m_nViewType == XY) ? 1 : 2;
+	const int nDim1 = (m_nViewType == YZ) ? 1 : 0;
+	const int nDim2 = (m_nViewType == XY) ? 1 : 2;
 	mins[0] = m_vOrigin[nDim1] - w;
 	maxs[0] = m_vOrigin[nDim1] + w;
 	mins[1] = m_vOrigin[nDim2] - h;
@@ -3589,7 +3519,8 @@ void CXYWnd::XY_Draw() {
 	XY_DrawGrid();
 	qglLineWidth(0.5);
 
-	drawn = culled = 0;
+	int drawn = 0;
+	int culled = 0;
 
 	if (m_nViewType != XY) {
 		qglPushMatrix();
@@ -3601,9 +3532,9 @@ void CXYWnd::XY_Draw() {
 		qglRotatef(-90, 1, 0, 0);		// put Z going up
 	}
 
-	e = world_entity;
+	entity_t* e = world_entity;
 
-	for ( brush = active_brushes.next; brush != &active_brushes; brush = brush->next ) {
+	for ( brush_t* brush = active_brushes.next; brush != &active_brushes; brush = brush->next ) {
 		if ( brush->forceVisibile || ( brush->owner->eclass->nShowFlags & ( ECLASS_LIGHT | ECLASS_PROJECTEDLIGHT ) ) ) {
 		} else if (	brush->mins[nDim1] > maxs[0] ||	brush->mins[nDim2] > maxs[1] ||	brush->maxs[nDim1] < mins[0] || brush->maxs[nDim2] < mins[1] ) {
 			culled++;
@@ -3671,10 +3602,12 @@ void CXYWnd::XY_Draw() {
 		qglColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES].ToFloatPtr());
 	}
 
+	/*
 	if (g_PrefsDlg.m_bNoStipple == FALSE) {
 		qglEnable(GL_LINE_STIPPLE);
 		qglLineStipple(3, 0xaaaa);
 	}
+	*/
 
 	qglLineWidth(1);
 
@@ -3685,7 +3618,7 @@ void CXYWnd::XY_Draw() {
 
 	int		nSaveDrawn = drawn;
 	bool	bFixedSize = false;
-	for (brush = selected_brushes.next; brush != &selected_brushes; brush = brush->next) {
+	for (brush_t* brush = selected_brushes.next; brush != &selected_brushes; brush = brush->next) {
 		drawn++;
 		Brush_DrawXY(brush, m_nViewType, true);
 
@@ -3695,7 +3628,7 @@ void CXYWnd::XY_Draw() {
 			}
 
 			if (g_PrefsDlg.m_bSizePaint) {
-				for (i = 0; i < 3; i++) {
+				for (int i = 0; i < 3; i++) {
 					if (brush->mins[i] < vMinBounds[i]) {
 						vMinBounds[i] = brush->mins[i];
 					}
@@ -3708,9 +3641,11 @@ void CXYWnd::XY_Draw() {
 		}
 	}
 
+	/*
 	if (g_PrefsDlg.m_bNoStipple == FALSE) {
 		qglDisable(GL_LINE_STIPPLE);
 	}
+	*/
 
 	qglLineWidth(0.5);
 
@@ -3723,7 +3658,7 @@ void CXYWnd::XY_Draw() {
 		qglPointSize(4);
 		qglColor3f(0, 1, 0);
 		qglBegin(GL_POINTS);
-		for (i = 0; i < g_qeglobals.d_numpoints; i++) {
+		for (int i = 0; i < g_qeglobals.d_numpoints; i++) {
 			qglVertex3fv(g_qeglobals.d_points[i].ToFloatPtr());
 		}
 
@@ -3736,7 +3671,7 @@ void CXYWnd::XY_Draw() {
 		qglPointSize(4);
 		qglColor3f(0, 0, 1);
 		qglBegin(GL_POINTS);
-		for (i = 0; i < g_qeglobals.d_numedges; i++) {
+		for (int i = 0; i < g_qeglobals.d_numedges; i++) {
 			v1 = g_qeglobals.d_points[g_qeglobals.d_edges[i].p1].ToFloatPtr();
 			v2 = g_qeglobals.d_points[g_qeglobals.d_edges[i].p2].ToFloatPtr();
 			qglVertex3f((v1[0] + v2[0]) * 0.5, (v1[1] + v2[1]) * 0.5, (v1[2] + v2[2]) * 0.5);
@@ -3755,7 +3690,7 @@ void CXYWnd::XY_Draw() {
 		qglPointSize(1);
 		qglBegin(GL_POINTS);
 		g_pParentWnd->GetNurb()->SetOrder(3);
-		for (i = 0; i < 100; i++) {
+		for (int i = 0; i < 100; i++) {
 			idVec2 v = g_pParentWnd->GetNurb()->GetCurrentValue(time);
 			qglVertex3f(v.x, v.y, 0.0f);
 			time += 10;
@@ -3764,7 +3699,7 @@ void CXYWnd::XY_Draw() {
 		qglPointSize(4);
 		qglColor3f(0, 0, 1);
 		qglBegin(GL_POINTS);
-		for (i = 0; i < maxage; i++) {
+		for (int i = 0; i < maxage; i++) {
 			idVec2 v = g_pParentWnd->GetNurb()->GetValue(i);
 			qglVertex3f(v.x, v.y, 0.0f);
 		}
@@ -3826,6 +3761,7 @@ void CXYWnd::XY_Draw() {
 	qglFlush();
 
 	// QE_CheckOpenGLForErrors();
+	R_ToggleSmpFrame();
 }
 
 
@@ -3982,6 +3918,14 @@ void CXYWnd::VectorCopyXY(const idVec3 &in, idVec3 &out) {
  =======================================================================================================================
  */
 void CXYWnd::OnDestroy() {
+
+	if (m_nViewType == XY)
+	{
+		SaveDialogPlacement(this, "radiant_xywindow");
+		SaveDialogPlacement(this, "radiant_xzwindow");
+		SaveDialogPlacement(this, "radiant_yzwindow");
+	}
+
 	CWnd::OnDestroy();
 
 	// delete this;
@@ -4462,9 +4406,6 @@ BOOL CXYWnd::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 	return TRUE;
 }
-
-
-
 
  //---------------------------------------------------------------------------
  // CyclePrecisionCrosshairMode

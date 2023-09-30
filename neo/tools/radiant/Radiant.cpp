@@ -55,8 +55,6 @@ BEGIN_MESSAGE_MAP(CRadiantApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
-	// Standard print setup command
-	ON_COMMAND(ID_FILE_PRINT_SETUP, CWinApp::OnFilePrintSetup)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -189,26 +187,32 @@ void RadiantRun( void ) {
 /////////////////////////////////////////////////////////////////////////////
 // CRadiantApp initialization
 
-HINSTANCE g_hOpenGL32 = NULL;
-HINSTANCE g_hOpenGL = NULL;
 bool g_bBuildList = false;
 
 BOOL CRadiantApp::InitInstance()
 {
-  //g_hOpenGL32 = ::LoadLibrary("opengl32.dll");
-	// AfxEnableControlContainer();
+	// InitCommonControlsEx() is required on Windows XP if an application
+	// manifest specifies use of ComCtl32.dll version 6 or later to enable
+	// visual styles.  Otherwise, any window creation will fail.
+	INITCOMMONCONTROLSEX InitCtrls;
+	InitCtrls.dwSize = sizeof(InitCtrls);
 
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	//  of your final executable, you should remove from the following
-	//  the specific initialization routines you do not need.
-  //AfxEnableMemoryTracking(FALSE);
+	// Set this to include all the common control classes you want to use
+	// in your application.
+	InitCtrls.dwICC = ICC_WIN95_CLASSES;
+	InitCommonControlsEx(&InitCtrls);
 
-#ifdef _AFXDLL
-	//Enable3dControls();			// Call this when using MFC in a shared DLL
-#else
-	//Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
+	CWinAppEx::InitInstance();
+
+	// Initialize OLE libraries
+	if (!AfxOleInit())
+	{
+		return FALSE;
+	}
+
+	AfxEnableControlContainer();
+
+	AfxInitRichEdit2();
 
 	// If there's a .INI file in the directory use it instead of registry
 

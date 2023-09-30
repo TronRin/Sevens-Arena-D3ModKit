@@ -39,7 +39,7 @@ If you have questions concerning this license or the applicable additional terms
 /////////////////////////////////////////////////////////////////////////////
 // CZWnd window
 
-class CZWnd : public CWnd
+class CZWnd : public CDialogEx
 {
   DECLARE_DYNCREATE(CZWnd);
 // Construction

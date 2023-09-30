@@ -196,11 +196,8 @@ void CSurfaceDlg::SetTexMods() {
 	UpdateData(FALSE);
 }
 
-
-bool g_bNewFace = false;
 bool g_bNewApplyHandling = false;
 bool g_bGatewayhack = false;
-
 
 /*
 =================
@@ -281,7 +278,6 @@ bool ByeByeSurfaceDialog();
 
 void DoSurface (void) {
 
-	g_bNewFace = ( g_PrefsDlg.m_bFace != FALSE );
 	g_bNewApplyHandling = ( g_PrefsDlg.m_bNewApplyHandling != FALSE );
 	g_bGatewayhack = ( g_PrefsDlg.m_bGatewayHack != FALSE );
 	// save current state for cancel
