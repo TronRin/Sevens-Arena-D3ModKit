@@ -201,6 +201,9 @@ public:
 
 	static int					FloatHash( const float *array, const int numFloats );
 
+	template<typename T>
+	static T                    Diff( T a, T b );
+
 	static const float			PI;							// pi
 	static const float			TWO_PI;						// pi * 2
 	static const float			HALF_PI;					// pi / 2
@@ -927,6 +930,12 @@ ID_INLINE int idMath::FloatHash( const float *array, const int numFloats ) {
 		hash ^= ptr[i];
 	}
 	return hash;
+}
+
+template<typename T>
+ID_INLINE T idMath::Diff( T a, T b )
+{
+	return std::abs( a - b );
 }
 
 #endif /* !__MATH_MATH_H__ */

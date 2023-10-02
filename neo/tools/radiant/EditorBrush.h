@@ -28,9 +28,59 @@ If you have questions concerning this license or the applicable additional terms
 
 // brush.h
 
+struct entity_t;
+
+struct brush_t {
+	brush_t	*prev, *next;	// links in active/selected
+	brush_t	*oprev, *onext;	// links in entity
+	brush_t *   list;				//keep a handy link to the list its in
+	entity_t	*owner;
+	idVec3 mins, maxs;
+
+	idVec3	lightCenter;			// for moving the shading center of point lights
+	idVec3	lightRight;
+	idVec3	lightTarget;
+	idVec3	lightUp;
+	idVec3	lightRadius;
+	idVec3	lightOffset;
+	idVec3	lightColor;
+	idVec3	lightStart;
+	idVec3	lightEnd;
+	bool	pointLight;
+	bool	startEnd;
+	int		lightTexture;
+
+	bool	trackLightOrigin;	// this brush is a special case light brush
+	bool	entityModel;
+
+	face_t  *brush_faces;
+
+	//
+	// curve brush extensions
+	// all are derived from brush_faces
+	bool	hiddenBrush;
+	bool	forceWireFrame;
+	bool	forceVisibile;
+
+	patchMesh_t *pPatch;
+	entity_t *pUndoOwner;
+
+	int undoId;						//undo ID
+	int redoId;						//redo ID
+	int ownerId;					//entityId of the owner entity for undo
+
+	int numberId;         // brush number
+
+	idRenderModel	*modelHandle;
+	mutable idRenderModel *animSnapshotModel;
+
+	// brush primitive only
+	idDict	epairs;
+};
+
 brush_t *	Brush_Alloc();
 void		Brush_Free (brush_t *b, bool bRemoveNode = true);
-int			Brush_MemorySize(brush_t *b);
+int			Brush_MemorySize(const brush_t *brush);
 void		Brush_MakeSided (int sides);
 void		Brush_MakeSidedCone (int sides);
 void		Brush_Move (brush_t *b, const idVec3 move, bool bSnap = true, bool updateOrigin = true);
@@ -45,7 +95,7 @@ void		Brush_BuildWindings( brush_t *b, bool bSnap = true, bool keepOnPlaneWindin
 brush_t *	Brush_Clone (brush_t *b);
 brush_t *	Brush_FullClone(brush_t *b);
 brush_t *	Brush_Create (idVec3 mins, idVec3 maxs, texdef_t *texdef);
-void		Brush_Draw( brush_t *b, bool bSelected = false);
+void		Brush_Draw( const brush_t *b, bool bSelected = false);
 void		Brush_DrawXY(brush_t *b, int nViewType, bool bSelected = false, bool ignoreViewType = false);
 void		Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back);
 void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear);
@@ -56,7 +106,6 @@ void		Brush_Rotate(brush_t *b, idVec3 vAngle, idVec3 vOrigin, bool bBuild = true
 void		Brush_MakeSidedSphere(int sides);
 void		Brush_Write (brush_t *b, FILE *f, const idVec3 &origin, bool newFormat);
 void		Brush_Write (brush_t *b, CMemFile* pMemFile, const idVec3 &origin, bool NewFormat);
-void		Brush_RemoveEmptyFaces ( brush_t *b );
 idWinding *	Brush_MakeFaceWinding (brush_t *b, face_t *face, bool keepOnPlaneWinding = false);
 void		Brush_SetTextureName(brush_t *b, const char *name);
 void		Brush_Print(brush_t* b);

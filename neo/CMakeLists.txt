@@ -1127,7 +1127,8 @@ elseif(WIN32)
 	)
 
 	if(TOOLS)
-		set(src_sys_core ${src_sys_core} "sys/win32/rc/doom.rc")
+		file(GLOB src_sys_tools_images "sys/win32/rc/res/*.bmp" "sys/win32/rc/res/*.ico" "sys/win32/rc/res/*.gif" "sys/win32/rc/res/*.cur" "sys/win32/rc/res/*.wal" "sys/win32/rc/res/*.htm")
+		set(src_sys_core ${src_sys_core} ${src_sys_tools_images}  "sys/win32/rc/doom.rc")
 	else()
 		# adding both .rc files breaks the build, but I think it only contains the icon
 		# and doom.rc also contains that (+icons for editor etc, AFAIK), so this is fine

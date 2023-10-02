@@ -1492,7 +1492,7 @@ void Patch_CapCurrent( bool bInvertedBevel,bool bInvertedEndcap ) {
 			eclass_t*pecNew	= Eclass_ForName("func_static", false);
 			if ( pecNew ) {
 				entity_t*e	= Entity_Create(pecNew);
-				SetKeyValue(e, "type", "patchCapped");
+				e->SetKeyValue("type", "patchCapped");
 			}
 		}
 	}
@@ -4157,7 +4157,7 @@ void Patch_Thicken( int nAmount,bool bSeam ) {
 		eclass_t*pecNew	= Eclass_ForName("func_static", false);
 		if ( pecNew ) {
 			entity_t*e	= Entity_Create(pecNew);
-			SetKeyValue(e, "type", "patchThick");
+			e->SetKeyValue("type", "patchThick");
 		}
 	}
 

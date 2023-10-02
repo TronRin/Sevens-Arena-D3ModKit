@@ -46,7 +46,7 @@ static char		THIS_FILE[] = __FILE__;
 const char		*g_pDimStrings[] = { "x:%.f", "y:%.f", "z:%.f" };
 const char		*g_pOrgStrings[] = { "(x:%.f  y:%.f)", "(x:%.f  z:%.f)", "(y:%.f  z:%.f)" };
 CString			g_strDim;
-CString			g_strStatus;
+static CString	g_strStatus;
 
 bool			g_bCrossHairs = false;
 bool			g_bScaleMode;
@@ -62,12 +62,12 @@ CClipPoint		*g_pMovingClip;
 brush_t			g_brFrontSplits;
 brush_t			g_brBackSplits;
 
-brush_t			g_brClipboard;
-brush_t			g_brUndo;
-entity_t		g_enClipboard;
+static brush_t	g_brClipboard;
+static brush_t	g_brUndo;
+static entity_t	g_enClipboard;
 
-idVec3			g_vRotateOrigin;
-idVec3			g_vRotation;
+static idVec3	g_vRotateOrigin;
+static idVec3   g_vRotation;
 
 bool			g_bPathMode;
 CClipPoint		g_PathPoints[256];
@@ -77,10 +77,10 @@ int				g_nPathLimit;
 
 bool			g_bSmartGo;
 
-bool			g_bPointMode;
-CClipPoint		g_PointPoints[512];
-CClipPoint		*g_pMovingPoint;
-int				g_nPointCount;
+static bool		g_bPointMode;
+static CClipPoint  g_PointPoints[512];
+static CClipPoint* g_pMovingPoint;
+static int		g_nPointCount;
 int				g_nPointLimit;
 
 const int		XY_LEFT = 0x01;
@@ -102,10 +102,10 @@ void AcquirePath(int nCount, PFNPathCallback *pFunc) {
 	g_bPathMode = true;
 }
 
-CPtrArray	g_ptrMenus;
+static CPtrArray	g_ptrMenus;
 
-CMemFile	g_Clipboard(4096);
-CMemFile	g_PatchClipboard(4096);
+static CMemFile	g_Clipboard(4096);
+static CMemFile	g_PatchClipboard(4096);
 
 extern int	pressx;
 extern int	pressy;
@@ -114,18 +114,10 @@ extern int	pressy;
  =======================================================================================================================
  =======================================================================================================================
  */
-float fDiff(float f1, float f2) {
-	if (f1 > f2) {
-		return f1 - f2;
-	}
-	else {
-		return f2 - f1;
-	}
-}
 
 #define MAX_DRAG_POINTS 128
 
-CPtrArray			dragPoints;
+static CPtrArray dragPoints;
 static CDragPoint	*activeDrag = NULL;
 static bool			activeDragging = false;
 
@@ -135,14 +127,14 @@ static bool			activeDragging = false;
  */
 bool CDragPoint::PointWithin(idVec3 p, int nView) {
 	if (nView == -1) {
-		if (fDiff(p[0], vec[0]) <= 3 && fDiff(p[1], vec[1]) <= 3 && fDiff(p[2], vec[2]) <= 3) {
+		if (idMath::Diff(p[0], vec[0]) <= 3 && idMath::Diff(p[1], vec[1]) <= 3 && idMath::Diff(p[2], vec[2]) <= 3) {
 			return true;
 		}
 	}
 	else {
 		int nDim1 = (nView == YZ) ? 1 : 0;
 		int nDim2 = (nView == XY) ? 1 : 2;
-		if (fDiff(p[nDim1], vec[nDim1]) <= 3 && fDiff(p[nDim2], vec[nDim2]) <= 3) {
+		if (idMath::Diff(p[nDim1], vec[nDim1]) <= 3 && idMath::Diff(p[nDim2], vec[nDim2]) <= 3) {
 			return true;
 		}
 	}
@@ -378,10 +370,12 @@ bool UpdateActiveDragPoint(const idVec3 &move) {
 		idMat3 invmat = mat.Transpose();
 		idVec3	target, up, right, start, end;
 		CString str;
+		entity_t* owner = activeDrag->pBrush->owner;
+		assert(owner);
 		if (activeDrag->nType == LIGHT_TARGET) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_target", target);
-			GetVectorForKey(activeDrag->pBrush->owner, "light_up", up);
-			GetVectorForKey(activeDrag->pBrush->owner, "light_right", right);
+			owner->GetVectorForKey("light_target", target);
+			owner->GetVectorForKey("light_up", up);
+			owner->GetVectorForKey("light_right", right);
 			target *= mat;
 			up *= mat;
 			right *= mat;
@@ -389,9 +383,9 @@ bool UpdateActiveDragPoint(const idVec3 &move) {
 			target *= invmat;
 			up *= invmat;
 			right *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_target", target);
-			SetKeyVec3(activeDrag->pBrush->owner, "light_up", up);
-			SetKeyVec3(activeDrag->pBrush->owner, "light_right", right);
+			owner->SetKeyVec3("light_target", target);
+			owner->SetKeyVec3("light_up", up);
+			owner->SetKeyVec3("light_right", right);
 			target += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush, target), LIGHT_TARGET);
 			up += target;
@@ -400,51 +394,51 @@ bool UpdateActiveDragPoint(const idVec3 &move) {
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush,right), LIGHT_RIGHT);
 		}
 		else if (activeDrag->nType == LIGHT_UP) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_up", up);
+			owner->GetVectorForKey("light_up", up);
 			up *= mat;
 			up += move;
 			up *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_up", up);
-			GetVectorForKey(activeDrag->pBrush->owner, "light_target", target);
+			owner->SetKeyVec3("light_up", up);
+			owner->GetVectorForKey("light_target", target);
 			target += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			up += target;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush,up), LIGHT_UP);
 		}
 		else if (activeDrag->nType == LIGHT_RIGHT) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_right", right);
+			owner->GetVectorForKey("light_right", right);
 			right *= mat;
 			right += move;
 			right *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_right", right);
-			GetVectorForKey(activeDrag->pBrush->owner, "light_target", target);
+			owner->SetKeyVec3("light_right", right);
+			owner->GetVectorForKey("light_target", target);
 			target += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			right += target;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush,right), LIGHT_RIGHT);
 		}
 		else if (activeDrag->nType == LIGHT_START) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_start", start);
+			owner->GetVectorForKey("light_start", start);
 			start *= mat;
 			start += move;
 			start *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_start", start);
+			owner->SetKeyVec3("light_start", start);
 			start += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush,start), LIGHT_START);
 		}
 		else if (activeDrag->nType == LIGHT_END) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_end", end);
+			owner->GetVectorForKey("light_end", end);
 			end *= mat;
 			end += move;
 			end *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_end", end);
+			owner->SetKeyVec3("light_end", end);
 			end += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush,end), LIGHT_END);
 		}
 		else if (activeDrag->nType == LIGHT_CENTER) {
-			GetVectorForKey(activeDrag->pBrush->owner, "light_center", end);
+			owner->GetVectorForKey("light_center", end);
 			end *= mat;
 			end += move;
 			end *= invmat;
-			SetKeyVec3(activeDrag->pBrush->owner, "light_center", end);
+			owner->SetKeyVec3("light_center", end);
 			end += (activeDrag->pBrush->trackLightOrigin) ? activeDrag->pBrush->owner->lightOrigin : activeDrag->pBrush->owner->origin;
 			UpdateSelectablePoint(activeDrag->pBrush, Brush_TransformedPoint(activeDrag->pBrush, end), LIGHT_CENTER);
 		}
@@ -1210,8 +1204,8 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				for (int n = 0; n < g_nPointCount; n++) {
 					if
 					(
-						fDiff(g_PointPoints[n].m_ptClip[nDim1], tdp[nDim1]) < 3 &&
-						fDiff(g_PointPoints[n].m_ptClip[nDim2], tdp[nDim2]) < 3
+						idMath::Diff(g_PointPoints[n].m_ptClip[nDim1], tdp[nDim1]) < 3 &&
+						idMath::Diff(g_PointPoints[n].m_ptClip[nDim2], tdp[nDim2]) < 3
 					) {
 						bCrossHair = true;
 						g_pMovingPoint = &g_PointPoints[n];
@@ -1233,8 +1227,8 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				if (g_Clip1.Set()) {
 					if
 					(
-						fDiff(g_Clip1.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
-						fDiff(g_Clip1.m_ptClip[nDim2], tdp[nDim2]) < 3
+						idMath::Diff(g_Clip1.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
+						idMath::Diff(g_Clip1.m_ptClip[nDim2], tdp[nDim2]) < 3
 					) {
 						bCrossHair = true;
 						g_pMovingClip = &g_Clip1;
@@ -1244,8 +1238,8 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				if (g_Clip2.Set()) {
 					if
 					(
-						fDiff(g_Clip2.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
-						fDiff(g_Clip2.m_ptClip[nDim2], tdp[nDim2]) < 3
+						idMath::Diff(g_Clip2.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
+						idMath::Diff(g_Clip2.m_ptClip[nDim2], tdp[nDim2]) < 3
 					) {
 						bCrossHair = true;
 						g_pMovingClip = &g_Clip2;
@@ -1255,8 +1249,8 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				if (g_Clip3.Set()) {
 					if
 					(
-						fDiff(g_Clip3.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
-						fDiff(g_Clip3.m_ptClip[nDim2], tdp[nDim2]) < 3
+						idMath::Diff(g_Clip3.m_ptClip[nDim1], tdp[nDim1]) < 3 &&
+						idMath::Diff(g_Clip3.m_ptClip[nDim2], tdp[nDim2]) < 3
 					) {
 						bCrossHair = true;
 						g_pMovingClip = &g_Clip3;
@@ -1282,8 +1276,8 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				for (int n = 0; n < g_nPathCount; n++) {
 					if
 					(
-						fDiff(g_PathPoints[n].m_ptClip[nDim1], tdp[nDim1]) < 3 &&
-						fDiff(g_PathPoints[n].m_ptClip[nDim2], tdp[nDim2]) < 3
+						idMath::Diff(g_PathPoints[n].m_ptClip[nDim1], tdp[nDim1]) < 3 &&
+						idMath::Diff(g_PathPoints[n].m_ptClip[nDim2], tdp[nDim2]) < 3
 					) {
 						bCrossHair = true;
 						g_pMovingPath = &g_PathPoints[n];
@@ -1595,8 +1589,8 @@ void CreateEntityFromName(char *pName, brush_t *pBrush, bool forceFixed, idVec3 
 		idVec3	rad = max - min;
 		rad *= 0.5;
 		if (rad.x != 0 && rad.y != 0 && rad.z != 0) {
-			SetKeyValue(petNew, "light_radius", va("%g %g %g", idMath::Fabs(rad.x), idMath::Fabs(rad.y), idMath::Fabs(rad.z)));
-			DeleteKey(petNew, "light");
+			petNew->SetKeyValue("light_radius", va("%g %g %g", idMath::Fabs(rad.x), idMath::Fabs(rad.y), idMath::Fabs(rad.z)));
+			petNew->DeleteKey("light");
 		}
 	}
 
@@ -1617,7 +1611,7 @@ void CreateEntityFromName(char *pName, brush_t *pBrush, bool forceFixed, idVec3 
 				brush_t *nb = Brush_Create(mins, maxs, &pecNew->texdef);
 				Entity_LinkBrush(b->owner, nb);
 				nb->owner->eclass = pecNew;
-				SetKeyValue(nb->owner, "classname", pName);
+				nb->owner->SetKeyValue("classname", pName);
 				Brush_Free(b);
 				Brush_Build(nb);
 				Brush_AddToList(nb, &active_brushes);
@@ -2621,7 +2615,7 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 				int		*px = &x;
 				long	*px2 = &m_ptCursor.x;
 
-				if (fDiff(y, m_ptCursor.y) > fDiff(x, m_ptCursor.x)) {
+				if (idMath::Diff<long>(y, m_ptCursor.y) > idMath::Diff<long>(x, m_ptCursor.x)) {
 					px = &y;
 					px2 = &m_ptCursor.y;
 				}
@@ -3095,7 +3089,7 @@ void CXYWnd::DrawZIcon(void) {
 	FilterBrush
  =======================================================================================================================
  */
-bool FilterBrush(brush_t *pb) {
+bool FilterBrush(const brush_t *pb) {
 
 	if (!pb->owner) {
 		return false;	// during construction
@@ -3247,7 +3241,6 @@ void DrawPathLines(void) {
 	idVec3		mid, mid1;
 	entity_t	*se, *te;
 	brush_t		*sb, *tb;
-	const char		*psz;
 	idVec3		dir, s1, s2;
 	float		len, f;
 	int			arrows;
@@ -3263,9 +3256,9 @@ void DrawPathLines(void) {
 	for (te = entities.next; te != &entities && num_entities != MAX_MAP_ENTITIES; te = te->next) {
 		for (i = 0; i < 2048; i++) {
 			if (i == 0) {
-				ent_target[num_entities] = ValueForKey(te, "target");
+				ent_target[num_entities] = te->ValueForKey("target");
 			} else {
-				ent_target[num_entities] = ValueForKey(te, va("target%i", i));
+				ent_target[num_entities] = te->ValueForKey(va("target%i", i));
 			}
 			if (ent_target[num_entities][0]) {
 				ent_entity[num_entities] = te;
@@ -3277,7 +3270,7 @@ void DrawPathLines(void) {
 	}
 
 	for (se = entities.next; se != &entities; se = se->next) {
-		psz = ValueForKey(se, "name");
+		const char* psz = se->ValueForKey("name");
 
 		if (psz == NULL || psz[0] == '\0') {
 			continue;
@@ -4029,7 +4022,7 @@ void CleanCopyEntities() {
 		entity_t	*next = pe->next;
 		pe->epairs.Clear();
 
-		Entity_Free(pe);
+		delete pe;
 		pe = next;
 	}
 
@@ -4041,9 +4034,8 @@ void CleanCopyEntities() {
  =======================================================================================================================
  */
 entity_t *Entity_CopyClone(entity_t *e) {
-	entity_t	*n;
 
-	n = Entity_New();
+	entity_t* n = new entity_t();
 	n->brushes.onext = n->brushes.oprev = &n->brushes;
 	n->eclass = e->eclass;
 	n->rotation = e->rotation;

@@ -1539,7 +1539,7 @@ void CMainFrame::OnDestroy() {
 	}
 
 	while (entities.next != &entities) {
-		Entity_Free(entities.next);
+		delete entities.next;
 	}
 
 
@@ -1548,14 +1548,12 @@ void CMainFrame::OnDestroy() {
 	entity_t	*pEntity = g_qeglobals.d_project_entity->next;
 	while (pEntity != NULL && pEntity != g_qeglobals.d_project_entity) {
 		entity_t	*pNextEntity = pEntity->next;
-		Entity_Free(pEntity);
+		delete pEntity;
 		pEntity = pNextEntity;
 	}
 
-	Texture_Cleanup();
-
 	if (world_entity) {
-		Entity_Free(world_entity);
+		delete world_entity;
 	}
 
 	//
@@ -1925,7 +1923,7 @@ void CMainFrame::OnFileSaveCopy() {
 
 	memset( &afn, 0, sizeof(OPENFILENAME) );
 
-	CString strPath = ValueForKey(g_qeglobals.d_project_entity, "basepath");
+	CString strPath = g_qeglobals.d_project_entity->ValueForKey("basepath");
 	AddSlash(strPath);
 	strPath += "maps";
 	if (g_PrefsDlg.m_strMaps.GetLength() > 0) {
@@ -2674,7 +2672,7 @@ void CMainFrame::OnMiscSelectentitycolor() {
 	entity_t *ent = NULL;
 	if (QE_SingleBrush(true, true)) {
 		ent = selected_brushes.next->owner;
-		CString strColor = ValueForKey(ent, "_color");
+		CString strColor = ent->ValueForKey("_color");
 		if (strColor.GetLength() > 0) {
 			float	fR, fG, fB;
 			int		n = sscanf(strColor, "%f %f %f", &fR, &fG, &fB);
@@ -2798,7 +2796,7 @@ bool FindNextBrush(brush_t* pPrevFoundBrush)	// can be NULL for fresh search
 			//
 			if (!strFindKey.IsEmpty())
 			{
-				const char *psEntFoundValue = ValueForKey(ent, strFindKey);
+				const char *psEntFoundValue = ent->ValueForKey(strFindKey);
 
 				if (strlen(psEntFoundValue)
 						&&
@@ -2821,10 +2819,10 @@ bool FindNextBrush(brush_t* pPrevFoundBrush)	// can be NULL for fresh search
 			{
 				// no FIND key specified, so just scan all of them...
 				//
-				int iNumEntKeys = GetNumKeys(ent);
+				int iNumEntKeys = ent->GetNumKeys();
 				for (int i=0; i<iNumEntKeys; i++)
 				{
-					const char *psEntFoundValue = ValueForKey(ent, GetKeyString(ent, i));
+					const char *psEntFoundValue = ent->ValueForKey(ent->GetKeyString(i));
 					if (psEntFoundValue)
 					{
 						if (	(strlen(psEntFoundValue) &&	strFindValue.IsEmpty())	// if blank <value> search specified then any found-value is ok
@@ -2934,7 +2932,7 @@ void CMainFrame::OnMiscFindOrReplaceEntity()
 					if (FilterBrush (b))
 						continue;
 
-					const char *psEntFoundValue = ValueForKey(ent, strFindKey);
+					const char *psEntFoundValue = ent->ValueForKey(strFindKey);
 
 					if (stricmp(strFindValue, psEntFoundValue)==0 ||		// found this exact key/value
 						(strlen(psEntFoundValue) &&	strFindValue.IsEmpty()) // or any value for this key if blank value search specified
@@ -2942,13 +2940,13 @@ void CMainFrame::OnMiscFindOrReplaceEntity()
 					{
 						// found this search key/value, so delete it...
 						//
-						DeleteKey(ent,strFindKey);
+						ent->DeleteKey(strFindKey);
 						//
 						// and replace with the new key/value (if specified)...
 						//
 						if (!strReplaceKey.IsEmpty() && !strReplaceValue.IsEmpty())
 						{
-							SetKeyValue (ent, strReplaceKey, strReplaceValue);
+							ent->SetKeyValue(strReplaceKey, strReplaceValue);
 						}
 						iOccurences++;
 					}
@@ -3158,9 +3156,9 @@ void CMainFrame::OnBrushFlipx() {
 	for (brush_t * b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 		if (b->owner->eclass->fixedsize) {
 			char	buf[16];
-			float	a = FloatForKey(b->owner, "angle");
+			float a = b->owner->FloatForKey("angle");
 			a = div((180 - a), 180).rem;
-			SetKeyValue(b->owner, "angle", itoa(a, buf, 10));
+			b->owner->SetKeyValue("angle", itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}
@@ -3180,7 +3178,7 @@ void CMainFrame::OnBrushFlipy() {
 	Select_FlipAxis(1);
 	for (brush_t * b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 		if (b->owner->eclass->fixedsize) {
-			float	a = FloatForKey(b->owner, "angle");
+			float a = b->owner->FloatForKey("angle");
 			if (a == 0 || a == 180 || a == 360) {
 				continue;
 			}
@@ -3204,7 +3202,7 @@ void CMainFrame::OnBrushFlipy() {
 			a = (int)a % 360;
 
 			char	buf[16];
-			SetKeyValue(b->owner, "angle", itoa(a, buf, 10));
+			b->owner->SetKeyValue("angle", itoa(a, buf, 10));
 			Brush_Build(b);
 		}
 	}
@@ -6527,15 +6525,15 @@ void CMainFrame::OnSelectionCombine()
 		// light_origin and light_rotation
 		e1->trackLightOrigin = true;
 		e1->brushes.onext->trackLightOrigin = true;
-		if (GetVectorForKey(e1, "origin", v)) {
-			SetKeyVec3(e1, "light_origin", v);
+		if (e1->GetVectorForKey("origin", v)) {
+			e1->SetKeyVec3("light_origin", v);
 			e1->lightOrigin = v;
 		}
-		if (!GetMatrixForKey(e1, "rotation", mat)) {
+		if (!e1->GetMatrixForKey("rotation", mat)) {
 			mat.Identity();
 		}
 		sprintf(str, "%g %g %g %g %g %g %g %g %g", mat[0][0], mat[0][1], mat[0][2], mat[1][0], mat[1][1], mat[1][2], mat[2][0], mat[2][1], mat[2][2]);
-		SetKeyValue(e1, "light_rotation", str, false);
+		e1->SetKeyValue("light_rotation", str, false);
 		e1->lightRotation = mat;
 	}
 
@@ -6543,18 +6541,18 @@ void CMainFrame::OnSelectionCombine()
 	for (brush_t *b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 		if (b->owner != e1) {
 			if (e1->eclass->nShowFlags & ECLASS_LIGHT) {
-				if (GetVectorForKey(b->owner, "origin", v)) {
+				if (b->owner->GetVectorForKey("origin", v)) {
 					e1->origin = b->owner->origin;
-					SetKeyVec3(e1, "origin", b->owner->origin);
+					e1->SetKeyVec3("origin", b->owner->origin);
 				}
-				if (GetMatrixForKey(b->owner, "rotation", mat)) {
+				if (b->owner->GetMatrixForKey("rotation", mat)) {
 					e1->rotation = b->owner->rotation;
 					mat = b->owner->rotation;
 					sprintf(str, "%g %g %g %g %g %g %g %g %g", mat[0][0], mat[0][1], mat[0][2], mat[1][0], mat[1][1], mat[1][2], mat[2][0], mat[2][1], mat[2][2]);
-					SetKeyValue(e1, "rotation", str, false);
+					e1->SetKeyValue("rotation", str, false);
 				}
 				if (b->modelHandle) {
-					SetKeyValue(e1, "model", ValueForKey(b->owner, "model"));
+					e1->SetKeyValue("model", b->owner->ValueForKey("model"));
 					setModel = false;
 				} else {
 					b->entityModel = true;
@@ -6566,7 +6564,7 @@ void CMainFrame::OnSelectionCombine()
 	}
 
 	if (setModel) {
-		SetKeyValue(e1, "model", ValueForKey(e1, "name"));
+		e1->SetKeyValue("model", e1->ValueForKey("name"));
 	}
 
 	Select_Deselect();

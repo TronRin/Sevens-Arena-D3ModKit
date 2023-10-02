@@ -413,7 +413,7 @@ void CEntityDlg::SetKeyValPairs( bool updateAnims ) {
 	}
 }
 
-void CEntityDlg::UpdateEntitySel(eclass_t *ent) {
+void CEntityDlg::UpdateEntitySel(const eclass_t* ent) {
 	assert ( ent );
 	assert ( ent->name );
 	int index = comboClass.FindString(-1, ent->name);
@@ -481,12 +481,13 @@ void CEntityDlg::DelProp() {
 	editKey.GetWindowText(key);
 	if (multipleEntities) {
 		for (brush_t *b = selected_brushes.next; b != &selected_brushes; b = b->next) {
-			DeleteKey(b->owner, key);
-			Entity_UpdateCurveData( b->owner );
+			assert(b->owner);
+			b->owner->DeleteKey(key);
+			b->owner->UpdateCurveData();	
 		}
 	} else {
-		DeleteKey(editEntity, key);
-		Entity_UpdateCurveData( editEntity );
+		editEntity->DeleteKey(key);
+		editEntity->UpdateCurveData();
 	}
 
 	// refresh the prop listbox
@@ -620,20 +621,20 @@ void CEntityDlg::AddProp() {
 		brush_t *b;
 		for (b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 			if (isName) {
-				Entity_SetName(b->owner, Value);
+				b->owner->SetName(Value);
 			} else {
 				if ( ! ( ( isModel || isOrigin ) && ( b->owner->eclass->nShowFlags & ECLASS_WORLDSPAWN ) ) ) {
-					SetKeyValue(b->owner, Key, Value);
+					b->owner->SetKeyValue(Key, Value);
 				}
 			}
 		}
 	}
 	else {
 		if (isName) {
-			Entity_SetName(editEntity, Value);
+			editEntity->SetName(Value);
 		} else {
 			if ( ! ( ( isModel || isOrigin ) && ( editEntity->eclass->nShowFlags & ECLASS_WORLDSPAWN ) ) ) {
-				SetKeyValue(editEntity, Key, Value);
+				editEntity->SetKeyValue(Key, Value);
 			}
 		}
 
@@ -929,7 +930,7 @@ void CEntityDlg::OnBnClickedButtonCurve() {
 			str += " )";
 			editVal.SetWindowText( str );
 			AddProp();
-			Entity_SetCurveData( editEntity );
+			editEntity->SetCurveData();
 		}
 	}
 }
@@ -1077,7 +1078,7 @@ void CEntityDlg::UpdateKeyVal(const char *key, const char *val) {
 		editEntity->epairs.Set(key, val);
 		SetKeyValPairs();
 		g_pParentWnd->GetCamera()->BuildEntityRenderState(editEntity, true);
-		Entity_UpdateSoundEmitter(editEntity);
+		editEntity->UpdateSoundEmitter();
 	}
 }
 
@@ -1252,7 +1253,7 @@ void CEntityDlg::InsertCurvePoint() {
 				// just do an add
 				AddCurvePoints();
 			} else {
-				idCurve<idVec3> *newCurve = Entity_MakeCurve( editEntity );
+				idCurve<idVec3>* newCurve = editEntity->MakeCurve();
 
 				if ( newCurve == NULL ) {
 					return;
@@ -1333,7 +1334,7 @@ void CEntityDlg::UpdateEntityCurve() {
 		return;
 	}
 
-	Entity_UpdateCurveData( editEntity );
+	editEntity->UpdateCurveData();
 
 	if ( g_qeglobals.d_select_mode == sel_editpoint ) {
 		g_qeglobals.d_numpoints = 0;

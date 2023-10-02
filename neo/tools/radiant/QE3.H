@@ -40,8 +40,6 @@ If you have questions concerning this license or the applicable additional terms
 #include <uxtheme.h> 
 #pragma comment(lib, "UxTheme")
 
-// this define to use HTREEITEM and MFC stuff in the headers
-#define QERTYPES_USE_MFC
 #include "qertypes.h"
 #include "cmdlib.h"
 #include "parse.h"
@@ -155,8 +153,6 @@ typedef struct
 	int			d_num_move_planes;
 	idPlane		*d_move_planes[MAX_MOVE_PLANES];
 
-	qtexture_t	*d_qtextures;
-
 	texturewin_t d_texturewin;
 
 	int	         d_pointfile_display_list;
@@ -202,8 +198,6 @@ typedef struct
 	//Timo
 	// tells we have surface properties plugin
 	bool	bSurfacePropertiesPlugin;
-	// tells we are using a BSP frontend plugin
-	bool	bBSPFrontendPlugin;
 
 	// the editor has its own soundWorld and renderWorld, completely distinct from the game
 	idRenderWorld	*rw;
@@ -256,32 +250,9 @@ BOOL CALLBACK Win_Dialog (
 	LPARAM lParam	// second message parameter
 );
 
-
-//
-// win_cam.c
-//
-void WCam_Create (HINSTANCE hInstance);
-
-
-//
-// win_xy.c
-//
-void WXY_Create (HINSTANCE hInstance);
-
-//
-// win_z.c
-//
-void WZ_Create (HINSTANCE hInstance);
-
-//
-// win_ent.c
-//
-
-
 //
 // win_main.c
 //
-void Main_Create (HINSTANCE hInstance);
 extern bool SaveWindowState(HWND hWnd, const char *pszName);
 extern bool LoadWindowState(HWND hWnd, const char *pszName);
 
@@ -371,16 +342,6 @@ void BPMatRotate(float A[2][3], float theta);
 void BPMatDump(float A[2][3]);
 #endif
 
-
-//
-// eclass.cpp
-//
-extern bool parsing_single;
-extern bool eclass_found;
-extern eclass_t *eclass_e;
-void Eclass_ScanFile( char *filename );
-void FillClassList (void);
-
 extern bool g_bShowLightVolumes;
 extern bool g_bShowLightTextures;
 extern const idMaterial *Texture_LoadLight(const char *name);
@@ -396,13 +357,6 @@ extern CString g_strAppPath;
 extern CPrefsDlg& g_PrefsDlg;
 extern CFindTextureDlg& g_dlgFind;
 extern idCVar radiant_entityMode;
-
-// layout styles
-#define QR_SPLIT 0
-#define QR_QE4 1
-#define QR_4WAY 2
-#define QR_SPLITZ 3
-
 
 // externs
 extern void AddSlash(CString&);
@@ -421,7 +375,6 @@ extern void RunScript(char* pBuffer);
 extern void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected, bool bForce);
 extern void DoProjectSettings();
 extern bool region_active;
-extern void	Texture_ShowDirectory (char* pPath, bool Linked = false);
 extern void Map_ImportFile (char *filename);
 extern void Map_SaveSelected(char* pFilename);
 extern bool g_bSwitch;
@@ -461,10 +414,6 @@ int PointInMoveList( idVec3 *pf );
 extern bool ByeByeSurfaceDialog();
 extern void UpdateSurfaceDialog();
 extern void UpdateLightInspector();
-
-BOOL UpdateEntitySel(eclass_t *pec);
-void SetInspectorMode(int iType);
-BOOL GetSelectAllCriteria(CString &strKey, CString &strVal);
 
 int GetCvarInt(const char *name, const int def);
 const char *GetCvarString(const char *name, const char *def);

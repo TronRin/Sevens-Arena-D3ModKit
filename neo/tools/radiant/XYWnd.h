@@ -44,7 +44,7 @@ const int SCALE_X = 0x01;
 const int SCALE_Y = 0x02;
 const int SCALE_Z = 0x04;
 
-bool FilterBrush(brush_t *pb);
+bool FilterBrush(const brush_t *pb);
 
 typedef void (PFNPathCallback)(bool, int);
 // as i didn't really encapsulate anything this

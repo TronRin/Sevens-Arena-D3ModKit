@@ -543,8 +543,6 @@ void CNewTexWnd::OnRButtonUp(UINT nFlags, CPoint point) {
 	CWnd::OnRButtonUp(nFlags, point);
 }
 
-extern float	fDiff(float f1, float f2);
-
 /*
  =======================================================================================================================
  =======================================================================================================================
@@ -563,7 +561,7 @@ void CNewTexWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				long	*px = &point.x;
 				long	*px2 = &cursor.x;
 
-				if (fDiff(point.y, cursor.y) > fDiff(point.x, cursor.x)) {
+				if (idMath::Diff(point.y, cursor.y) > idMath::Diff(point.x, cursor.x)) {
 					px = &point.y;
 					px2 = &cursor.y;
 				}
@@ -663,10 +661,6 @@ const idMaterial *Texture_LoadLight(const char *name) {
 	return declManager->FindMaterial(name);
 }
 
-
-void Texture_ClearInuse(void) {
-}
-
 void Texture_ShowAll(void) {
 	int count = declManager->GetNumDecls( DECL_MATERIAL );
 	for (int i = 0; i < count; i++) {
@@ -730,12 +724,7 @@ void Texture_ShowInuse(void) {
 	g_Inspectors->SetWindowText("Textures (in use)");
 }
 
-void Texture_Cleanup(CStringList *pList) {
-}
-
-int				texture_mode = GL_LINEAR_MIPMAP_LINEAR;
 bool texture_showinuse = true;
-
 
 /*
  =======================================================================================================================
@@ -794,7 +783,6 @@ void Texture_SetMode(int iMenu) {
 	CheckMenuItem(hMenu, iMenu, MF_BYCOMMAND | MF_CHECKED);
 
 	g_qeglobals.d_savedinfo.iTexMenu = iMenu;
-	texture_mode = iMode;
 
 	if (!texturing && iMenu == ID_TEXTURES_WIREFRAME) {
 		g_pParentWnd->GetCamera()->Camera().draw_mode = cd_wire;
