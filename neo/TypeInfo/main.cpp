@@ -59,13 +59,8 @@ int main( int argc, char** argv ) {
 	generator = new idTypeInfoGen;
 
 	// Change the direcotry base uppon the game that's being build uppon
-#ifdef _D3XP
-	sourcePath = "d3xp";
-	fileName = "../neo/d3xp/gamesys/GameTypeInfo";
-#else
 	sourcePath = "game";
 	fileName = "../neo/game/gamesys/GameTypeInfo";
-#endif // _D3XP
 
 	if ( argc > 3 ) {
 		for ( int i = 3; i < argc; i++ ) {

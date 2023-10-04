@@ -26,54 +26,67 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#ifndef __GAMETYPEINFO_H__
-#define __GAMETYPEINFO_H__
+#ifndef __GAME_GRABBER_H__
+#define __GAME_GRABBER_H__
+
+#include "physics/Force_Grab.h"
+#include "Entity.h"
 
 /*
-===================================================================================
+===============================================================================
 
-	This file has been generated with the Type Info Generator v1.0 (c) 2004 id Software
+	Grabber Object - Class to extend idWeapon to include functionality for
+						manipulating physics objects.
 
-===================================================================================
+===============================================================================
 */
 
-typedef struct {
-	const char * name;
-	const char * type;
-	const char * value;
-} constantInfo_t;
+class idBeam;
 
-typedef struct {
-	const char * name;
-	int value;
-} enumValueInfo_t;
+class idGrabber : public idEntity {
+public:
+	CLASS_PROTOTYPE( idGrabber );
 
-typedef struct {
-	const char * typeName;
-	const enumValueInfo_t * values;
-} enumTypeInfo_t;
+							idGrabber( void );
+							~idGrabber( void );
 
-typedef struct {
-	const char * type;
-	const char * name;
-	int offset;
-	int size;
-} classVariableInfo_t;
+	void					Save( idSaveGame *savefile ) const;
+	void					Restore( idRestoreGame *savefile );
 
-typedef struct {
-	const char * typeName;
-	const char * superType;
-	int size;
-	const classVariableInfo_t * variables;
-} classTypeInfo_t;
+	void					Initialize( void );
+	void					SetDragDistance( float dist );
+	int						Update( idPlayer *player, bool hide );
 
+private:
+	idEntityPtr<idEntity>	dragEnt;			// entity being dragged
+	idForce_Grab			drag;
+	idVec3					saveGravity;
 
-static enumTypeInfo_t enumTypeInfo[] = {
-	{ NULL, NULL }
+	int						id;					// id of body being dragged
+	idVec3					localPlayerPoint;	// dragged point in player space
+	idEntityPtr<idPlayer>	owner;
+	int						oldUcmdFlags;
+	bool					holdingAF;
+	bool					shakeForceFlip;
+	int						endTime;
+	int						lastFiredTime;
+	int						dragFailTime;
+	int						startDragTime;
+	float					dragTraceDist;
+	int						savedContents;
+	int						savedClipmask;
+
+	idBeam*					beam;
+	idBeam*					beamTarget;
+
+	int						warpId;
+
+	bool					grabbableAI( const char *aiName );
+	void					StartDrag( idEntity *grabEnt, int id );
+	void					StopDrag( bool dropOnly );
+	void					UpdateBeams( void );
+	void					ApplyShake( void );
 };
 
-static classTypeInfo_t classTypeInfo[] = {
-	{ NULL, NULL, 0, NULL }
-};
 
-#endif /* !__GAMETYPEINFO_H__ */
+#endif
