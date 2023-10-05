@@ -29,8 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "renderer/ModelManager.h"
 
-#include "gamesys/SysCvar.h"
-#include "ai/AI.h"
 #include "Fx.h"
 
 #include "Moveable.h"
@@ -77,9 +75,6 @@ idMoveable::idMoveable( void ) {
 	unbindOnDeath		= false;
 	allowStep			= false;
 	canDamage			= false;
-#ifdef _D3XP
-	attacker			= NULL;
-#endif
 }
 
 /*
@@ -135,19 +130,9 @@ void idMoveable::Spawn( void ) {
 
 	fl.takedamage = true;
 	damage = spawnArgs.GetString( "def_damage", "" );
-#ifdef _D3XP
-	monsterDamage = spawnArgs.GetString( "monster_damage", "" );
-	fl.networkSync = true;
-	attacker = NULL;
-#endif
 	canDamage = spawnArgs.GetBool( "damageWhenActive" ) ? false : true;
-#ifdef _D3XP
-	minDamageVelocity = spawnArgs.GetFloat( "minDamageVelocity", "300" );	// _D3XP
-	maxDamageVelocity = spawnArgs.GetFloat( "maxDamageVelocity", "700" );	// _D3XP
-#else
 	minDamageVelocity = spawnArgs.GetFloat( "minDamageVelocity", "100" );
 	maxDamageVelocity = spawnArgs.GetFloat( "maxDamageVelocity", "200" );
-#endif // _D3XP
 	nextDamageTime = 0;
 	nextSoundTime = 0;
 
@@ -205,10 +190,6 @@ void idMoveable::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteString( brokenModel );
 	savefile->WriteString( damage );
-#ifdef _D3XP
-	savefile->WriteString( monsterDamage );
-	savefile->WriteObject( attacker );
-#endif
 	savefile->WriteString( fxCollide );
 	savefile->WriteInt( nextCollideFxTime );
 	savefile->WriteFloat( minDamageVelocity );
@@ -235,10 +216,6 @@ void idMoveable::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadString( brokenModel );
 	savefile->ReadString( damage );
-#ifdef _D3XP
-	savefile->ReadString( monsterDamage );
-	savefile->ReadObject( reinterpret_cast<idClass *&>( attacker ) );
-#endif
 	savefile->ReadString( fxCollide );
 	savefile->ReadInt( nextCollideFxTime );
 	savefile->ReadFloat( minDamageVelocity );
@@ -305,63 +282,16 @@ bool idMoveable::Collide( const trace_t &collision, const idVec3 &velocity ) {
 		nextSoundTime = gameLocal.time + 500;
 	}
 
-#ifdef _D3XP
-	// _D3XP :: changes relating to the addition of monsterDamage
-	if ( !gameLocal.isClient && canDamage && gameLocal.time > nextDamageTime ) {
-		bool hasDamage = damage.Length() > 0;
-		bool hasMonsterDamage = monsterDamage.Length() > 0;
-
-		if ( hasDamage || hasMonsterDamage )
-#else
-		if ( canDamage && damage.Length() && gameLocal.time > nextDamageTime )
-#endif // _D3XP
-		{
-			ent = gameLocal.entities[ collision.c.entityNum ];
-			if ( ent && v > minDamageVelocity ) {
-				f = v > maxDamageVelocity ? 1.0f : idMath::Sqrt( v - minDamageVelocity ) * ( 1.0f / idMath::Sqrt( maxDamageVelocity - minDamageVelocity ) );
-				dir = velocity;
-				dir.NormalizeFast();
-
-#ifdef _D3XP
-				if ( ent->IsType( idAI::Type ) && hasMonsterDamage ) {
-					if ( attacker ) {
-						ent->Damage( this, attacker, dir, monsterDamage, f, INVALID_JOINT );
-					}
-					else {
-						ent->Damage( this, GetPhysics()->GetClipModel()->GetOwner(), dir, monsterDamage, f, INVALID_JOINT );
-					}
-				} else if ( hasDamage ) {
-					// in multiplayer, scale damage wrt mass of object
-					if ( gameLocal.isMultiplayer ) {
-						f *= GetPhysics()->GetMass() * g_moveableDamageScale.GetFloat();
-					}
-
-					if ( attacker ) {
-						ent->Damage( this, attacker, dir, damage, f, INVALID_JOINT );
-					}
-					else {
-						ent->Damage( this, GetPhysics()->GetClipModel()->GetOwner(), dir, damage, f, INVALID_JOINT );
-					}
-				}
-#else
-				ent->Damage( this, GetPhysics()->GetClipModel()->GetOwner(), dir, damage, f, INVALID_JOINT );
-#endif
-			}
-				nextDamageTime = gameLocal.time + 1000;
-		}
-#ifdef _D3XP
-	}
-#endif // _D3XP
-
-#ifdef _D3XP
-	if ( this->IsType( idExplodingBarrel::Type ) ) {
-		idExplodingBarrel *ebarrel = static_cast<idExplodingBarrel*>(this);
-
-		if ( !ebarrel->IsStable() ) {
-			PostEventSec( &EV_Explode, 0.04f );
+	if ( canDamage && damage.Length() && gameLocal.time > nextDamageTime ) {
+		ent = gameLocal.entities[ collision.c.entityNum ];
+		if ( ent && v > minDamageVelocity ) {
+			f = v > maxDamageVelocity ? 1.0f : idMath::Sqrt( v - minDamageVelocity ) * ( 1.0f / idMath::Sqrt( maxDamageVelocity - minDamageVelocity ) );
+			dir = velocity;
+			dir.NormalizeFast();
+			ent->Damage( this, GetPhysics()->GetClipModel()->GetOwner(), dir, damage, f, INVALID_JOINT );
+			nextDamageTime = gameLocal.time + 1000;
 		}
 	}
-#endif
 
 	if ( fxCollide.Length() && gameLocal.time > nextCollideFxTime ) {
 		idEntityFx::StartFx( fxCollide, &collision.c.point, NULL, this, false );
@@ -426,19 +356,9 @@ idMoveable::EnableDamage
 ================
 */
 void idMoveable::EnableDamage( bool enable, float duration ) {
-#ifdef _D3XP
-	if ( canDamage == enable ) {
-		return;
-	}
-#endif
-
 	canDamage = enable;
 	if ( duration ) {
-#ifdef _D3XP
-		PostEventSec( &EV_EnableDamage, duration, ( /*_D3XP*/enable ) ? 0.0f : 1.0f );
-#else
 		PostEventSec( &EV_EnableDamage, duration, ( !enable ) ? 0.0f : 1.0f );
-#endif // _D3XP
 	}
 }
 
@@ -549,17 +469,6 @@ void idMoveable::Event_BecomeNonSolid( void ) {
 	BecomeNonSolid();
 }
 
-#ifdef _D3XP
-/*
-================
-idMoveable::SetAttacker
-================
-*/
-void idMoveable::SetAttacker( idEntity *ent ) {
-	attacker = ent;
-}
-#endif
-
 /*
 ================
 idMoveable::Event_Activate
@@ -625,11 +534,6 @@ idMoveable::Event_EnableDamage
 ================
 */
 void idMoveable::Event_EnableDamage( float enable ) {
-#ifdef _D3XP
-	// clear out attacker
-	attacker = NULL;
-#endif
-
 	canDamage = ( enable != 0.0f );
 }
 
@@ -805,10 +709,6 @@ void idBarrel::Spawn( void ) {
 
 	additionalRotation = 0.0f;
 	additionalAxis.Identity();
-
-#ifdef _D3XP
-	fl.networkSync = true;
-#endif
 }
 
 /*
@@ -847,9 +747,6 @@ idExplodingBarrel::idExplodingBarrel() {
 	spawnOrigin.Zero();
 	spawnAxis.Zero();
 	state = NORMAL;
-#ifdef _D3XP
-	isStable = true;
-#endif
 	particleModelDefHandle = -1;
 	lightDefHandle = -1;
 	memset( &particleRenderEntity, 0, sizeof( particleRenderEntity ) );
@@ -892,10 +789,6 @@ void idExplodingBarrel::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( particleTime );
 	savefile->WriteInt( lightTime );
 	savefile->WriteFloat( time );
-
-#ifdef _D3XP
-	savefile->WriteBool( isStable );
-#endif
 }
 
 /*
@@ -918,10 +811,6 @@ void idExplodingBarrel::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( lightTime );
 	savefile->ReadFloat( time );
 
-#ifdef _D3XP
-	savefile->ReadBool( isStable );
-#endif
-
 	// DG: enforce getting fresh handle, else this may be tied to an unrelated light!
 	if ( lightDefHandle != -1 ) {
 		lightDefHandle = gameRenderWorld->AddLightDef( &light );
@@ -940,10 +829,6 @@ idExplodingBarrel::Spawn
 void idExplodingBarrel::Spawn( void ) {
 	health = spawnArgs.GetInt( "health", "5" );
 	fl.takedamage = true;
-#ifdef _D3XP
-	isStable = true;
-	fl.networkSync = true;
-#endif
 	spawnOrigin = GetPhysics()->GetOrigin();
 	spawnAxis = GetPhysics()->GetAxis();
 	state = NORMAL;
@@ -999,53 +884,6 @@ void idExplodingBarrel::Think( void ) {
 	}
 }
 
-#ifdef _D3XP
-/*
-================
-idExplodingBarrel::SetStability
-================
-*/
-void idExplodingBarrel::SetStability( bool stability ) {
-	isStable = stability;
-}
-
-/*
-================
-idExplodingBarrel::IsStable
-================
-*/
-bool idExplodingBarrel::IsStable( void ) {
-	return isStable;
-}
-
-/*
-================
-idExplodingBarrel::StartBurning
-================
-*/
-void idExplodingBarrel::StartBurning( void ) {
-	state = BURNING;
-	AddParticles( "barrelfire.prt", true );
-}
-
-/*
-================
-idExplodingBarrel::StartBurning
-================
-*/
-void idExplodingBarrel::StopBurning( void ) {
-	state = NORMAL;
-
-	if ( particleModelDefHandle >= 0 ){
-		gameRenderWorld->FreeEntityDef( particleModelDefHandle );
-		particleModelDefHandle = -1;
-
-		particleTime = 0;
-		memset( &particleRenderEntity, 0, sizeof( particleRenderEntity ) );
-	}
-}
-#endif
-
 /*
 ================
 idExplodingBarrel::AddParticles
@@ -1053,10 +891,6 @@ idExplodingBarrel::AddParticles
 */
 void idExplodingBarrel::AddParticles( const char *name, bool burn ) {
 	if ( name && *name ) {
-#ifdef _D3XP
-		int explicitTimeGroup = timeGroup;
-		SetTimeState explicitTS( explicitTimeGroup );
-#endif
 		if ( particleModelDefHandle >= 0 ){
 			gameRenderWorld->FreeEntityDef( particleModelDefHandle );
 		}
@@ -1073,9 +907,6 @@ void idExplodingBarrel::AddParticles( const char *name, bool burn ) {
 			particleRenderEntity.shaderParms[ SHADERPARM_ALPHA ] = rgb;
 			particleRenderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = -MS2SEC( gameLocal.realClientTime );
 			particleRenderEntity.shaderParms[ SHADERPARM_DIVERSITY ] = ( burn ) ? 1.0f : gameLocal.random.RandomInt( 90 );
-#ifdef _D3XP
-			particleRenderEntity.timeGroup = explicitTimeGroup;
-#endif
 			if ( !particleRenderEntity.hModel ) {
 				particleRenderEntity.hModel = renderModelManager->FindModel( name );
 			}

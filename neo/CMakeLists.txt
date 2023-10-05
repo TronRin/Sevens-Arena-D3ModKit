@@ -59,7 +59,7 @@ include(GNUInstallDirs OPTIONAL RESULT_VARIABLE GNUINSTALLDIRS)
 
 option(CORE			"Build the core" ON)
 option(BASE			"Build the base game code" ON)
-option(D3XP			"Build the d3xp game features" ON)
+option(D3XP			"Build the d3xp game code" ON)
 if(MSVC)
 	option(TOOLS			"Build the tools game code (Visual Studio+SDL2 only)" ON) # OFF
 endif()
@@ -828,20 +828,81 @@ set(src_game
 
 add_globbed_headers(src_game "game")
 
-# HACK: we don't want D3XP headers here
-list(REMOVE_ITEM src_game "game/Grabber.h" "game/physics/Force_Grab.h" )
-
-if (D3XP)
 set(src_d3xp
-	game/Grabber.cpp
-	game/Grabber.h
-	game/physics/Force_Grab.cpp
-	game/physics/Force_Grab.h
+	d3xp/AF.cpp
+	d3xp/AFEntity.cpp
+	d3xp/Actor.cpp
+	d3xp/Camera.cpp
+	d3xp/Entity.cpp
+	d3xp/BrittleFracture.cpp
+	d3xp/Fx.cpp
+	d3xp/GameEdit.cpp
+	d3xp/Game_local.cpp
+	d3xp/Game_network.cpp
+	d3xp/Item.cpp
+	d3xp/IK.cpp
+	d3xp/Light.cpp
+	d3xp/Misc.cpp
+	d3xp/Mover.cpp
+	d3xp/Moveable.cpp
+	d3xp/MultiplayerGame.cpp
+	d3xp/Player.cpp
+	d3xp/PlayerIcon.cpp
+	d3xp/PlayerView.cpp
+	d3xp/Projectile.cpp
+	d3xp/Pvs.cpp
+	d3xp/SecurityCamera.cpp
+	d3xp/SmokeParticles.cpp
+	d3xp/Sound.cpp
+	d3xp/Target.cpp
+	d3xp/Trigger.cpp
+	d3xp/Weapon.cpp
+	d3xp/WorldSpawn.cpp
+	d3xp/ai/AAS.cpp
+	d3xp/ai/AAS_debug.cpp
+	d3xp/ai/AAS_pathing.cpp
+	d3xp/ai/AAS_routing.cpp
+	d3xp/ai/AI.cpp
+	d3xp/ai/AI_events.cpp
+	d3xp/ai/AI_pathing.cpp
+	d3xp/ai/AI_Vagary.cpp
+	d3xp/gamesys/DebugGraph.cpp
+	d3xp/gamesys/Class.cpp
+	d3xp/gamesys/Event.cpp
+	d3xp/gamesys/SaveGame.cpp
+	d3xp/gamesys/SysCmds.cpp
+	d3xp/gamesys/SysCvar.cpp
+	d3xp/gamesys/TypeInfo.cpp
+	d3xp/anim/Anim.cpp
+	d3xp/anim/Anim_Blend.cpp
+	d3xp/anim/Anim_Import.cpp
+	d3xp/anim/Anim_Testmodel.cpp
+	d3xp/script/Script_Compiler.cpp
+	d3xp/script/Script_Interpreter.cpp
+	d3xp/script/Script_Program.cpp
+	d3xp/script/Script_Thread.cpp
+	d3xp/physics/Clip.cpp
+	d3xp/physics/Force.cpp
+	d3xp/physics/Force_Constant.cpp
+	d3xp/physics/Force_Drag.cpp
+	d3xp/physics/Force_Field.cpp
+	d3xp/physics/Force_Spring.cpp
+	d3xp/physics/Physics.cpp
+	d3xp/physics/Physics_AF.cpp
+	d3xp/physics/Physics_Actor.cpp
+	d3xp/physics/Physics_Base.cpp
+	d3xp/physics/Physics_Monster.cpp
+	d3xp/physics/Physics_Parametric.cpp
+	d3xp/physics/Physics_Player.cpp
+	d3xp/physics/Physics_RigidBody.cpp
+	d3xp/physics/Physics_Static.cpp
+	d3xp/physics/Physics_StaticMulti.cpp
+	d3xp/physics/Push.cpp
+	d3xp/Grabber.cpp
+	d3xp/physics/Force_Grab.cpp
 )
 
-# Include our base related files
-list(APPEND src_d3xp ${src_game} )
-endif()
+add_globbed_headers(src_d3xp "d3xp")
 
 set(src_debuggerServer
 	tools/debugger/DebuggerBreakpoint.h
@@ -1125,6 +1186,13 @@ if(HARDLINK_GAME)
 	if(BASE)
 		set(src_core ${src_core} ${src_game})
 		set(game_includes "${CMAKE_SOURCE_DIR}/game")
+		if(D3XP)
+			message(WARNING "hardlinking the base game, d3xp will not be supported (disable BASE for D3XP support with HARDLINK_GAME)")
+		endif()
+		
+	elseif(D3XP)
+		set(src_core ${src_core} ${src_d3xp})
+		set(game_includes "${CMAKE_SOURCE_DIR}/d3xp")
 	endif()
 endif()# HARDLINK_GAME
 
@@ -1280,7 +1348,7 @@ if(D3XP AND NOT HARDLINK_GAME)
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_d3xp})
 	set_target_properties(d3xp PROPERTIES PREFIX "")
 	set_target_properties(d3xp PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF")
-	target_include_directories(d3xp PRIVATE "${CMAKE_SOURCE_DIR}/game")
+	target_include_directories(d3xp PRIVATE "${CMAKE_SOURCE_DIR}/d3xp")
 	set_target_properties(d3xp PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(d3xp PROPERTIES INSTALL_NAME_DIR "@executable_path")
 	if (AROS)

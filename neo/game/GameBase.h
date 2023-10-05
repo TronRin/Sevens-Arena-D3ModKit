@@ -34,11 +34,6 @@ If you have questions concerning this license or the applicable additional terms
 #define SCRIPT_DEFAULT			"script/doom_main.script"
 #define SCRIPT_DEFAULTFUNC		"doom_main"
 
-#ifdef _D3XP
-#define TIME_GROUP1				0
-#define TIME_GROUP2				1
-#endif // _D3XP
-
 #define LAGO_IMG_WIDTH			64
 #define LAGO_IMG_HEIGHT			64
 #define LAGO_WIDTH				64

@@ -97,10 +97,6 @@ public:
 	void				ReadPVS( const pvsHandle_t handle, const idBitMsg &msg );
 #endif
 
-#ifdef _D3XP
-	bool				CheckAreasForPortalSky( const pvsHandle_t handle, const idVec3 &origin );
-#endif
-
 private:
 	int					numAreas;
 	int					numPortals;

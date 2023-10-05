@@ -845,7 +845,11 @@ void idTypeInfoGen::CreateTypeInfo( const char *path ) {
 	common->Printf( "%s\n", path );
 
 	// Change the direcotry base uppon the game that's being build uppon
+#ifdef _D3XP
+	fileName = "neo/d3xp/game_precompiled.cpp";
+#else
 	fileName = "neo/game/game_precompiled.cpp";
+#endif // _D3XP
 
 	common->Printf( "processing '%s' for type info...\n", fileName.c_str() );
 

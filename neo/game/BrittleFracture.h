@@ -104,10 +104,6 @@ private:
 	float						bouncyness;
 	idStr						fxFracture;
 
-#ifdef _D3XP
-	bool						isXraySurface;
-#endif
-
 	// state
 	idPhysics_StaticMulti		physicsObj;
 	idList<shard_t *>			shards;

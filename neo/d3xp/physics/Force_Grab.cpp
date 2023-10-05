@@ -26,6 +26,8 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#ifdef _D3XP
+
 #include "sys/platform.h"
 #include "gamesys/SysCvar.h"
 #include "gamesys/SaveGame.h"
@@ -184,3 +186,5 @@ void idForce_Grab::RemovePhysics( const idPhysics *phys ) {
 		physics = NULL;
 	}
 }
+
+#endif	// _D3XP

@@ -32,10 +32,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "script/Script_Thread.h"
 #include "Entity.h"
 #include "Light.h"
-#include "Grabber.h"
 #include "Actor.h"
-
-class idFuncEmitter;
 
 /*
 ===============================================================================
@@ -44,10 +41,6 @@ class idFuncEmitter;
 
 ===============================================================================
 */
-
-#ifdef _D3XP
-extern const idEventDef EV_Weapon_State;
-#endif
 
 typedef enum {
 	WP_READY,
@@ -67,28 +60,6 @@ static const int LIGHTID_WORLD_MUZZLE_FLASH = 1;
 static const int LIGHTID_VIEW_MUZZLE_FLASH = 100;
 
 class idMoveableItem;
-
-#ifdef _D3XP
-typedef struct {
-	char			name[64];
-	char			particlename[128];
-	bool			active;
-	int				startTime;
-	jointHandle_t	joint;			//The joint on which to attach the particle
-	bool			smoke;			//Is this a smoke particle
-	const idDeclParticle* particle;		//Used for smoke particles
-	idFuncEmitter*  emitter;		//Used for non-smoke particles
-} WeaponParticle_t;
-
-typedef struct {
-	char			name[64];
-	bool			active;
-	int				startTime;
-	jointHandle_t	joint;
-	int				lightHandle;
-	renderLight_t	light;
-} WeaponLight_t;
-#endif
 
 class idWeapon : public idAnimatedEntity {
 public:
@@ -146,10 +117,6 @@ public:
 	bool					CanDrop( void ) const;
 	void					WeaponStolen( void );
 
-#ifdef _D3XP
-	weaponStatus_t			GetStatus() { return status; };
-#endif
-
 	// Script state management
 	virtual idThread *		ConstructScriptObject( void );
 	virtual void			DeconstructScriptObject( void );
@@ -177,10 +144,6 @@ public:
 	int						ClipSize( void ) const;
 	int						LowAmmo( void ) const;
 	int						AmmoRequired( void ) const;
-#ifdef _D3XP
-	int						AmmoCount() const;
-	int						GetGrabberState() const;
-#endif
 
 	virtual void			WriteToSnapshot( idBitMsgDelta &msg ) const;
 	virtual void			ReadFromSnapshot( const idBitMsgDelta &msg );
@@ -310,13 +273,6 @@ private:
 	jointHandle_t			barrelJointWorld;
 	jointHandle_t			ejectJointWorld;
 
-#ifdef _D3XP
-	jointHandle_t			smokeJointView;
-
-	idHashTable<WeaponParticle_t>	weaponParticles;
-	idHashTable<WeaponLight_t>		weaponLights;
-#endif
-
 	// sound
 	const idSoundShader *	sndHum;
 
@@ -397,26 +353,6 @@ private:
 	void					Event_NetReload( void );
 	void					Event_IsInvisible( void );
 	void					Event_NetEndReload( void );
-
-#ifdef _D3XP
-	idGrabber				grabber;
-	int						grabberState;
-
-	void					Event_Grabber( int enable );
-	void					Event_GrabberHasTarget( void );
-	void					Event_GrabberSetGrabDistance( float dist );
-	void					Event_LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power );
-	void					Event_LaunchPowerup( const char* powerup, float duration, int useAmmo );
-
-	void					Event_StartWeaponSmoke();
-	void					Event_StopWeaponSmoke();
-
-	void					Event_StartWeaponParticle( const char* name);
-	void					Event_StopWeaponParticle( const char* name);
-
-	void					Event_StartWeaponLight( const char* name);
-	void					Event_StopWeaponLight( const char* name);
-#endif
 };
 
 ID_INLINE bool idWeapon::IsLinked( void ) {

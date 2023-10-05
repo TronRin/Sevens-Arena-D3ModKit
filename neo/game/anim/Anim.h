@@ -153,12 +153,6 @@ typedef enum {
 	FC_DISABLE_LEG_IK,
 	FC_RECORDDEMO,
 	FC_AVIGAME
-#ifdef _D3XP
-	, FC_LAUNCH_PROJECTILE,
-	FC_TRIGGER_FX,
-	FC_START_EMITTER,
-	FC_STOP_EMITTER,
-#endif
 } frameCommandType_t;
 
 typedef struct {
@@ -244,7 +238,6 @@ private:
 	idStr					name;
 	idVec3					totaldelta;
 	mutable int				ref_count;
-
 public:
 	#if MD5_ENABLE_GIBS > 0 // ANIMS
 	int						gibLimit;

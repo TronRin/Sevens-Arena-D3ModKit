@@ -59,10 +59,6 @@ extern const idEventDef AI_AnimDone;
 extern const idEventDef AI_SetBlendFrames;
 extern const idEventDef AI_GetBlendFrames;
 
-#ifdef _D3XP
-extern const idEventDef AI_SetState;
-#endif
-
 class idDeclParticle;
 
 class idAnimState {
@@ -219,10 +215,6 @@ public:
 	#endif
 	virtual void			SpawnGibs(const idVec3& dir, const char* damageDefName);
 
-#ifdef _D3XP
-	idEntity*				GetHeadEntity() { return head.GetEntity(); };
-#endif
-
 protected:
 	friend class			idAnimState;
 
@@ -299,10 +291,6 @@ protected:
 
 	idList<idAttachInfo>	attachments;
 
-#ifdef _D3XP
-	int						damageCap;
-#endif
-
 	virtual void			Gib( const idVec3 &dir, const char *damageDefName );
 
 							// removes attachments with "remove" set for when character dies
@@ -357,15 +345,6 @@ private:
 	void					Event_SetState( const char *name );
 	void					Event_GetState( void );
 	void					Event_GetHead( void );
-#ifdef _D3XP
-	void					Event_SetDamageGroupScale( const char* groupName, float scale);
-	void					Event_SetDamageGroupScaleAll( float scale );
-	void					Event_GetDamageGroupScale( const char* groupName );
-	void					Event_SetDamageCap( float _damageCap );
-	void					Event_SetWaitState( const char* waitState);
-	void					Event_GetWaitState();
-
-#endif
 };
 
 #endif /* !__GAME_ACTOR_H__ */
