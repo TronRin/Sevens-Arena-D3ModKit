@@ -2043,7 +2043,7 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		// diffusemap for stage shortcut
 		else if ( !token.Icmp( "diffusemap" ) ) {
 			idStr nstr;
-            src.ReadRestOfLine( nstr );
+			src.ReadRestOfLine( nstr );
 			idStr::snPrintf( buffer, sizeof( buffer ), "blend diffusemap\nmap %s\n}\n", nstr.c_str() );
 			newSrc.LoadMemory( buffer, strlen(buffer), "diffusemap" );
 			newSrc.SetFlags( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
@@ -2054,7 +2054,7 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		// specularmap for stage shortcut
 		else if ( !token.Icmp( "specularmap" ) ) {
 			idStr nstr;
-            src.ReadRestOfLine( nstr );
+			src.ReadRestOfLine( nstr );
 			idStr::snPrintf( buffer, sizeof( buffer ), "blend specularmap\nmap %s\n}\n", nstr.c_str() );
 			newSrc.LoadMemory( buffer, strlen(buffer), "specularmap" );
 			newSrc.SetFlags( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
@@ -2065,7 +2065,7 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		// normalmap for stage shortcut
 		else if ( !token.Icmp( "bumpmap" ) ) {
 			idStr nstr;
-            src.ReadRestOfLine( nstr );
+			src.ReadRestOfLine( nstr );
 			idStr::snPrintf( buffer, sizeof( buffer ), "blend bumpmap\nmap %s\n}\n", nstr.c_str() );
 			newSrc.LoadMemory( buffer, strlen(buffer), "bumpmap" );
 			newSrc.SetFlags( LEXFL_NOFATALERRORS | LEXFL_NOSTRINGCONCAT | LEXFL_NOSTRINGESCAPECHARS | LEXFL_ALLOWPATHNAMES );
