@@ -26,6 +26,20 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+// foresthale 2014-05-22: gross hack - there's no proper logFile implementation in idTech4 apparently, so just enable this code if you need it, NOTE: VERY SLOW (due to the constant reopening)
+#define CONDEBUG 1
+
+#ifdef CONDEBUG
+	#ifdef WIN32
+		#include <io.h>
+		#include <fcntl.h>
+		#include <sys/stat.h>
+		#include <share.h>
+	#else
+		#include <unistd.h>
+	#endif
+#endif
+
 #include <SDL.h>
 
 #include "sys/platform.h"
@@ -406,6 +420,24 @@ void idCommonLocal::VPrintf( const char *fmt, va_list args ) {
 		TRACE( msg );
 	}
 #endif
+#endif
+
+// foresthale 2014-05-22: gross hack - there's no proper logFile implementation in idTech4 apparently, so just enable this code if you need it, NOTE: VERY SLOW (due to the constant reopening)
+#ifdef CONDEBUG
+	{
+		const char *logname = "dconsole.log";
+		int logfd = -1;
+#ifdef WIN32
+		_sopen_s( &logfd, logname, O_WRONLY | O_APPEND | O_CREAT, _SH_DENYNO, _S_IREAD | _S_IWRITE );
+#else
+		logfd = open( "dconsole.log", O_WRONLY | O_APPEND | O_CREAT, 0666 );
+#endif
+		if (logfd >= 0)
+		{
+			write( logfd, msg, strlen( msg ) );
+			close( logfd );
+		}
+	}
 #endif
 
 	// don't trigger any updates if we are in the process of doing a fatal error
