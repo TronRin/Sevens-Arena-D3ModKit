@@ -160,7 +160,7 @@ ID_INLINE void idCmdSystem::ArgCompletion_MapName( const idCmdArgs &args, void(*
 }
 
 ID_INLINE void idCmdSystem::ArgCompletion_ModelName( const idCmdArgs &args, void(*callback)( const char *s ) ) {
-	cmdSystem->ArgCompletion_FolderExtension( args, callback, "models/", false, ".lwo", ".ase", ".md5mesh", ".ma", NULL );
+	cmdSystem->ArgCompletion_FolderExtension( args, callback, "models/", false, ".lwo", ".ase", ".md5mesh", ".md3", ".ma", NULL );
 }
 
 ID_INLINE void idCmdSystem::ArgCompletion_SoundName( const idCmdArgs &args, void(*callback)( const char *s ) ) {
