@@ -723,8 +723,6 @@ void idWeapon::Clear( void ) {
 	memset( &renderEntity, 0, sizeof( renderEntity ) );
 	renderEntity.entityNum	= entityNumber;
 
-	renderEntity.noShadow		= true;
-	renderEntity.noSelfShadow	= true;
 	renderEntity.customSkin		= NULL;
 
 	// set default shader parms
