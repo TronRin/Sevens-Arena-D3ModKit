@@ -36,6 +36,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "renderer/Material.h"
 
+#define _SURFTYPE(x) ( ( x ) | ( surfaceFlags & ( ~SURF_TYPE_MASK ) ) )
+
 /*
 
 Any errors during parsing just set MF_DEFAULTED and return, rather than throwing
@@ -274,6 +276,7 @@ static const infoParm_t	infoParms[] = {
 	{"wood",		0,  SURFTYPE_WOOD,		0 },	// wood
 	{"cardboard",	0,	SURFTYPE_CARDBOARD,	0 },	// cardboard
 	{"liquid",		0,	SURFTYPE_LIQUID,	0 },	// liquid
+	{"pipe",		0,	SURFTYPE_PIPE,		0 },	// pipe
 	{"glass",		0,	SURFTYPE_GLASS,		0 },	// glass
 	{"plastic",		0,	SURFTYPE_PLASTIC,	0 },	// plastic
 	{"ricochet",	0,	SURFTYPE_RICOCHET,	0 },	// behaves like metal but causes a ricochet sound
@@ -283,8 +286,6 @@ static const infoParm_t	infoParms[] = {
 	{"surftype11",	0,	SURFTYPE_11,	0 },
 	{"surftype12",	0,	SURFTYPE_12,	0 },
 	{"surftype13",	0,	SURFTYPE_13,	0 },
-	{"surftype14",	0,	SURFTYPE_14,	0 },
-	{"surftype15",	0,	SURFTYPE_15,	0 },
 };
 
 static const int numInfoParms = sizeof(infoParms) / sizeof (infoParms[0]);
@@ -1859,6 +1860,41 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 			continue;
 		}
 
+		// Set the material's surface type
+		if ( !token.Icmp( "metal" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_METAL );
+			continue;
+		} else if ( !token.Icmp( "stone" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_STONE );
+			continue;
+		} else if ( !token.Icmp( "flesh" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_FLESH );
+			continue;
+		} else if ( !token.Icmp( "wood" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_WOOD );
+			continue;
+		} else if ( !token.Icmp( "cardboard" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_CARDBOARD );
+			continue;
+		} else if ( !token.Icmp( "liquid" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_LIQUID );
+			continue;
+		} else if ( !token.Icmp( "glass" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_GLASS );
+			continue;
+		} else if ( !token.Icmp( "tile" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_TILE );
+			continue;
+		} else if ( !token.Icmp( "pipe" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_PIPE );
+			continue;
+		} else if ( !token.Icmp( "plastic" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_PLASTIC );
+			continue;
+		} else if ( !token.Icmp( "ricochet" ) ) {
+			surfaceFlags = _SURFTYPE( SURFTYPE_RICOCHET );
+			continue;
+		}
 
 		// polygonOffset
 		else if ( !token.Icmp( "polygonOffset" ) ) {

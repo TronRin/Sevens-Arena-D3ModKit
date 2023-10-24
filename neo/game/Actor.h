@@ -304,6 +304,7 @@ private:
 	void					FinishSetup( void );
 	void					SetupHead( void );
 	void					PlayFootStepSound( void );
+	void					GetFootstepSoundMaterial( const trace_t& trace );
 
 	void					Event_EnableEyeFocus( void );
 	void					Event_DisableEyeFocus( void );

@@ -2743,24 +2743,37 @@ idActor::Event_EnableEyeFocus
 =====================
 */
 void idActor::PlayFootStepSound( void ) {
-	const char *sound = NULL;
-	const idMaterial *material;
+	trace_t trace;
+	int num = GetPhysics()->GetNumContacts();
+	memset( &trace, 0, sizeof( trace_t ) );
 
-	if ( !GetPhysics()->HasGroundContacts() ) {
+	for( int i = 0; i < num; i++ ) {
+		trace.c = GetPhysics()->GetContact( i );
+		if( GetPhysics()->IsGroundEntity( trace.c.entityNum ) ) {
+			GetFootstepSoundMaterial( trace );
+			return;
+		}
+	}
+}
+
+/*
+===============
+idActor::GetFootstepSoundMaterial
+===============
+*/
+void idActor::GetFootstepSoundMaterial( const trace_t& trace ) {
+	if( !trace.c.material ) {
 		return;
 	}
 
-	// start footstep sound based on material type
-	material = GetPhysics()->GetContact( 0 ).material;
-	if ( material != NULL ) {
-		sound = spawnArgs.GetString( va( "snd_footstep_%s", gameLocal.sufaceTypeNames[ material->GetSurfaceType() ] ) );
+	if ( trace.c.material->GetSurfaceFlags() & SURF_NOSTEPS ) {
+		return;
 	}
-	if ( *sound == '\0' ) {
-		sound = spawnArgs.GetString( "snd_footstep" );
-	}
-	if ( *sound != '\0' ) {
-		StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_BODY, 0, false, NULL );
-	}
+
+	surfTypes_t type = gameLocal.GetMaterialType( trace, "idActor::GetFootstepSoundMaterial" );
+
+	const char* soundKey = gameLocal.MaterialTypeToKey( "snd_footstep", type );
+	StartSound( soundKey, SND_CHANNEL_BODY3, 0, false, NULL );
 }
 
 /*
