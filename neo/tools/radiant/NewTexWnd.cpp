@@ -305,6 +305,7 @@ void CNewTexWnd::OnPaint() {
 				// Draw the texture
 				float	fScale = (g_PrefsDlg.m_bHiColorTextures == TRUE) ? ((float)g_PrefsDlg.m_nTextureScale / 100) : 1.0;
 
+				GL_SelectTexture( 0 );
 				mat->GetEditorImage()->Bind();
 				QE_CheckOpenGLForErrors();
 				qglColor3f(1, 1, 1);

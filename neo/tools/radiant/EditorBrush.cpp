@@ -3658,20 +3658,20 @@ void GLSphere(float r, int lats, int longs) {
 		float lat1 = idMath::PI * (-0.5 + (float) i / lats);
 		float z1 = sin(lat1);
 		float zr1 = cos(lat1);
-    
+	
 		qglBegin(GL_QUAD_STRIP);
 		for(j = 0; j <= longs; j++) {
 			float lng = 2 * idMath::PI * (float) (j - 1) / longs;
 			float x = idMath::Cos(lng);
 			float y = idMath::Sin(lng);
-    
+	
 			qglNormal3f(x * zr0, y * zr0, z0);
 			qglVertex3f(x * zr0, y * zr0, z0);
 			qglNormal3f(x * zr1, y * zr1, z1);
 			qglVertex3f(x * zr1, y * zr1, z1);
 			}
 			qglEnd();
-       }
+	   }
  }
 /*
 ================
@@ -4424,6 +4424,7 @@ void Brush_Draw(const brush_t *b, bool bSelected) {
 		if ( (nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev && !b->forceWireFrame ) {
 			// set the texture for this face
 			prev = face->d_texture;
+			GL_SelectTexture( 0 );
 			face->d_texture->GetEditorImage()->Bind();
 		}
 
@@ -4461,14 +4462,12 @@ Face_Draw
 ================
 */
 void Face_Draw(face_t *f) {
-	int i;
-
 	if (f->face_winding == NULL) {
 		return;
 	}
 
 	qglBegin(GL_POLYGON);
-	for (i = 0; i < f->face_winding->GetNumPoints(); i++) {
+	for (int i = 0; i < f->face_winding->GetNumPoints(); i++) {
 		qglVertex3fv( (*f->face_winding)[i].ToFloatPtr() );
 	}
 
@@ -4681,7 +4680,66 @@ void Brush_DrawXY(brush_t *b, int nViewType, bool bSelected, bool ignoreViewType
 		return;
 	}
 
+	bool hasFilteredFace = false;
+	for ( face = b->brush_faces; face; face = face->next ) {
+		if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_NODRAW ) {
+			if ( strstr( face->texdef.name, "nodraw" ) ) {
+				hasFilteredFace = true;
+				break;
+			}
+		}
+		if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_CAULK ) {
+			if( strstr( face->texdef.name, "caulk" ) )
+			{
+				hasFilteredFace = true;
+				break;
+			}
+		}
+		if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_VISPORTALS ) {
+			if( strstr( face->texdef.name, "visportal" ) )
+			{
+				hasFilteredFace = true;
+				break;
+			}
+		}
+	}
+
 	for (face = b->brush_faces, order = 0; face; face = face->next, order++) {
+		bool stipple = false;
+		if ( hasFilteredFace ) {
+			if ( ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_NODRAW ) && strstr( face->texdef.name, "nodraw" ) ) {
+				if( bSelected ) {
+					stipple = true;
+				} else {
+					continue;
+				}
+			} else if ( ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_CAULK ) && strstr( face->texdef.name, "caulk" ) ) {
+				if ( bSelected ) {
+					stipple = true;
+				} else {
+					continue;
+				}
+			} else if( ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_VISPORTALS ) &&  strstr( face->texdef.name, "visportal" ) ) {
+				if ( bSelected ) {
+					stipple = true;
+				} else {
+					continue;
+				}
+			} else {
+				stipple = false;
+			}
+
+			// We're stippling selected ignored faces
+			if ( stipple ) {
+				qglEnable( GL_LINE_STIPPLE );
+				qglLineStipple( 3, 0xaaaa );
+				ignoreViewType = false;
+			} else {
+				qglDisable( GL_LINE_STIPPLE );
+				ignoreViewType = true;
+			}
+		}
+
 		// only draw polygons facing in a direction we care about
 		if (!ignoreViewType) {
 			if (nViewType == XY) {
@@ -4720,6 +4778,11 @@ void Brush_DrawXY(brush_t *b, int nViewType, bool bSelected, bool ignoreViewType
 			glLabeledPoint(idVec4(1, 0, 0, 1), face->planepts[i], 3, va("%i", i));
 		}
 */
+	}
+
+	// We're stippling selected ignored faces
+	if ( hasFilteredFace ) {
+		qglDisable( GL_LINE_STIPPLE );
 	}
 
 	DrawBrushEntityName(b);
