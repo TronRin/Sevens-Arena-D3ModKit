@@ -26,7 +26,8 @@ Note: Numbers starting with a "#" like #330 refer to the bugreport with that num
 * Fix several compiler warnings
 * Added build instructions for Linux (and similar systems) to README.md
 * Updated stb_image and stb_vorbis
-
+* Fix crashes with big models by using a ScopedAllocator instead of alloca(),
+  which could overflow the stack (#528)
 
 1.5.2 (2022-06-13)
 ------------------------------------------------------------------------
