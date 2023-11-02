@@ -547,6 +547,8 @@ BEGIN_MESSAGE_MAP(CXYWnd, CWnd)
 	ON_WM_PAINT()
 	ON_WM_KEYDOWN()
 	ON_WM_SIZE()
+	ON_WM_SIZING()
+	ON_WM_MOVING()
 	ON_WM_DESTROY()
 	ON_COMMAND(ID_SELECT_MOUSEROTATE, OnSelectMouserotate)
 	ON_WM_TIMER()
@@ -588,6 +590,8 @@ BOOL CXYWnd::PreCreateWindow(CREATESTRUCT &cs) {
 	if (cs.style != QE3_CHILDSTYLE) {
 		cs.style = QE3_SPLITTER_STYLE;
 	}
+
+	cs.dwExStyle = WS_EX_TOOLWINDOW;
 
 	return CWnd::PreCreateWindow(cs);
 }
@@ -765,7 +769,7 @@ void CXYWnd::DropClipPoint(UINT nFlags, CPoint point) {
 		}
 	}
 
-	Sys_UpdateWindows(XY | W_CAMERA_IFON);
+	Sys_UpdateWindows(XY | W_CAMERA_ICON);
 }
 
 /*
@@ -795,7 +799,7 @@ void CXYWnd::DropPathPoint(UINT nFlags, CPoint point) {
 		}
 	}
 
-	Sys_UpdateWindows(XY | W_CAMERA_IFON);
+	Sys_UpdateWindows(XY | W_CAMERA_ICON);
 }
 
 /*
@@ -809,7 +813,7 @@ void CXYWnd::AddPointPoint(UINT nFlags, idVec3 *pVec) {
 	g_PointPoints[g_nPointCount].m_ptClip = *pVec;
 	g_PointPoints[g_nPointCount].SetPointPtr(pVec);
 	g_nPointCount++;
-	Sys_UpdateWindows(XY | W_CAMERA_IFON);
+	Sys_UpdateWindows(XY | W_CAMERA_ICON);
 }
 
 /*
@@ -1194,7 +1198,7 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingPoint->m_ptClip);
 				g_pMovingPoint->UpdatePointPtr();
-				Sys_UpdateWindows(XY | W_CAMERA_IFON);
+				Sys_UpdateWindows(XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingPoint = NULL;
@@ -1217,7 +1221,7 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 			if (g_pMovingClip && GetCapture() == this) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingClip->m_ptClip);
-				Sys_UpdateWindows(XY | W_CAMERA_IFON);
+				Sys_UpdateWindows(XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingClip = NULL;
@@ -1266,7 +1270,7 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 			if (g_pMovingPath && GetCapture() == this) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingPath->m_ptClip);
-				Sys_UpdateWindows(XY | W_CAMERA_IFON);
+				Sys_UpdateWindows(XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingPath = NULL;
@@ -1349,7 +1353,7 @@ void CXYWnd::SetClipMode(bool bMode) {
 		CleanList(&g_brBackSplits);
 		g_brFrontSplits.next = &g_brFrontSplits;
 		g_brBackSplits.next = &g_brBackSplits;
-		Sys_UpdateWindows(XY | W_CAMERA_IFON);
+		Sys_UpdateWindows(XY | W_CAMERA_ICON);
 	}
 }
 
@@ -2358,7 +2362,7 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 		int nAngle = (m_nViewType == XY) ? YAW : PITCH;
 		if (point[n1] || point[n2]) {
 			g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG( atan2(point[n1], point[n2]) );
-			Sys_UpdateWindows(W_CAMERA_IFON | W_XY_OVERLAY);
+			Sys_UpdateWindows(W_CAMERA_ICON | W_XY_OVERLAY);
 		}
 	}
 
@@ -2540,7 +2544,7 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 	// lbutton (possibly with control and or shift) with selection = drag selection
 	if (m_nButtonstate & MK_LBUTTON) {
 		Drag_MouseMoved(x, y, buttons);
-		Sys_UpdateWindows(W_XY_OVERLAY | W_CAMERA_IFON | W_Z);
+		Sys_UpdateWindows(W_XY_OVERLAY | W_CAMERA_ICON | W_Z);
 		return false;
 	}
 
@@ -2600,7 +2604,7 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 		int nAngle = (m_nViewType == XY) ? YAW : PITCH;
 		if (point[n1] || point[n2]) {
 			g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG( atan2(point[n1], point[n2]) );
-			Sys_UpdateWindows(W_CAMERA_IFON | W_XY_OVERLAY);
+			Sys_UpdateWindows(W_CAMERA_ICON | W_XY_OVERLAY);
 		}
 
 		return false;
@@ -2933,10 +2937,9 @@ void GLColoredBoxWithLabel(float x, float y, float size, idVec4 color, const cha
 	qglCallLists(strlen(text), GL_UNSIGNED_BYTE, text);
 }
 
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
+//========================
+// DrawRotateIcon
+//========================
 void CXYWnd::DrawRotateIcon() {
 	float	x, y;
 
@@ -2994,10 +2997,9 @@ void CXYWnd::DrawRotateIcon() {
 	qglCallLists(str.Length(), GL_UNSIGNED_BYTE, str.c_str());
 }
 
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
+//========================
+// DrawCameraIcon
+//========================
 void CXYWnd::DrawCameraIcon() {
 	float	x, y, a;
 
@@ -3044,10 +3046,9 @@ void CXYWnd::DrawCameraIcon() {
 #endif
 }
 
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
+//========================
+// DrawZIcon
+//========================
 void CXYWnd::DrawZIcon(void) {
 	if (m_nViewType == XY) {
 		float	x = z.origin[0];
@@ -3451,15 +3452,13 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, idVec3 vMinBounds, idVec3 vMaxB
 	}
 }
 
-/* XY_Draw */
 long		g_lCount = 0;
 long		g_lTotal = 0;
 extern void DrawBrushEntityName(brush_t *b);
 
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
+//========================
+// XY_Draw
+//========================
 void CXYWnd::XY_Draw() {
 	idVec3 mins, maxs;
 
@@ -3790,6 +3789,27 @@ void CXYWnd::OnSize(UINT nType, int cx, int cy) {
 	InvalidateRect(NULL, false);
 }
 
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CXYWnd::OnSizing( UINT nSide, LPRECT lpRect ) {
+	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) ) {
+		return;
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CXYWnd::OnMoving( UINT nSide, LPRECT lpRect ) {
+	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) )
+	{
+		return;
+	}
+}
+
 brush_t hold_brushes;
 
 /*
@@ -3865,7 +3885,7 @@ void CXYWnd::SplitClip() {
  */
 void CXYWnd::FlipClip() {
 	g_bSwitch = !g_bSwitch;
-	Sys_UpdateWindows(XY | W_CAMERA_IFON);
+	Sys_UpdateWindows(XY | W_CAMERA_ICON);
 }
 
 //

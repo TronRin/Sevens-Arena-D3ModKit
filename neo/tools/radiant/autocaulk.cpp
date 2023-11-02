@@ -48,28 +48,38 @@ If you have questions concerning this license or the applicable additional terms
 
 //extern void ClearBounds (idVec3 mins, idVec3 maxs);
 //extern void AddPointToBounds (const idVec3 v, idVec3 mins, idVec3 maxs);
+/*
+================
+ClearBounds
+================
+*/
 static void ClearBounds (idVec3 &mins, idVec3 &maxs)
 {
 	mins[0] = mins[1] = mins[2] = 99999;
 	maxs[0] = maxs[1] = maxs[2] = -99999;
 }
 
+/*
+================
+AddPointToBounds
+================
+*/
 static void AddPointToBounds( const idVec3 &v, idVec3 &mins, idVec3 &maxs )
 {
-	int		i;
-	float	val;
-
-	for (i=0 ; i<3 ; i++)
+	for (int i = 0 ; i < 3 ; i++)
 	{
-		val = v[i];
-		if (val < mins[i])
-			mins[i] = val;
-		if (val > maxs[i])
-			maxs[i] = val;
+		if (v[i] < mins[i])
+			mins[i] = v[i];
+		if (v[i] > maxs[i])
+			maxs[i] = v[i];
 	}
 }
 
-
+/*
+================
+FloorBounds
+================
+*/
 static void FloorBounds(idVec3 &mins, idVec3 &maxs)
 {
 	for (int i=0 ; i<3 ; i++)
@@ -85,9 +95,14 @@ struct PairBrushFace_t
 	brush_t*	pBrush;
 };
 
+/*
+================
+Select_AutoCaulk
+================
+*/
 void Select_AutoCaulk()
 {
-	/*Sys_Printf*/common->Printf("Caulking...\n");
+	common->Printf("Caulking...\n");
 
 	idList < PairBrushFace_t > FacesToCaulk;
 
@@ -316,15 +331,15 @@ void Select_AutoCaulk()
 		}
 		else
 		{
-			/*Sys_Printf*/common->Printf(" Unable to locate caulk texture at: \"%s\"!\n",psCaulkName);
+			common->Printf(" Unable to locate caulk texture at: \"%s\"!\n",psCaulkName);
 		}
 	}
 
-	/*Sys_Printf*/common->Printf("( %d faces caulked )\n",iFacesCaulked);
+	common->Printf("( %d faces caulked )\n",iFacesCaulked);
 
 	if (iSystemBrushesSkipped)
 	{
-		/*Sys_Printf*/common->Printf("( %d system-faced brushes skipped )\n",iSystemBrushesSkipped);
+		common->Printf("( %d system-faced brushes skipped )\n",iSystemBrushesSkipped);
 	}
 
 	Sys_UpdateWindows (W_ALL);

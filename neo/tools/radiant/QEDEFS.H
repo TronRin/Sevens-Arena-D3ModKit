@@ -113,6 +113,8 @@ If you have questions concerning this license or the applicable additional terms
 // odd things not in windows header...
 #define	VK_COMMA		188
 #define	VK_PERIOD		190
+#define	VK_PLUS			187
+#define	VK_MINUS		189
 
 enum {
 	COLOR_TEXTUREBACK,

@@ -312,7 +312,7 @@ extern	eclass_t	*eclass;
 #define	W_Z_OVERLAY		0x0020
 #define W_CONSOLE		0x0040
 #define W_ENTITY		0x0080
-#define W_CAMERA_IFON	0x0100
+#define W_CAMERA_ICON	0x0100
 #define W_XZ			0x0200  //--| only used for patch vertex manip stuff
 #define W_YZ			0x0400  //--|
 #define W_MEDIA			0x1000

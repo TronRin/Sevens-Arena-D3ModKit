@@ -34,11 +34,11 @@ If you have questions concerning this license or the applicable additional terms
 #endif // _MSC_VER >= 1000
 
 #include "XYWnd.h"
-#include "NewTexWnd.h"
 #include "ZWnd.h"
 #include "CamWnd.h"
+#include "NewTexWnd.h"
 #include "TextureBar.h"
-
+//#include "InspectorDialog.h"
 
 const int RAD_SHIFT =   0x01;
 const int RAD_ALT =     0x02;
@@ -121,6 +121,9 @@ public:
 	CXYWnd* GetYZWnd() {return m_pYZWnd;};
 	CCamWnd* GetCamera() {return m_pCamWnd;};
 	CZWnd* GetZWnd()	 {return m_pZWnd;};
+//	CInspectorDialog*	GetInspectorsWnd() { return m_wndInspectors; };
+	CStatusBar* GetStatusbarWnd() { return &m_wndStatusBar; };
+	CToolBar* GetToolbarWnd() { return &m_wndToolBar; };
 
 	void SetActiveXY(CXYWnd* p)
 	{
@@ -139,6 +142,7 @@ public:
 #endif
 
 protected:  // control bar embedded members
+	// CInspectorDialog* m_wndInspectors;
 	CStatusBar  m_wndStatusBar;
 	CToolBar m_wndToolBar;
 	CTextureBar m_wndTextureBar;
@@ -242,10 +246,6 @@ public:
 	afx_msg void OnMiscFindOrReplaceEntity();
 	afx_msg void OnMiscFindNextEntity();
 	afx_msg void OnMiscSetViewPos();
-	afx_msg void OnTexturebk();
-	afx_msg void OnColorsMajor();
-	afx_msg void OnColorsMinor();
-	afx_msg void OnColorsXybk();
 	afx_msg void OnBrush3sided();
 	afx_msg void OnBrush4sided();
 	afx_msg void OnBrush5sided();
@@ -329,11 +329,16 @@ public:
 	afx_msg void OnSplitSelected();
 	afx_msg void OnToggleviewXz();
 	afx_msg void OnToggleviewYz();
-	afx_msg void OnColorsBrush();
-	afx_msg void OnColorsClipper();
+	afx_msg void OnColorsXybk();
+	afx_msg void OnColorsCameraBk();
+	afx_msg void OnTexturebk();
+	afx_msg void OnColorsMajor();
+	afx_msg void OnColorsMinor();
 	afx_msg void OnColorsGridtext();
-	afx_msg void OnColorsSelectedbrush();
 	afx_msg void OnColorsGridblock();
+	afx_msg void OnColorsBrush();
+	afx_msg void OnColorsSelectedbrush();
+	afx_msg void OnColorsClipper();
 	afx_msg void OnColorsViewname();
 	afx_msg void OnColorSetoriginal();
 	afx_msg void OnColorSetqer();

@@ -240,6 +240,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
+	afx_msg void OnMoving(UINT nSide, LPRECT lpRect);
 	afx_msg void OnDestroy();
 	afx_msg void OnSelectMouserotate();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);

@@ -1361,7 +1361,7 @@ void CMainFrame::RoutineProcessing() {
 
 		// run time dependant behavior
 		if (m_pCamWnd) {
-			m_pCamWnd->Cam_MouseControl(delta);
+			m_pCamWnd->Cam_KeyControl(delta);
 		}
 	}
 }
@@ -2142,7 +2142,9 @@ void RunBsp (const char *command) {
 	char	*in;
 
 	// bring the console window forward for feedback
-	g_Inspectors->SetMode(W_CONSOLE);
+	if( !g_Inspectors->IsWindowVisible() || g_Inspectors->prevMode != W_CONSOLE ) {
+		g_Inspectors->SetMode( W_CONSOLE );
+	}
 
 	// decide if we are doing a .map or a .reg
 	strcpy (name, currentmap);
@@ -2562,7 +2564,7 @@ void CMainFrame::OnGrid1(unsigned int nID) {
 
 	SetGridStatus();
 	SetGridChecks(nID);
-	Sys_UpdateWindows(W_XY | W_Z);
+	Sys_UpdateWindows(W_XY | W_Z | W_CAMERA);
 }
 
 /*
@@ -3046,6 +3048,16 @@ void CMainFrame::OnColorsMinor() {
 void CMainFrame::OnColorsXybk() {
 	DoColor(COLOR_GRIDBACK);
 	Sys_UpdateWindows(W_ALL);
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CMainFrame::OnColorsCameraBk()
+{
+	DoColor(COLOR_CAMERABACK);
+	Sys_UpdateWindows(W_CAMERA);
 }
 
 /*
@@ -3966,7 +3978,7 @@ void CMainFrame::UpdateWindows(int nBits) {
 		}
 	}
 
-	if (nBits & W_CAMERA || ((nBits & W_CAMERA_IFON) && m_bCamPreview)) {
+	if (nBits & W_CAMERA || ((nBits & W_CAMERA_ICON) && m_bCamPreview)) {
 		if (m_pCamWnd) {
 			m_pCamWnd->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 		}
@@ -4648,7 +4660,7 @@ void CMainFrame::OnGridNext() {
 
 	SetGridChecks(id);
 	SetGridStatus();
-	Sys_UpdateWindows(W_XY | W_Z);
+	Sys_UpdateWindows(W_XY | W_Z | W_CAMERA);
 }
 
 /*
@@ -4674,7 +4686,7 @@ void CMainFrame::OnGridPrev() {
 
 	SetGridChecks(id);
 	SetGridStatus();
-	Sys_UpdateWindows(W_XY | W_Z);
+	Sys_UpdateWindows(W_XY | W_Z | W_CAMERA);
 }
 
 /*

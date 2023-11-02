@@ -498,18 +498,23 @@ void CEntityDlg::DelProp() {
 
 BOOL CEntityDlg::PreTranslateMessage(MSG* pMsg)
 {
+	/*
+	if ( pMsg->message == WM_LBUTTONDOWN || pMsg->message == WM_RBUTTONDOWN || pMsg->message == WM_MBUTTONDOWN ) {
+		g_Inspectors->BringWindowToTop();
+	}
+	*/
 
 	if (pMsg->hwnd == editVal.GetSafeHwnd()) {
 		if (pMsg->message == WM_LBUTTONDOWN) {
 			editVal.SetFocus();
-			return TRUE;
+			//return TRUE; // Don't return so we can do default message handling
 		}
 	}
 
 	if (pMsg->hwnd == editKey.GetSafeHwnd()) {
 		if (pMsg->message == WM_LBUTTONDOWN) {
 			editKey.SetFocus();
-			return TRUE;
+			//return TRUE; // Don't return so we can do default message handling
 		}
 	}
 

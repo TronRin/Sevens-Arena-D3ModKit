@@ -60,10 +60,13 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CRadiantApp construction
 
+/*
+================
+CRadiantApp::CRadiantApp
+================
+*/
 CRadiantApp::CRadiantApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -73,6 +76,11 @@ CRadiantApp theApp;
 HINSTANCE g_DoomInstance = NULL;
 bool g_editorAlive = false;
 
+/*
+================
+RadiantPrint
+================
+*/
 void RadiantPrint( const char *text ) {
 	if ( g_editorAlive && g_Inspectors ) {
 		if (g_Inspectors->consoleWnd.GetSafeHwnd()) {
@@ -81,6 +89,11 @@ void RadiantPrint( const char *text ) {
 	}
 }
 
+/*
+================
+RadiantShutdown
+================
+*/
 void RadiantShutdown( void ) {
 	theApp.ExitInstance();
 }
@@ -145,6 +158,11 @@ void RadiantInit( void ) {
 
 extern void Map_VerifyCurrentMap(const char *map);
 
+/*
+================
+RadiantSync
+================
+*/
 void RadiantSync( const char *mapName, const idVec3 &viewOrg, const idAngles &viewAngles ) {
 	if ( g_DoomInstance == NULL ) {
 		RadiantInit();
@@ -163,6 +181,11 @@ void RadiantSync( const char *mapName, const idVec3 &viewOrg, const idAngles &vi
 	}
 }
 
+/*
+================
+RadiantRun
+================
+*/
 void RadiantRun( void ) {
 	static bool exceptionErr = false;
 	int show = ::IsWindowVisible(win32.hWnd);
@@ -189,6 +212,11 @@ void RadiantRun( void ) {
 
 bool g_bBuildList = false;
 
+/*
+================
+CRadiantApp::InitInstance
+================
+*/
 BOOL CRadiantApp::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application
@@ -331,6 +359,11 @@ BOOL CRadiantApp::InitInstance()
 /////////////////////////////////////////////////////////////////////////////
 // CRadiantApp commands
 
+/*
+================
+CRadiantApp::ExitInstance
+================
+*/
 int CRadiantApp::ExitInstance()
 {
 	common->Shutdown();
@@ -340,7 +373,11 @@ int CRadiantApp::ExitInstance()
 	return ret;
 }
 
-
+/*
+================
+CRadiantApp::OnIdle
+================
+*/
 BOOL CRadiantApp::OnIdle(LONG lCount) {
 	if (g_pParentWnd) {
 		g_pParentWnd->RoutineProcessing();
@@ -349,11 +386,21 @@ BOOL CRadiantApp::OnIdle(LONG lCount) {
 	//return CWinApp::OnIdle(lCount);
 }
 
+/*
+================
+CRadiantApp::OnHelp
+================
+*/
 void CRadiantApp::OnHelp()
 {
-	ShellExecute(m_pMainWnd->GetSafeHwnd(), "open", "http://www.idDevNet.com", NULL, NULL, SW_SHOW);
+	ShellExecute(m_pMainWnd->GetSafeHwnd(), "open", "https://iddevnet.dhewm3.org/doom3/index.html", NULL, NULL, SW_SHOW);
 }
 
+/*
+================
+CRadiantApp::Run
+================
+*/
 int CRadiantApp::Run( void )
 {
 	BOOL bIdle = TRUE;
@@ -401,6 +448,11 @@ REGISTRY INFO
 =============================================================
 */
 
+/*
+================
+SaveRegistryInfo
+================
+*/
 bool SaveRegistryInfo(const char *pszName, void *pvBuf, long lSize)
 {
 	SetCvarBinary(pszName, pvBuf, lSize);
@@ -408,11 +460,21 @@ bool SaveRegistryInfo(const char *pszName, void *pvBuf, long lSize)
 	return true;
 }
 
+/*
+================
+LoadRegistryInfo
+================
+*/
 bool LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize)
 {
 	return GetCvarBinary(pszName, pvBuf, *plSize);
 }
 
+/*
+================
+SaveWindowState
+================
+*/
 bool SaveWindowState(HWND hWnd, const char *pszName)
 {
 	RECT rc;
@@ -426,7 +488,11 @@ bool SaveWindowState(HWND hWnd, const char *pszName)
 	return SaveRegistryInfo(pszName, &rc, sizeof(rc));
 }
 
-
+/*
+================
+LoadWindowState
+================
+*/
 bool LoadWindowState(HWND hWnd, const char *pszName)
 {
 	RECT rc;
@@ -458,6 +524,11 @@ bool LoadWindowState(HWND hWnd, const char *pszName)
 ===============================================================
 */
 
+/*
+================
+Sys_UpdateStatusBar
+================
+*/
 void Sys_UpdateStatusBar( void )
 {
 	extern int   g_numbrushes, g_numentities;
@@ -468,6 +539,11 @@ void Sys_UpdateStatusBar( void )
 	Sys_Status( numbrushbuffer, 2 );
 }
 
+/*
+================
+Sys_Status
+================
+*/
 void Sys_Status(const char *psz, int part )
 {
 	if ( part < 0 ) {

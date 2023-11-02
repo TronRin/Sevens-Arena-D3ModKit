@@ -77,7 +77,7 @@ const float	HUGE_DISTANCE = 100000;
 #include "undo.h"
 #include "PMESH.H"
 
-// the dec offsetof macro doesn't work very well...
+// the dec offset of macro doesn't work very well...
 #define myoffsetof(type,identifier) ((size_t)&((type *)0)->identifier)
 
 
@@ -130,6 +130,7 @@ typedef struct
 {
 	bool d_showgrid;
 	float d_gridsize;
+	float d_selectedgridsize;
 
 	int	rotateAxis;			// 0, 1 or 2
 	int flatRotation;		// 0, 1 or 2, 0 == off, 1 == rotate about the rotation origin, 1 == rotate about the selection mid point
@@ -204,7 +205,9 @@ typedef struct
 	idSoundWorld	*sw;
 } QEGlobals_t;
 
-
+//=========================
+// pointfile.cpp
+//========================
 void Pointfile_Delete (void);
 void Pointfile_Check (void);
 void Pointfile_Next (void);
@@ -212,26 +215,26 @@ void Pointfile_Prev (void);
 void Pointfile_Clear (void);
 void Pointfile_Draw( void );
 
-//
+//========================
 // drag.c
-//
+//========================
 void Drag_Begin (int x, int y, int buttons,
 		   const idVec3 &xaxis, const idVec3 &yaxis,
 		   const idVec3 &origin, const idVec3 &dir);
 void Drag_MouseMoved (int x, int y, int buttons);
 void Drag_MouseUp (int nButtons = 0);
 extern bool g_moveOnly;
-//
+
+//========================
 // csg.c
-//
+//========================
 void CSG_MakeHollow (void);
 void CSG_Subtract (void);
 void CSG_Merge (void);
 
-//
+//========================
 // vertsel.c
-//
-
+//========================
 void SetupVertexSelection (void);
 void SelectEdgeByRay (idVec3 org, idVec3 dir);
 void SelectVertexByRay (idVec3 org, idVec3 dir);
@@ -250,19 +253,18 @@ BOOL CALLBACK Win_Dialog (
 	LPARAM lParam	// second message parameter
 );
 
-//
+//========================
 // win_main.c
-//
+//========================
 extern bool SaveWindowState(HWND hWnd, const char *pszName);
 extern bool LoadWindowState(HWND hWnd, const char *pszName);
 
 extern bool SaveRegistryInfo(const char *pszName, void *pvBuf, long lSize);
 extern bool LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 
-
-
+//========================
 // win_dlg.c
-
+//========================
 void DoGamma(void);
 void DoFind(void);
 void DoRotate(void);
@@ -270,9 +272,22 @@ void DoSides(bool bCone = false, bool bSphere = false, bool bTorus = false);
 void DoAbout(void);
 void DoSurface();
 
-/*
-** QE function declarations
-*/
+//========================
+//	win_snap.cpp
+//
+//	*ripped from QE5
+//========================
+bool FindClosestBottom(HWND h, LPRECT rect, LPRECT parentrect);
+bool FindClosestTop(HWND h, LPRECT rect, LPRECT parentrect);
+bool FindClosestLeft(HWND h, LPRECT rect, LPRECT parentrect, int widthlimit);
+bool FindClosestRight(HWND h, LPRECT rect, LPRECT parentrect, int widthlimit);
+bool FindClosestHorizontal(HWND h, LPRECT rect, LPRECT parentrect);
+bool FindClosestVertical(HWND h, LPRECT rect, LPRECT parentrect);
+bool TryDocking(HWND h, long side, LPRECT rect, int widthlimit);
+
+//========================
+// QE function declarations
+//========================
 void	QE_CheckAutoSave( void );
 void	QE_CountBrushesAndUpdateStatusBar( void );
 void	WINAPI QE_CheckOpenGLForErrors(void);
@@ -283,17 +298,19 @@ bool	QE_LoadProject (char *projectfile);
 bool	QE_SingleBrush (bool bQuiet = false, bool entityOK = false);
 
 
+//========================
 // sys stuff
+//========================
 void Sys_MarkMapModified (void);
 
-/*
-** QE Win32 function declarations
-*/
+//========================
+// QE Win32 function declarations
+//========================
 int  WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer );
 
-/*
-** extern declarations
-*/
+//========================
+// extern declarations
+//========================
 extern QEGlobals_t   g_qeglobals;
 extern int mapModified;		// for quit confirmation (0 = clean, 1 = unsaved,
 
@@ -308,8 +325,10 @@ extern int g_axialDest;
 extern void Face_FlipTexture_BrushPrimit(face_t *face, bool y);
 extern void Brush_FlipTexture_BrushPrimit(brush_t *b, bool y);
 
-// Timo
+//========================
 // new brush primitive stuff
+// Timo
+//========================
 //void ComputeAxisBase( idVec3 &normal,idVec3 &texS,idVec3 &texT );
 void FaceToBrushPrimitFace(face_t *f);
 void EmitBrushPrimitTextureCoordinates(face_t *, idWinding *, patchMesh_t *patch = NULL);
@@ -382,6 +401,8 @@ extern brush_t g_brFrontSplits;
 extern brush_t g_brBackSplits;
 extern CClipPoint g_Clip1;
 extern CClipPoint g_Clip2;
+extern CClipPoint g_Clip3;
+extern CClipPoint* g_pMovingClip;
 extern brush_t* g_pSplitList;
 extern CClipPoint g_PathPoints[256];
 extern void AcquirePath(int nCount, PFNPathCallback* pFunc);

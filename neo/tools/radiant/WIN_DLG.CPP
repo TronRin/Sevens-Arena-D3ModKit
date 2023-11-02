@@ -31,6 +31,19 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "qe3.h"
 
+/*
+===================================================
+
+ PROJECT SETTINGS DIALOG
+
+===================================================
+*/
+
+/*
+=================
+EditCommandDlgProc
+=================
+*/
 INT_PTR CALLBACK EditCommandDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -91,6 +104,11 @@ INT_PTR CALLBACK EditCommandDlgProc(
 	return FALSE;
 }
 
+/*
+=================
+AddCommandDlgProc
+=================
+*/
 INT_PTR CALLBACK AddCommandDlgProc (
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -138,13 +156,16 @@ INT_PTR CALLBACK AddCommandDlgProc (
 	return FALSE;
 }
 
+/*
+=================
+UpdateBSPCommandList
+=================
+*/
 void UpdateBSPCommandList (HWND hwndDlg)
 {
-	int			i;
-
 	SendDlgItemMessage(hwndDlg, IDC_CMD_LIST, LB_RESETCONTENT, 0 , 0);
 
-	i = 0;
+	int i = 0;
 	int count = g_qeglobals.d_project_entity->epairs.GetNumKeyVals();
 	for (int j = 0; j < count; j++) {
 		if (g_qeglobals.d_project_entity->epairs.GetKeyVal(j)->GetKey()[0] == 'b' && g_qeglobals.d_project_entity->epairs.GetKeyVal(j)->GetKey()[1] == 's' && g_qeglobals.d_project_entity->epairs.GetKeyVal(j)->GetKey()[2] == 'p') {
@@ -156,6 +177,12 @@ void UpdateBSPCommandList (HWND hwndDlg)
 
 
 // FIXME: turn this into an MFC dialog
+
+/*
+=================
+ProjectDlgProc
+=================
+*/
 INT_PTR CALLBACK ProjectDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -243,13 +270,29 @@ INT_PTR CALLBACK ProjectDlgProc(
 	return FALSE;
 }
 
+/*
+=================
+DoProjectSettings
+=================
+*/
 void DoProjectSettings()
 {
 	DialogBox(g_qeglobals.d_hInstance, (char *)IDD_PROJECT, g_pParentWnd->GetSafeHwnd(), ProjectDlgProc);
 }
 
+/*
+===================================================
 
+  GAMMA DIALOG
 
+===================================================
+*/
+
+/*
+=================
+GammaDlgProc
+=================
+*/
 INT_PTR CALLBACK GammaDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -283,8 +326,11 @@ INT_PTR CALLBACK GammaDlgProc(
 	return FALSE;
 }
 
-
-
+/*
+=================
+DoGamma
+=================
+*/
 void DoGamma(void)
 {
 	if ( DialogBox(g_qeglobals.d_hInstance, (char *)IDD_GAMMA, g_pParentWnd->GetSafeHwnd(), GammaDlgProc))
@@ -292,9 +338,19 @@ void DoGamma(void)
 	}
 }
 
-//================================================
+/*
+===================================================
 
+  FIND BRUSH/ENTITY DIALOG
 
+===================================================
+*/
+
+/*
+=================
+SelectBrush
+=================
+*/
 void SelectBrush (int entitynum, int brushnum)
 {
 	entity_t	*e;
@@ -385,6 +441,11 @@ void GetSelectionIndex (int *ent, int *brush)
 	;
 }
 
+/*
+===================
+FindBrushDlgProc
+===================
+*/
 INT_PTR CALLBACK FindBrushDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -418,6 +479,7 @@ INT_PTR CALLBACK FindBrushDlgProc(
 				GetWindowText(GetDlgItem(hwndDlg, IDC_FIND_ENTITY), entstr, 255);
 				GetWindowText(GetDlgItem(hwndDlg, IDC_FIND_BRUSH), brushstr, 255);
 				SelectBrush (atoi(entstr), atoi(brushstr));
+				g_pParentWnd->OnViewCenter();
 				EndDialog(hwndDlg, 1);
 				return TRUE;
 
@@ -430,7 +492,11 @@ INT_PTR CALLBACK FindBrushDlgProc(
 }
 
 
-
+/*
+===================
+DoFind
+===================
+*/
 void DoFind(void)
 {
 	DialogBox(g_qeglobals.d_hInstance, (char *)IDD_FINDBRUSH, g_pParentWnd->GetSafeHwnd(), FindBrushDlgProc);
@@ -444,7 +510,11 @@ void DoFind(void)
 ===================================================
 */
 
-
+/*
+===================
+RotateDlgProc
+===================
+*/
 INT_PTR CALLBACK RotateDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -496,7 +566,11 @@ INT_PTR CALLBACK RotateDlgProc(
 }
 
 
-
+/*
+===================
+DoRotate
+===================
+*/
 void DoRotate(void)
 {
 	DialogBox(g_qeglobals.d_hInstance, (char *)IDD_ROTATE, g_pParentWnd->GetSafeHwnd(), RotateDlgProc);
@@ -512,6 +586,12 @@ void DoRotate(void)
 
 bool g_bDoCone = false;
 bool g_bDoSphere = false;
+
+/*
+===================
+SidesDlgProc
+===================
+*/
 INT_PTR CALLBACK SidesDlgProc(
 	HWND hwndDlg,	// handle to dialog box
 	UINT uMsg,	// message
@@ -553,7 +633,11 @@ INT_PTR CALLBACK SidesDlgProc(
 	}
 }
 
-
+/*
+===================
+DoSides
+===================
+*/
 void DoSides(bool bCone, bool bSphere, bool bTorus)
 {
   g_bDoCone = bCone;
@@ -563,11 +647,17 @@ void DoSides(bool bCone, bool bSphere, bool bTorus)
 }
 
 
-//======================================================================
+/*
+===================================================
+
+  ABOUT DIALOG
+
+===================================================
+*/
 
 /*
 ===================
-DoAbout
+AboutDlgProc
 ===================
 */
 INT_PTR CALLBACK AboutDlgProc( HWND hwndDlg,
@@ -622,6 +712,11 @@ INT_PTR CALLBACK AboutDlgProc( HWND hwndDlg,
 	return FALSE;
 }
 
+/*
+===================
+DoAbout
+===================
+*/
 void DoAbout(void)
 {
 	DialogBox( g_qeglobals.d_hInstance, ( char * ) IDD_ABOUT, g_pParentWnd->GetSafeHwnd(), AboutDlgProc );

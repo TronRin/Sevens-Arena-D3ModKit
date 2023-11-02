@@ -339,7 +339,7 @@ void CPrefsDlg::LoadPrefs() {
 	m_nUndoLevels = GetCvarInt( UNDOLEVELS_KEY, 63 );
 	m_strMaps = GetCvarString( MAPS_KEY, "" );
 	m_strModels = GetCvarString( MODELS_KEY, "" );
-	//m_bNoStipple = GetCvarInt( NEWMAPFORMAT_KEY, 1 );
+	m_bNewMapFormat = GetCvarInt( NEWMAPFORMAT_KEY, 1 );
 
 	if ( m_bRunBefore == FALSE ) {
 		SetGamePrefs();

@@ -54,24 +54,26 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	void AssignModel ();
-	CTabCtrl tabInspector;
-	//idGLConsoleWidget consoleWnd;
-	CConsoleDlg consoleWnd;
-	CNewTexWnd texWnd;
-	CDialogTextures mediaDlg;
-	CEntityDlg entityDlg;
 	void SetMode(int mode, bool updateTabs = true);
 	void UpdateEntitySel(const eclass_t* ent);
 	void UpdateSelectedEntity();
 	void FillClassList();
 	bool GetSelectAllCriteria(idStr &key, idStr &val);
+	void SetDockedTabs(bool docked, int ID);
 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnDestroy();
 	afx_msg void OnClose();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
-	void SetDockedTabs ( bool docked , int ID );
+	CTabCtrl		tabInspector;
+	//idGLConsoleWidget	consoleWnd;
+	CConsoleDlg		consoleWnd;
+	CNewTexWnd		texWnd;
+	CDialogTextures mediaDlg;
+	CEntityDlg		entityDlg;
+
+	int prevMode;
 };
 
 extern CInspectorDialog *g_Inspectors;
