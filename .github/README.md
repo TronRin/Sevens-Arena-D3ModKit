@@ -40,6 +40,8 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
     - Added Camera Background Color Selection.
     - Selection Centers views on entity.
     - Restore Command List windows.
+- The Dark Mod / Hardcorps
+  - Re-implemented water system
 - Original Changes:
   - Restore Quake 3 Style console base on left overs in the files.
   - Support for source engine skyboxes base on StormEngine2 Changes.
