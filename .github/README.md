@@ -20,16 +20,31 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Added con_size cvar to scale the console.
   - Removal of death code in various places.
   - Dmap timming stats.
-- IceTech:
+- IcedTech / Darkligth:
   - Add MatBuild for mass texture creation.
   - Restore TypeInfoGen (Mostly for standolone games)
 - StormEngine2
-  - Support for "standard" cubemap side images
+  - Support for "standard" cubemap side images.
+- TEKUUM-D3 / RBDOOM3-BFG:
+  - DoomEdit:
+    - Window Snapping.
+    - Mousewheel Support for cam window.
+    - Tool window uses smaller title bar (more screen space for editing)
+    - Cam Win Clip Point Manipulation.
+    - Rotate Around Selection.
+    - New Brush creation in Cam window.
+    - Center on Selection.
+    - Closing inspector dialog simply hides it.
+    - Modified camera control.
+    - BSP doesn't hide the Inspector's console.
+    - Added Camera Background Color Selection.
+    - Selection Centers views on entity.
+    - Restore Command List windows.
 - Original Changes:
   - Restore Quake 3 Style console base on left overs in the files.
-  - Support for source engine skyboxes base on StormEngine2 Changes
-  - fixed noSpecular flag for lights Base on a dhewn3 rejected PR
-  - Enable Common Controls theme engine for the tools
+  - Support for source engine skyboxes base on StormEngine2 Changes.
+  - fixed noSpecular flag for lights Base on a dhewn3 rejected PR.
+  - Enable Common Controls theme engine for the tools.
   - D3XP And Game dlls are in one folder.
   - WIP Template base for TC Games.
 
