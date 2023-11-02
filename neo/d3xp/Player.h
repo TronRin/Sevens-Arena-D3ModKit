@@ -526,6 +526,7 @@ public:
 	void					SetCurrentHeartRate( void );
 	int						GetBaseHeartRate( void );
 	void					UpdateAir( void );
+	void					PlaySwimmingSplashSound( const char *soundName );
 
 #ifdef _D3XP
 	void					UpdatePowerupHud();

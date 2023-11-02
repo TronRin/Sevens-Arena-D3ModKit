@@ -120,6 +120,8 @@ const idEventDef EV_StartFx( "startFx", "s" );
 const idEventDef EV_HasFunction( "hasFunction", "s", 'd' );
 const idEventDef EV_CallFunction( "callFunction", "s" );
 const idEventDef EV_SetNeverDormant( "setNeverDormant", "d" );
+const idEventDef EV_GetMass( "getMass", "d" , 'f' );
+const idEventDef EV_IsInLiquid( "isInLiquid", NULL, 'd' );
 #ifdef _D3XP
 const idEventDef EV_SetGui ( "setGui", "ds" );
 const idEventDef EV_PrecacheGui ( "precacheGui", "s" );
@@ -194,6 +196,8 @@ ABSTRACT_DECLARATION( idClass, idEntity )
 	EVENT( EV_HasFunction,			idEntity::Event_HasFunction )
 	EVENT( EV_CallFunction,			idEntity::Event_CallFunction )
 	EVENT( EV_SetNeverDormant,		idEntity::Event_SetNeverDormant )
+	EVENT( EV_GetMass,              idEntity::Event_GetMass )
+	EVENT( EV_IsInLiquid,           idEntity::Event_IsInLiquid )
 #ifdef _D3XP
 	EVENT( EV_SetGui,				idEntity::Event_SetGui )
 	EVENT( EV_PrecacheGui,			idEntity::Event_PrecacheGui )
@@ -4697,6 +4701,28 @@ idEntity::Event_SetNeverDormant
 void idEntity::Event_SetNeverDormant( int enable ) {
 	fl.neverDormant	= ( enable != 0 );
 	dormantStart = 0;
+}
+
+/*
+================
+idEntity::Event_GetMass
+================
+*/
+void idEntity::Event_GetMass( int id ) {
+
+	idThread::ReturnFloat( physics->GetMass( id ) );
+
+}
+
+/*
+================
+idEntity::Event_IsInLiquid
+================
+*/
+void idEntity::Event_IsInLiquid( void ) {
+
+	idThread::ReturnInt( physics->GetWater() != NULL );
+
 }
 
 #ifdef _D3XP

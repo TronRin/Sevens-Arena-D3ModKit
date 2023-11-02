@@ -30,6 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __GAME_MISC_H__
 
 #include "physics/Physics_Parametric.h"
+#include "physics/Physics_Liquid.h"
 #include "physics/Force_Field.h"
 #include "physics/Force_Spring.h"
 
@@ -548,16 +549,28 @@ class idLiquid : public idEntity {
 public:
 	CLASS_PROTOTYPE( idLiquid );
 
+						idLiquid( void );
+
+				virtual ~idLiquid();
+
 	void				Spawn( void );
 
 	void				Save( idSaveGame *savefile ) const;
 	void				Restore( idRestoreGame *savefile );
 
+	virtual bool		Collide( const trace_t &collision, const idVec3 &velocity );
+
 private:
 	void				Event_Touch( idEntity *other, trace_t *trace );
 
+	idPhysics_Liquid	physicsObj;
 
 	idRenderModelLiquid *model;
+
+	const idDeclParticle *splash[3];
+	const idDeclParticle *waves;
+
+	bool				skipSound;
 };
 
 

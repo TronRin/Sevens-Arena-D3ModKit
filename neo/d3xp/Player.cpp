@@ -6057,6 +6057,50 @@ void idPlayer::SetCurrentHeartRate( void ) {
 }
 
 /*
+=================================
+idPlayer::PlaySwimmingSplashSound
+=================================
+*/
+
+void idPlayer::PlaySwimmingSplashSound( const char *soundName ) {
+	// Determine player's vertical speed parallel to gravity
+	const idVec3 curVelocity = GetPhysics()->GetLinearVelocity();
+	const idVec3& vGravNorm = GetPhysics()->GetGravityNormal();
+	const idVec3 curGravVelocity = (curVelocity*vGravNorm) * vGravNorm;
+	const float verticalVelocity = curGravVelocity.LengthFast();
+
+	// Adjust volume depending on vertical velocity.
+	// If vel is under 10, there's no sound.
+	// If vel is between 10 and 20, the volume adjustment varies between -10 and 0.
+	// If vel is over 20, the sound plays at full volume.
+	// The same volume adjustment is applied to the propagated sound.
+
+	if ( verticalVelocity <= 10.0f ) {
+		return; // silent
+	}
+
+	float volAdjust = 0;
+	if ( verticalVelocity <= 20.0f ) {
+		volAdjust = verticalVelocity - 20.0f;
+	}
+
+	const char* sound;
+	if ( !spawnArgs.GetString( soundName, "", &sound ) ) {
+		return;
+	}
+
+	// ignore empty spawnargs
+	if ( sound[0] == '\0' ) {
+		return;
+	}
+
+	const idSoundShader	*sndShader = declManager->FindSound( sound );
+	SetSoundVolume( sndShader->GetParms()->volume + volAdjust );
+	StartSoundShader( sndShader, SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
+	SetSoundVolume( 0.0f );
+}
+
+/*
 ==============
 idPlayer::UpdateAir
 ==============
@@ -6065,6 +6109,9 @@ void idPlayer::UpdateAir( void ) {
 	if ( health <= 0 ) {
 		return;
 	}
+
+	// Are we loosing air because we're under water?
+	bool	isUnderWater = false; // This is used for sound purposes
 
 	// see if the player is connected to the info_vacuum
 	bool	newAirless = false;
@@ -6086,6 +6133,20 @@ void idPlayer::UpdateAir( void ) {
 		}
 	}
 
+	// check if the player is in water
+	idPhysics* phys = GetPhysics();
+
+	if ( phys != NULL ) {
+		if ( phys->IsType( idPhysics_Actor::Type ) &&
+			static_cast<idPhysics_Actor*>(phys)->GetWaterLevel() >= WATERLEVEL_HEAD ) {
+			newAirless = true;
+			isUnderWater = true;
+			hiddenWeapon = true; // No weapons underwater
+		} else {
+			hiddenWeapon = false;
+		}
+	}
+
 #ifdef _D3XP
 	if ( PowerUpActive( ENVIROTIME ) ) {
 		newAirless = false;
@@ -6094,7 +6155,12 @@ void idPlayer::UpdateAir( void ) {
 
 	if ( newAirless ) {
 		if ( !airless ) {
-			StartSound( "snd_decompress", SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
+			if ( isUnderWater ) {
+				// player is dropping below the surface of the water
+				PlaySwimmingSplashSound( "snd_decompress" );
+			} else {
+				StartSound( "snd_decompress", SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );			
+			}
 			StartSound( "snd_noAir", SND_CHANNEL_BODY2, 0, false, NULL );
 			if ( hud ) {
 				hud->HandleNamedEvent( "noAir" );
@@ -6114,7 +6180,12 @@ void idPlayer::UpdateAir( void ) {
 
 	} else {
 		if ( airless ) {
-			StartSound( "snd_recompress", SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );
+			if ( isUnderWater ) {
+				// player is dropping below the surface of the water
+				PlaySwimmingSplashSound( "snd_recompress" );
+			} else {
+				StartSound( "snd_recompress", SND_CHANNEL_ANY, SSF_GLOBAL, false, NULL );			
+			}
 			StopSound( SND_CHANNEL_BODY2, false );
 			if ( hud ) {
 				hud->HandleNamedEvent( "Air" );

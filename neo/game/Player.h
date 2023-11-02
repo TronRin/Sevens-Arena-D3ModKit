@@ -453,6 +453,7 @@ public:
 	void					SetCurrentHeartRate( void );
 	int						GetBaseHeartRate( void );
 	void					UpdateAir( void );
+	void					PlaySwimmingSplashSound( const char *soundName );
 
 	virtual bool			HandleSingleGuiCommand( idEntity *entityGui, idLexer *src );
 	bool					GuiActive( void ) { return focusGUIent != NULL; }

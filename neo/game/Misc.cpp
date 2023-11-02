@@ -2301,9 +2301,30 @@ void idBeam::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 ===============================================================================
 */
 
+// We do these splashes if the mass of the colliding object is less than these values.
+// Anything large than MEDIUM_SPLASH does a large splash. (get it?)
+const int SMALL_SPLASH		= 5;
+const int MEDIUM_SPLASH		= 20;
+
+/*
+===============================================================================
+
+	idLiquid
+
+===============================================================================
+*/
+
 CLASS_DECLARATION( idEntity, idLiquid )
 	EVENT( EV_Touch,			idLiquid::Event_Touch )
 END_CLASS
+
+/*
+================
+idLiquid::idLiquid
+================
+*/
+idLiquid::idLiquid( void ) {
+}
 
 /*
 ================
@@ -2311,7 +2332,15 @@ idLiquid::Save
 ================
 */
 void idLiquid::Save( idSaveGame *savefile ) const {
-	// Nothing to save
+
+	int i;
+
+	savefile->WriteStaticObject( this->physicsObj );
+
+	for( i = 0; i < 3; i++ )
+		savefile->WriteParticle( this->splash[i] );
+
+	savefile->WriteParticle( this->waves );
 }
 
 /*
@@ -2320,8 +2349,30 @@ idLiquid::Restore
 ================
 */
 void idLiquid::Restore( idRestoreGame *savefile ) {
-	//FIXME: NO!
-	Spawn();
+	
+	int i;
+
+	savefile->ReadStaticObject( this->physicsObj );
+	RestorePhysics( &this->physicsObj );
+
+	for( i = 0; i < 3; i++ )
+		savefile->ReadParticle( this->splash[i] );
+	
+	savefile->ReadParticle( this->waves );
+}
+/*
+================
+idLiquid::~idLiquid
+================
+*/
+idLiquid::~idLiquid()
+{
+	// Traverse all spawned entities and remove ourselves as water if necessary
+	for ( idEntity* ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
+		if ( ent->GetPhysics() != NULL && ent->GetPhysics()->GetWater() == &physicsObj ) {
+			ent->GetPhysics()->SetWater( NULL, 0.0f );
+		}
+	}
 }
 
 /*
@@ -2330,29 +2381,167 @@ idLiquid::Spawn
 ================
 */
 void idLiquid::Spawn() {
-/*
-	model = dynamic_cast<idRenderModelLiquid *>( renderEntity.hModel );
-	if ( !model ) {
-		gameLocal.Error( "Entity '%s' must have liquid model", name.c_str() );
-	}
-	model->Reset();
-	GetPhysics()->SetContents( CONTENTS_TRIGGER );
-*/
+	float liquidDensity;
+	float liquidViscosity;
+	idVec3 minSplash;
+	idVec3 minWave;
+	idStr temp;
+	const char *splashName;
+	idStr tempName;
+
+	// getters
+	spawnArgs.GetFloat( "density", "0.01043", liquidDensity ); //changes the gravity (>density --> > upward push)
+	spawnArgs.GetFloat( "viscosity", "3.0", liquidViscosity ); //changes the friction (>viscosity --> > friction)
+	spawnArgs.GetString( "liquid_name", "water", temp );
+	spawnArgs.GetVector( "minSplashVelocity", "100 100 100", minSplash );
+	spawnArgs.GetVector( "minWaveVelocity", "60 60 60", minWave );
+
+	skipSound = false; //init
+
+	sprintf( tempName, "%s_splash_tiny", temp.c_str() );
+	splashName = spawnArgs.GetString( "smoke_small", tempName.c_str() );
+	this->splash[0] = static_cast<const idDeclParticle*>( declManager->FindType( DECL_PARTICLE, splashName ) );
+
+	sprintf( tempName, "%s_splash", temp.c_str() );
+	splashName = spawnArgs.GetString( "smoke_medium", tempName.c_str() );
+	this->splash[1] = static_cast<const idDeclParticle*>( declManager->FindType( DECL_PARTICLE, splashName ) );
+
+	sprintf( tempName, "%s_splash_large", temp.c_str() );
+	splashName = spawnArgs.GetString( "smoke_large", tempName.c_str() );
+	this->splash[2] = static_cast<const idDeclParticle*>( declManager->FindType( DECL_PARTICLE, splashName ) );
+
+	sprintf( tempName, "%s_waves", temp.c_str() );
+	splashName = spawnArgs.GetString( "smoke_waves", tempName.c_str() );
+	this->waves = static_cast<const idDeclParticle*>( declManager->FindType( DECL_PARTICLE, splashName ) );
+
+	// setup physics
+	this->physicsObj.SetSelf( this );
+	this->physicsObj.SetClipModel( new idClipModel( this->GetPhysics()->GetClipModel() ), liquidDensity );
+	this->physicsObj.SetOrigin( this->GetPhysics()->GetOrigin() );
+	this->physicsObj.SetAxis( this->GetPhysics()->GetAxis() );
+	this->physicsObj.SetGravity( gameLocal.GetGravity() );
+	this->physicsObj.SetContents( CONTENTS_WATER | CONTENTS_TRIGGER );
+
+	this->physicsObj.SetDensity( liquidDensity );
+	this->physicsObj.SetViscosity( liquidViscosity );
+	this->physicsObj.SetMinSplashVelocity( minSplash );
+	this->physicsObj.SetMinWaveVelocity( minWave );
+
+	this->SetPhysics( &this->physicsObj );
+
+	renderEntity.shaderParms[ 3 ]	= spawnArgs.GetFloat( "shaderParm3", "1" );
+	renderEntity.shaderParms[ 4 ]	= spawnArgs.GetFloat( "shaderParm4", "0" );
+	renderEntity.shaderParms[ 5 ]	= spawnArgs.GetFloat( "shaderParm5", "0.1" );
+	renderEntity.shaderParms[ 6 ]	= spawnArgs.GetFloat( "shaderParm6", "1.5" );
+	renderEntity.shaderParms[ 7 ]	= spawnArgs.GetFloat( "shaderParm7", "0" );
+	renderEntity.shaderParms[ 8 ]	= spawnArgs.GetFloat( "shaderParm8", "0" );
+	renderEntity.shaderParms[ 9 ]	= spawnArgs.GetFloat( "shaderParm9", "0" );
+	renderEntity.shaderParms[ 10 ]	= spawnArgs.GetFloat( "shaderParm10", "0" );
+	renderEntity.shaderParms[ 11 ]	= spawnArgs.GetFloat( "shaderParm11", "0" );
+
+	BecomeActive( TH_THINK );
 }
 
 /*
 ================
 idLiquid::Event_Touch
+
+	This is mainly used for actors who touch the liquid, it spawns a splash
+	near their feet if they're moving fast enough.
 ================
 */
 void idLiquid::Event_Touch( idEntity *other, trace_t *trace ) {
-	// FIXME: for QuakeCon
-/*
-	idVec3 pos;
+	idPhysics_Actor *phys;
 
-	pos = other->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
-	model->IntersectBounds( other->GetPhysics()->GetBounds().Translate( pos ), -10.0f );
+	//only for actors!
+	if ( !other->GetPhysics()->IsType( idPhysics_Actor::Type ) ) {
+		return;
+	}
+
+	//only if enough in the water
+	phys = static_cast<idPhysics_Actor *>( other->GetPhysics() );
+	if ( phys->GetWaterLevel() != WATERLEVEL_FEET ) {
+		return;
+	}
+
+	//nextWaterSplash can be reset by the player if its walking in order to force this random behaviour
+	if ( phys->nextWaterSplash == 0 ) {	//someone reset this (or it's the first time)
+		if ( gameLocal.random.RandomFloat() > 0.5f ) {
+			return;
+		}
+	}
+
+	//default behaviour
+	if ( phys->nextWaterSplash < gameLocal.time ) {
+		phys->nextWaterSplash = gameLocal.time + 50 + gameLocal.random.RandomInt( 50 );
+		if ( phys->nextWaterSnd < gameLocal.time ) {
+			phys->nextWaterSnd = gameLocal.time + 300 + gameLocal.random.RandomInt( 100 );
+		} else {
+			skipSound = true;
+		}
+	} else {
+		return;
+	}
+
+	impactInfo_t info;
+	other->GetImpactInfo( this, trace->c.id, trace->c.point, &info );
+
+	trace->c.point = info.position + other->GetPhysics()->GetOrigin();
+	trace->c.entityNum = other->entityNumber;
+
+	this->Collide( *trace, info.velocity );
+}
+
+/*
+================
+idLiquid::Collide
+	Spawns a splash particle and attaches a sound to the colliding entity.
+================
 */
+bool idLiquid::Collide( const trace_t &collision, const idVec3 &velocity )
+{
+	idEntity* e = gameLocal.entities[collision.c.entityNum];
+	const idDeclParticle* splash;
+	float eMass;
+	idVec3 splashSpot;
+	float velSquare = velocity.LengthSqr();
+	int customType;
+
+	eMass = e->GetPhysics()->GetMass();
+	splashSpot = collision.c.point;
+
+	if ( velSquare > physicsObj.GetMinSplashVelocity().LengthSqr() ) {
+		customType = e->spawnArgs.GetInt( "water_size" , "-1" ); //default is invalid
+
+		if ( customType >= 0 && customType < 3 ) {
+			splash = this->splash[customType];
+		} else {
+			// load a liquid particle based on the mass of the splashing entity
+			if ( eMass < SMALL_SPLASH ) {
+				splash = this->splash[0];
+			} else if( eMass < MEDIUM_SPLASH ) {
+				splash = this->splash[1];
+			} else {
+				splash = this->splash[2];
+			}
+		}
+
+		// only play the sound for a splash
+		if ( skipSound ) {
+			skipSound = false;
+		} else {
+			e->StartSound( "snd_footstep_liquid", SND_CHANNEL_ANY, 0, false, NULL );
+		}
+	} else if( velSquare > physicsObj.GetMinWaveVelocity().LengthSqr() ) {
+		splash = this->waves;
+	} else {
+		// the object is moving too slow so we abort
+		return true;
+	}
+
+	// spawn the particle
+	gameLocal.smokeParticles->EmitSmoke( splash, gameLocal.time, gameLocal.random.RandomFloat(), splashSpot, collision.endAxis );
+	return true;
 }
 
 

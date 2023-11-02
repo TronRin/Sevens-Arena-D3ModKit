@@ -70,6 +70,7 @@ If you have questions concerning this license or the applicable additional terms
 #define CONTACT_EPSILON			0.25f				// maximum contact seperation distance
 
 class idEntity;
+class idPhysics_Liquid;
 
 typedef struct impactInfo_s {
 	float						invMass;			// inverse mass
@@ -184,6 +185,10 @@ public:	// common physics interface
 								// networking
 	virtual void				WriteToSnapshot( idBitMsgDelta &msg ) const = 0;
 	virtual void				ReadFromSnapshot( const idBitMsgDelta &msg ) = 0;
+
+								// gets/sets the water
+	virtual idPhysics_Liquid	*GetWater() = 0;
+	virtual void				SetWater( idPhysics_Liquid *e, const float murkiness ) = 0;
 };
 
 #endif /* !__PHYSICS_H__ */

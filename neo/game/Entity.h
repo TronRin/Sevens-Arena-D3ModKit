@@ -68,6 +68,8 @@ extern const idEventDef EV_SetSkin;
 extern const idEventDef EV_StartSoundShader;
 extern const idEventDef EV_StopSound;
 extern const idEventDef EV_CacheSoundShader;
+extern const idEventDef EV_GetMass;
+extern const idEventDef EV_IsInLiquid;
 
 // Think flags
 enum {
@@ -157,6 +159,7 @@ public:
 		bool				hasAwakened			:1;	// before a monster has been awakened the first time, use full PVS for dormant instead of area-connected
 		bool				networkSync			:1; // if true the entity is synchronized over the network
 	} fl;
+
 
 public:
 	ABSTRACT_PROTOTYPE( idEntity );
@@ -465,6 +468,9 @@ private:
 	void					Event_HasFunction( const char *name );
 	void					Event_CallFunction( const char *name );
 	void					Event_SetNeverDormant( int enable );
+	void					Event_GetMass( int body );
+	void					Event_IsInLiquid( void );
+
 };
 
 /*

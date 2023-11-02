@@ -116,8 +116,8 @@ elseif(MSVC)
 	# and moved the CPU detection to MSVC-specific code in neo/sys/platform.h
 else() # not MSVC and not cross-compiling, assume GCC or clang (-compatible), seems to work for MinGW as well
 	execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
-	                RESULT_VARIABLE cc_dumpmachine_res
-	                OUTPUT_VARIABLE cc_dumpmachine_out)
+					RESULT_VARIABLE cc_dumpmachine_res
+					OUTPUT_VARIABLE cc_dumpmachine_out)
 	if(cc_dumpmachine_res EQUAL 0)
 		string(STRIP ${cc_dumpmachine_out} cc_dumpmachine_out) # get rid of trailing newline
 		message(STATUS "`${CMAKE_C_COMPILER} -dumpmachine` says: \"${cc_dumpmachine_out}\"")
@@ -825,6 +825,7 @@ set(src_game
 	game/physics/Physics_Actor.cpp
 	game/physics/Physics_Base.cpp
 	game/physics/Physics_Monster.cpp
+	game/physics/Physics_Liquid.cpp
 	game/physics/Physics_Parametric.cpp
 	game/physics/Physics_Player.cpp
 	game/physics/Physics_RigidBody.cpp
@@ -899,6 +900,7 @@ set(src_d3xp
 	d3xp/physics/Physics_Actor.cpp
 	d3xp/physics/Physics_Base.cpp
 	d3xp/physics/Physics_Monster.cpp
+	d3xp/physics/Physics_Liquid.cpp
 	d3xp/physics/Physics_Parametric.cpp
 	d3xp/physics/Physics_Player.cpp
 	d3xp/physics/Physics_RigidBody.cpp
@@ -1164,9 +1166,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 add_library(idlib STATIC ${src_idlib})
 if (AROS)
 	add_library(dll STATIC ${src_arosdll})
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
+		if(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
 		set(AROS_ARCH "x86")
-        else()
+		else()
 		set(AROS_ARCH ${CMAKE_SYSTEM_PROCESSOR})
 	endif()
 else()

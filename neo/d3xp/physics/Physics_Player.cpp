@@ -29,6 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "gamesys/SysCvar.h"
 #include "Entity.h"
+#include "Player.h"
 
 #include "physics/Physics_Player.h"
 
@@ -469,6 +470,8 @@ void idPhysics_Player::Friction( void ) {
 	}
 	// apply ground friction
 	else if ( walking && waterLevel <= WATERLEVEL_FEET ) {
+		nextWaterSplash = 0; // reset this so splash can happen
+
 		// no friction on slick surfaces
 		if ( !(groundMaterial && groundMaterial->GetSurfaceFlags() & SURF_SLICK) ) {
 			// if getting knocked back, no friction
@@ -529,6 +532,21 @@ void idPhysics_Player::WaterMove( void ) {
 	float	scale;
 	float	vel;
 
+	// this is a water jump from the ground
+	if ( groundPlane && waterLevel >= WATERLEVEL_HEAD ) {
+		if ( idPhysics_Player::CheckJump() ) {
+			idPhysics_Player::WaterJumpMove();
+			return;
+		}
+	}
+
+	// project moves down to flat plane, so that our movement doesn't depend on view angles
+	viewForward -= ( viewForward * gravityNormal ) * gravityNormal;
+	viewRight -= ( viewRight * gravityNormal ) * gravityNormal;
+	viewForward.Normalize();
+	viewRight.Normalize();
+
+	//jump out of water
 	if ( idPhysics_Player::CheckWaterJump() ) {
 		idPhysics_Player::WaterJumpMove();
 		return;
@@ -540,10 +558,19 @@ void idPhysics_Player::WaterMove( void ) {
 
 	// user intentions
 	if ( !scale ) {
-		wishvel = gravityNormal * 60; // sink towards bottom
-	} else {
-		wishvel = scale * (viewForward * command.forwardmove + viewRight * command.rightmove);
+		if ( ( command.buttons & BUTTON_6 ) != 0 ) { //button up
+			wishvel = gravityNormal * 30; // sink towards bottom slower
+		} else if( ( command.buttons & BUTTON_7 ) != 0 ) {	//button down
+			wishvel = gravityNormal * 80; // sink towards bottom faster
+		} else {
+			wishvel = gravityNormal * 60; // sink towards bottom
+		}
+	}
+	else
+	{
+		wishvel = scale * ( viewForward * command.forwardmove + viewRight * command.rightmove );
 		wishvel -= scale * gravityNormal * command.upmove;
+		wishvel += scale * gravityNormal * 30; // sink down a bit anyway
 	}
 
 	wishdir = wishvel;
@@ -555,14 +582,20 @@ void idPhysics_Player::WaterMove( void ) {
 
 	idPhysics_Player::Accelerate( wishdir, wishspeed, PM_WATERACCELERATE );
 
-	// make sure we can go up slopes easily under water
-	if ( groundPlane && ( current.velocity * groundTrace.c.normal ) < 0.0f ) {
+	// make sure we can go up slopes easily under water	
+	if ( groundPlane && ( command.forwardmove != 0 ) && ( current.velocity * groundTrace.c.normal ) < 0.0f ) {	// fix - do this only if we are actually trying to walk
 		vel = current.velocity.Length();
 		// slide along the ground plane
 		current.velocity.ProjectOntoPlane( groundTrace.c.normal, OVERCLIP );
 
 		current.velocity.Normalize();
 		current.velocity *= vel;
+	}
+
+	// Don't allow high speed on Z axis
+	//TODO: redo this in a better way
+	if ( current.velocity.z > 300.0f || current.velocity.z < -300.0f ) {
+		current.velocity.z = current.velocity.z * 0.9;
 	}
 
 	idPhysics_Player::SlideMove( false, true, false, false );
@@ -1200,7 +1233,7 @@ bool idPhysics_Player::CheckJump( void ) {
 	walking = false;
 	current.movementFlags |= PMF_JUMP_HELD | PMF_JUMPED;
 
-	addVelocity = 2.0f * maxJumpHeight * -gravityVector;
+	addVelocity = maxJumpHeight * -gravityVector * ( waterLevel >= WATERLEVEL_HEAD ? 0.2f : 2.0f );
 	addVelocity *= idMath::Sqrt( addVelocity.Normalize() );
 	current.velocity += addVelocity;
 
@@ -1213,10 +1246,6 @@ idPhysics_Player::CheckWaterJump
 =============
 */
 bool idPhysics_Player::CheckWaterJump( void ) {
-	idVec3	spot;
-	int		cont;
-	idVec3	flatforward;
-
 	if ( current.movementTime ) {
 		return false;
 	}
@@ -1226,71 +1255,39 @@ bool idPhysics_Player::CheckWaterJump( void ) {
 		return false;
 	}
 
-	flatforward = viewForward - (viewForward * gravityNormal) * gravityNormal;
-	flatforward.Normalize();
-
-	spot = current.origin + 30.0f * flatforward;
-	spot -= 4.0f * gravityNormal;
-	cont = gameLocal.clip.Contents( spot, NULL, mat3_identity, -1, self );
-	if ( !(cont & CONTENTS_SOLID) ) {
+	if ( command.upmove < 10 ) {
+		// not holding jump
 		return false;
 	}
 
-	spot -= 16.0f * gravityNormal;
-	cont = gameLocal.clip.Contents( spot, NULL, mat3_identity, -1, self );
-	if ( cont ) {
+	/*
+	// must wait for jump to be released
+	if ( current.movementFlags & PMF_JUMP_HELD ) {
 		return false;
 	}
+	*/
+
+	// don't jump if we can't stand up
+	if ( current.movementFlags & PMF_DUCKED ) {
+		return false;
+	}
+
+	groundPlane = false;		// jumping away
+	walking = false;
+	current.movementFlags |= PMF_JUMP_HELD | PMF_JUMPED;
 
 	// jump out of water
-	current.velocity = 200.0f * viewForward - 350.0f * gravityNormal;
+	current.velocity = -350.0f * gravityNormal;
+	if ( command.forwardmove > 0 ) { // jump direction based on inputs
+		current.velocity += 200.0f * viewForward;
+	} else if( command.forwardmove < 0 ) {
+		current.velocity -= 200.0f * viewForward;
+	}
+
 	current.movementFlags |= PMF_TIME_WATERJUMP;
 	current.movementTime = 2000;
 
 	return true;
-}
-
-/*
-=============
-idPhysics_Player::SetWaterLevel
-=============
-*/
-void idPhysics_Player::SetWaterLevel( void ) {
-	idVec3		point;
-	idBounds	bounds;
-	int			contents;
-
-	//
-	// get waterlevel, accounting for ducking
-	//
-	waterLevel = WATERLEVEL_NONE;
-	waterType = 0;
-
-	bounds = clipModel->GetBounds();
-
-	// check at feet level
-	point = current.origin - ( bounds[0][2] + 1.0f ) * gravityNormal;
-	contents = gameLocal.clip.Contents( point, NULL, mat3_identity, -1, self );
-	if ( contents & MASK_WATER ) {
-
-		waterType = contents;
-		waterLevel = WATERLEVEL_FEET;
-
-		// check at waist level
-		point = current.origin - ( bounds[1][2] - bounds[0][2] ) * 0.5f * gravityNormal;
-		contents = gameLocal.clip.Contents( point, NULL, mat3_identity, -1, self );
-		if ( contents & MASK_WATER ) {
-
-			waterLevel = WATERLEVEL_WAIST;
-
-			// check at head level
-			point = current.origin - ( bounds[1][2] - 1.0f ) * gravityNormal;
-			contents = gameLocal.clip.Contents( point, NULL, mat3_identity, -1, self );
-			if ( contents & MASK_WATER ) {
-				waterLevel = WATERLEVEL_HEAD;
-			}
-		}
-	}
 }
 
 /*
@@ -1378,7 +1375,7 @@ void idPhysics_Player::MovePlayer( int msec ) {
 	}
 
 	// set watertype and waterlevel
-	idPhysics_Player::SetWaterLevel();
+	idPhysics_Player::SetWaterLevel( true );
 
 	// check for ground
 	idPhysics_Player::CheckGround();
@@ -1419,30 +1416,12 @@ void idPhysics_Player::MovePlayer( int msec ) {
 	}
 
 	// set watertype, waterlevel and groundentity
-	idPhysics_Player::SetWaterLevel();
+	idPhysics_Player::SetWaterLevel( false );
 	idPhysics_Player::CheckGround();
 
 	// move the player velocity back into the world frame
 	current.velocity += current.pushVelocity;
 	current.pushVelocity.Zero();
-}
-
-/*
-================
-idPhysics_Player::GetWaterLevel
-================
-*/
-waterLevel_t idPhysics_Player::GetWaterLevel( void ) const {
-	return waterLevel;
-}
-
-/*
-================
-idPhysics_Player::GetWaterType
-================
-*/
-int idPhysics_Player::GetWaterType( void ) const {
-	return waterType;
 }
 
 /*

@@ -82,6 +82,9 @@ public :
 	virtual void			ReadFromSnapshot( const idBitMsgDelta &msg );
 	virtual bool			ClientReceiveEvent( int event, int time, const idBitMsg &msg );
 
+	virtual bool			DetonateOnWater();
+	void					SetNoSplashDamage( bool setting );
+
 protected:
 	idEntityPtr<idEntity>	owner;
 
@@ -91,6 +94,7 @@ protected:
 		bool				randomShaderSpin			: 1;
 		bool				isTracer					: 1;
 		bool				noSplashDamage				: 1;
+		bool				detonate_on_water			: 1;
 	} projectileFlags;
 
 	float					thrust;

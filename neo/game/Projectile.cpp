@@ -1223,6 +1223,24 @@ bool idProjectile::ClientReceiveEvent( int event, int time, const idBitMsg &msg 
 }
 
 /*
+================================
+idProjectile::DetonateOnWater
+================================
+*/
+bool idProjectile::DetonateOnWater() {
+	return projectileFlags.detonate_on_water;
+}
+
+/*
+================================
+idProjectile::SetNoSplashDamage
+================================
+*/
+void idProjectile::SetNoSplashDamage( bool setting ) {
+	projectileFlags.noSplashDamage = setting;
+}
+
+/*
 ===============================================================================
 
 	idGuidedProjectile

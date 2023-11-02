@@ -137,6 +137,8 @@ extern idCVar	af_useLinearTime;
 extern idCVar	af_useImpulseFriction;
 extern idCVar	af_useJointImpulseFriction;
 extern idCVar	af_useSymmetry;
+extern idCVar	af_useBodyDensityBuoyancy;
+extern idCVar	af_useFixedDensityBuoyancy;
 extern idCVar	af_skipSelfCollision;
 extern idCVar	af_skipLimits;
 extern idCVar	af_skipFriction;
@@ -170,6 +172,7 @@ extern idCVar	rb_showMass;
 extern idCVar	rb_showInertia;
 extern idCVar	rb_showVelocity;
 extern idCVar	rb_showActive;
+extern idCVar	rb_showBuoyancy;
 
 extern idCVar	pm_jumpheight;
 extern idCVar	pm_stepsize;

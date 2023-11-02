@@ -68,6 +68,8 @@ extern const idEventDef EV_SetSkin;
 extern const idEventDef EV_StartSoundShader;
 extern const idEventDef EV_StopSound;
 extern const idEventDef EV_CacheSoundShader;
+extern const idEventDef EV_GetMass;
+extern const idEventDef EV_IsInLiquid;
 
 // Think flags
 enum {
@@ -481,6 +483,8 @@ private:
 	void					Event_HasFunction( const char *name );
 	void					Event_CallFunction( const char *name );
 	void					Event_SetNeverDormant( int enable );
+	void					Event_GetMass( int body );
+	void					Event_IsInLiquid( void );
 #ifdef _D3XP
 	void					Event_SetGui( int guiNum, const char *guiName);
 	void					Event_PrecacheGui( const char *guiName );

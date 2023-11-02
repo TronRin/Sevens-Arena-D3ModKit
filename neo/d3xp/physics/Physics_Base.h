@@ -56,6 +56,7 @@ public:
 public:	// common physics interface
 
 	void					SetSelf( idEntity *e );
+	idEntity				*GetSelf() { return self; }
 
 	void					SetClipModel( idClipModel *model, float density, int id = 0, bool freeOld = true );
 	idClipModel *			GetClipModel( int id = 0 ) const;
@@ -144,6 +145,12 @@ public:	// common physics interface
 	void					WriteToSnapshot( idBitMsgDelta &msg ) const;
 	void					ReadFromSnapshot( const idBitMsgDelta &msg );
 
+	idPhysics_Liquid *		GetWater();
+	float					GetWaterMurkiness() const;
+	void					SetWater( idPhysics_Liquid *e, const float murkiness );
+	float					SetWaterLevelf();
+	float					GetWaterLevelf() const;
+
 protected:
 	idEntity *				self;					// entity using this physics object
 	int						clipMask;				// contents the physics object collides with
@@ -151,6 +158,11 @@ protected:
 	idVec3					gravityNormal;			// normalized direction of gravity
 	idList<contactInfo_t>	contacts;				// contacts with other physics objects
 	idList<contactEntity_t>	contactEntities;		// entities touching this physics object
+
+	// the water object the object is in, we use this to check density/viscosity
+	idPhysics_Liquid		*water;
+	// The murkiness of this water, 0 => clear as crystal, 1 => opaque
+	float					m_fWaterMurkiness;
 
 protected:
 							// add ground contacts for the clip model
