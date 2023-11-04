@@ -1,8 +1,9 @@
-#ifndef __DOOM3_CONFIG_H__
-#define __DOOM3_CONFIG_H__
+#ifndef _CONFIG_H__
+#define _CONFIG_H__
 
 #define BUILD_OS				"@os@"
 #define BUILD_CPU				"@cpu@"
+#define BUILD_BRANCH			"@branch@"
 
 #define BUILD_LIBRARY_SUFFIX	"@CMAKE_SHARED_LIBRARY_SUFFIX@"
 

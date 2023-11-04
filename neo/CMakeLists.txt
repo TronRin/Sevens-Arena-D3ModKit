@@ -97,6 +97,26 @@ if(NOT CMAKE_SYSTEM_NAME)
 	message(FATAL_ERROR "No target OS set")
 endif()
 
+# This gets the current git branch we're running
+# We only use this for source builds so, this shouldn't be shipped!
+# Maybe..
+function(get_git_branch BRANCH_NAME)
+    find_package(Git)
+    if(GIT_FOUND)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(${BRANCH_NAME} ${GIT_BRANCH} PARENT_SCOPE)
+    else()
+        message(WARNING "Git not found, not setting ${BRANCH_NAME}")
+        set(${BRANCH_NAME} "" PARENT_SCOPE)
+    endif()
+endfunction()
+
+
 # target cpu
 set(cpu ${CMAKE_SYSTEM_PROCESSOR})
 
@@ -475,6 +495,10 @@ if(GNUINSTALLDIRS MATCHES "NOTFOUND")
 		endif()
 	endforeach()
 endif()
+
+# Inform us of the current branch we're on.
+get_git_branch(branch)
+message(STATUS "Setting project on git branch: ${branch}")
 
 set(bindir		"${CMAKE_INSTALL_FULL_BINDIR}")
 set(libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/dhewm3")
@@ -1139,7 +1163,7 @@ elseif(WIN32)
 	)
 
 	if(TOOLS)
-		file(GLOB src_sys_tools_images "sys/win32/rc/res/*.bmp" "sys/win32/rc/res/*.ico" "sys/win32/rc/res/*.gif" "sys/win32/rc/res/*.cur" "sys/win32/rc/res/*.wal" "sys/win32/rc/res/*.htm")
+		file(GLOB src_sys_tools_images "sys/win32/rc/res/*.bmp" "sys/win32/rc/res/*.ico" "sys/win32/rc/res/*.cur")
 		set(src_sys_core ${src_sys_core} ${src_sys_tools_images}  "sys/win32/rc/doom.rc")
 	else()
 		# adding both .rc files breaks the build, but I think it only contains the icon

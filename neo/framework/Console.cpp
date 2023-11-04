@@ -1130,15 +1130,36 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 	renderSystem->SetColor( colorWhite );
 
 	// draw the version number
-
-	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_RED ) );
-
-	idStr version = va("%s.%i", ENGINE_VERSION, BUILD_NUMBER);
+#ifdef _MSC_VER
+	idStr version = va("%s.%i %s-%s", ENGINE_VERSION, BUILD_NUMBER, BUILD_OS, D3_ARCH);
+#else
+	idStr version = va("%s.%i %s-%s", ENGINE_VERSION, BUILD_NUMBER, BUILD_OS, BUILD_CPU);
+#endif // _MSC_VER
 	i = version.Length();
+
+#define VERSION_LINE_SPACE (SMALLCHAR_HEIGHT + 4)
 
 	for ( x = 0; x < i; x++ ) {
 		renderSystem->DrawSmallChar( SCREEN_WIDTH - ( i - x ) * SMALLCHAR_WIDTH,
-			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), version[x], localConsole.charSetShader );
+									 (lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/4)) - VERSION_LINE_SPACE - VERSION_LINE_SPACE, version[x], localConsole.charSetShader );
+
+	}
+
+	idStr branchVersion = va("Branch %s", BUILD_BRANCH);
+	i = branchVersion.Length();
+
+	for ( x = 0; x < i; x++ ) {
+		renderSystem->DrawSmallChar( SCREEN_WIDTH - ( i - x ) * SMALLCHAR_WIDTH,
+									 (lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)) - ( VERSION_LINE_SPACE - 2 ), branchVersion[x], localConsole.charSetShader );
+
+	}
+
+	idStr builddate = va("%s %s", ID__DATE__, ID__TIME__);
+	i = builddate.Length();
+
+	for ( x = 0; x < i; x++ ) {
+		renderSystem->DrawSmallChar( SCREEN_WIDTH - ( i - x ) * SMALLCHAR_WIDTH,
+									 (lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), builddate[x], localConsole.charSetShader );
 
 	}
 
