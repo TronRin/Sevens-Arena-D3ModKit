@@ -1204,6 +1204,10 @@ else()
 	endif()
 endif()
 
+if (MSVC)
+	target_sources(idlib INTERFACE "sys/win32/natvis/idlib.natvis")
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_idlib})
 
 set_target_properties(idlib PROPERTIES FOLDER "libs")
@@ -1250,9 +1254,19 @@ if(CORE)
 if(HARDLINK_GAME)
 	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}")
 	target_include_directories(${DHEWM3BINARY} PRIVATE ${game_includes})
+	
+	# Hack to get .natvis added
+	if (MSVC)
+		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
+	endif()
 else()
 	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "__DOOM_DLL__;${TOOLS_DEFINES}")
 endif()
+
+	if (MSVC)
+		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+	endif()
+
 	set_target_properties(${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
 	set_target_properties(${DHEWM3BINARY} PROPERTIES FOLDER "exes")
@@ -1290,9 +1304,19 @@ if(DEDICATED)
 if(HARDLINK_GAME)
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED")
 	target_include_directories(${DHEWM3BINARY}ded PRIVATE ${game_includes})
+	
+	# Hack to get .natvis added
+	if (MSVC)
+		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
+	endif()
 else()
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__")
 endif()
+
+	if (MSVC)
+		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+	endif()
+
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(${DHEWM3BINARY}ded PROPERTIES FOLDER "exes")
 
@@ -1351,6 +1375,10 @@ if(BASE AND NOT HARDLINK_GAME)
 		add_library(base SHARED ${src_game})
 	endif()
 	
+	if (MSVC)
+		target_sources(base PRIVATE "sys/win32/natvis/game.natvis")
+	endif()
+	
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game})
 	
 	set_target_properties(base PROPERTIES PREFIX "")
@@ -1381,7 +1409,13 @@ if(D3XP AND NOT HARDLINK_GAME)
 	else()
 		add_library(d3xp SHARED ${src_d3xp})
 	endif()
+
+	if (MSVC)
+		target_sources(d3xp PRIVATE "sys/win32/natvis/game.natvis")
+	endif()
+
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_d3xp})
+
 	set_target_properties(d3xp PROPERTIES PREFIX "")
 	set_target_properties(d3xp PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF")
 	target_include_directories(d3xp PRIVATE "${CMAKE_SOURCE_DIR}/d3xp")
