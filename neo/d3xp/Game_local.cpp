@@ -2673,6 +2673,9 @@ gameReturn_t idGameLocal::RunFrame(const usercmd_t* clientCmds) {
 	if ( skipCinematic ) {
 		soundSystem->SetMute( false );
 		skipCinematic = false;
+
+		// replay music again because it got shut down with all other sounds :(
+		gameLocal.world->Event_PlayBackgroundMusic();
 	}
 
 	// show any debug info for this frame

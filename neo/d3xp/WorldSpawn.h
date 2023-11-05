@@ -31,6 +31,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "Entity.h"
 
+extern const idEventDef EV_PlayBackgroundMusic;
+
 /*
 ===============================================================================
 
@@ -50,8 +52,13 @@ public:
 	void			Save( idRestoreGame *savefile );
 	void			Restore( idRestoreGame *savefile );
 
-private:
+public:
 	void			Event_Remove( void );
+	void			Event_PlayBackgroundMusic( void );
+
+private:
+	void			SetMusicTrack( void );
+	idStr			musicTrack;
 };
 
 #endif /* !__GAME_WORLDSPAWN_H__ */

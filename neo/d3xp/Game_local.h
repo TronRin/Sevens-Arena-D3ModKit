@@ -714,7 +714,8 @@ typedef enum {
 
 	// internal use only.  not exposed to script or framecommands.
 	SND_CHANNEL_AMBIENT,
-	SND_CHANNEL_DAMAGE
+	SND_CHANNEL_DAMAGE,
+	SND_CHANNEL_MUSIC
 } gameSoundChannel_t;
 
 extern const float	DEFAULT_GRAVITY;

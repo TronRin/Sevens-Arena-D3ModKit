@@ -34,6 +34,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "WorldSpawn.h"
 
+const idEventDef EV_PlayBackgroundMusic( "<playBackgroundMusic>", NULL );
+
 /*
 ================
 idWorldspawn
@@ -45,6 +47,7 @@ Every map should have exactly one worldspawn.
 CLASS_DECLARATION( idEntity, idWorldspawn )
 	EVENT( EV_Remove,				idWorldspawn::Event_Remove )
 	EVENT( EV_SafeRemove,			idWorldspawn::Event_Remove )
+	EVENT( EV_PlayBackgroundMusic,	idWorldspawn::Event_PlayBackgroundMusic )
 END_CLASS
 
 /*
@@ -62,6 +65,9 @@ void idWorldspawn::Spawn( void ) {
 	gameLocal.world = this;
 
 	g_gravity.SetFloat( spawnArgs.GetFloat( "gravity", va( "%f", DEFAULT_GRAVITY ) ) );
+
+	// play a music in the current map
+	SetMusicTrack();
 
 	// disable stamina on hell levels
 	if ( spawnArgs.GetBool( "no_stamina" ) ) {
@@ -114,6 +120,9 @@ void idWorldspawn::Restore( idRestoreGame *savefile ) {
 
 	g_gravity.SetFloat( spawnArgs.GetFloat( "gravity", va( "%f", DEFAULT_GRAVITY ) ) );
 
+	// play a music in the current map
+	SetMusicTrack();
+
 	// disable stamina on hell levels
 	if ( spawnArgs.GetBool( "no_stamina" ) ) {
 		pm_stamina.SetFloat( 0.0f );
@@ -133,9 +142,36 @@ idWorldspawn::~idWorldspawn() {
 
 /*
 ================
+idWorldspawn::SetMusicTrack
+================
+*/
+void idWorldspawn::SetMusicTrack( void ) {
+	idStr music = spawnArgs.GetString( "music", "" );
+	if ( music != "" ) {
+		musicTrack = music;
+
+		// play it after a few seconds
+		PostEventSec( &EV_PlayBackgroundMusic, 3 );
+	}
+}
+
+/*
+================
 idWorldspawn::Event_Remove
 ================
 */
 void idWorldspawn::Event_Remove( void ) {
 	gameLocal.Error( "Tried to remove world" );
+}
+
+/*
+================
+idWorldspawn::Event_PlayBackgroundMusic
+================
+*/
+void idWorldspawn::Event_PlayBackgroundMusic() {
+	if ( !musicTrack.IsEmpty() ) {
+		common->Printf( "Playing custom music sound track: %s\n", musicTrack.c_str() );
+		gameSoundWorld->PlayShaderDirectly( musicTrack, SND_CHANNEL_MUSIC );
+	}
 }
