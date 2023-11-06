@@ -46,7 +46,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include <commctrl.h>
 #include "afxres.h"
-#include "../../sys/win32/rc/Radiant_resource.h"       // main symbols
+#include "../../sys/win32/rc/resource.h"       // main symbols
 #include "../../sys/win32/win_local.h"
 
 #include "qedefs.h"
@@ -94,7 +94,6 @@ typedef struct
 {
 	int		iSize;
 	int		iTexMenu;		// nearest, linear, etc
-	float	fGamma;			// gamma for textures
 	char	szProject[256];	// last project loaded
 	idVec3	colors[COLOR_LAST];
 	bool	show_names;
@@ -265,7 +264,6 @@ extern bool LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 //========================
 // win_dlg.c
 //========================
-void DoGamma(void);
 void DoFind(void);
 void DoRotate(void);
 void DoSides(bool bCone = false, bool bSphere = false, bool bTorus = false);

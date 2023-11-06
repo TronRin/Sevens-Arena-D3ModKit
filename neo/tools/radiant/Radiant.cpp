@@ -337,7 +337,7 @@ BOOL CRadiantApp::InitInstance()
 	}
 
 	CMainFrame* pMainFrame = new CMainFrame;
-	if (!pMainFrame->LoadFrame(IDR_MENU_QUAKE3)) {
+	if (!pMainFrame->LoadFrame(IDR_MAINFRAME)) {
 		return FALSE;
 	}
 

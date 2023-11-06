@@ -283,64 +283,6 @@ void DoProjectSettings()
 /*
 ===================================================
 
-  GAMMA DIALOG
-
-===================================================
-*/
-
-/*
-=================
-GammaDlgProc
-=================
-*/
-INT_PTR CALLBACK GammaDlgProc(
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,	// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam	// second message parameter
-   )
-{
-	char sz[256];
-
-	switch (uMsg)
-	{
-	case WM_INITDIALOG:
-		sprintf(sz, "%1.1f", g_qeglobals.d_savedinfo.fGamma);
-		SetWindowText(GetDlgItem(hwndDlg, IDC_G_EDIT), sz);
-		return TRUE;
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-
-		case IDOK:
-			GetWindowText(GetDlgItem(hwndDlg, IDC_G_EDIT), sz, 255);
-			g_qeglobals.d_savedinfo.fGamma = atof(sz);
-			EndDialog(hwndDlg, 1);
-			return TRUE;
-
-		case IDCANCEL:
-			EndDialog(hwndDlg, 0);
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-/*
-=================
-DoGamma
-=================
-*/
-void DoGamma(void)
-{
-	if ( DialogBox(g_qeglobals.d_hInstance, (char *)IDD_GAMMA, g_pParentWnd->GetSafeHwnd(), GammaDlgProc))
-	{
-	}
-}
-
-/*
-===================================================
-
   FIND BRUSH/ENTITY DIALOG
 
 ===================================================

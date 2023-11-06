@@ -31,8 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "tools/edit_gui_common.h"
 
 
-#include "../../sys/win32/rc/Common_resource.h"
-#include "../../sys/win32/rc/DeclEditor_resource.h"
+#include "../../sys/win32/rc/resource.h"
 
 #include "../comafx/CPathTreeCtrl.h"
 #include "DialogDeclBrowser.h"

@@ -31,7 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include <io.h>
 
-#include "../../sys/win32/rc/guied_resource.h"
+#include "../../sys/win32/rc/resource.h"
 #include "../../ui/DeviceContext.h"
 
 #include "GEApp.h"
@@ -552,25 +552,6 @@ int rvGEApp::HandleCommand ( WPARAM wParam, LPARAM lParam )
 
 	switch ( LOWORD ( wParam ) )
 	{
-		case ID_GUIED_SOURCECONTROL_CHECKIN:
-			assert ( workspace );
-			HandleCommandSave ( workspace, workspace->GetFilename ( ) );
-			workspace->CheckIn ( );
-			break;
-
-		case ID_GUIED_SOURCECONTROL_CHECKOUT:
-			assert ( workspace );
-			workspace->CheckOut ( );
-			break;
-
-		case ID_GUIED_SOURCECONTROL_UNDOCHECKOUT:
-			assert ( workspace );
-			if ( IDYES == MessageBox ( va("Are you sure you want to undo the checkout of the file '%s'?",workspace->GetFilename()), MB_YESNO|MB_ICONQUESTION) )
-			{
-				workspace->UndoCheckout ( );
-			}
-			break;
-
 		case ID_GUIED_TOOLS_RELOADMATERIALS:
 			SetCursor ( LoadCursor ( NULL, IDC_WAIT ) );
 			cmdSystem->BufferCommandText( CMD_EXEC_NOW, "reloadImages\n" );
@@ -982,10 +963,6 @@ int rvGEApp::HandleInitMenu ( WPARAM wParam, LPARAM lParam )
 				case ID_GUIED_EDIT_COPY:
 				case ID_GUIED_EDIT_PASTE:
 				case ID_GUIED_ITEM_ARRANGEMAKECHILD:
-				case ID_GUIED_SOURCECONTROL_GETLATESTVERSION:
-				case ID_GUIED_SOURCECONTROL_CHECKIN:
-				case ID_GUIED_SOURCECONTROL_CHECKOUT:
-				case ID_GUIED_SOURCECONTROL_UNDOCHECKOUT:
 				case ID_GUIED_FILE_CLOSE:
 					EnableMenuItem ( hmenu, nPos, MF_GRAYED|MF_BYPOSITION );
 					break;
@@ -1117,15 +1094,6 @@ int rvGEApp::HandleInitMenu ( WPARAM wParam, LPARAM lParam )
 			case ID_GUIED_ITEM_MAKESAMESIZEWIDTH:
 			case ID_GUIED_ITEM_ARRANGEMAKECHILD:
 				EnableMenuItem ( hmenu, nPos, MF_BYPOSITION|(workspace->GetSelectionMgr().Num()>1?MF_ENABLED:MF_GRAYED) );
-				break;
-
-			case ID_GUIED_SOURCECONTROL_CHECKIN:
-			case ID_GUIED_SOURCECONTROL_UNDOCHECKOUT:
-				EnableMenuItem ( hmenu, nPos, MF_BYPOSITION|((workspace->GetSourceControlState()==rvGEWorkspace::SCS_CHECKEDOUT)?MF_ENABLED:MF_GRAYED) );
-				break;
-
-			case ID_GUIED_SOURCECONTROL_CHECKOUT:
-				EnableMenuItem ( hmenu, nPos, MF_BYPOSITION|((workspace->GetSourceControlState()==rvGEWorkspace::SCS_CHECKEDIN)?MF_ENABLED:MF_GRAYED) );
 				break;
 
 			default:

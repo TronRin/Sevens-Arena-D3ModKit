@@ -32,7 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Licensee.h"
 #include "framework/UsercmdGen.h"
 #include "renderer/tr_local.h"
-#include "sys/win32/rc/CreateResourceIDs.h"
 #include "sys/sys_local.h"
 
 #include "sys/win32/win_local.h"
@@ -742,9 +741,6 @@ void Sys_Init( void ) {
 	// get WM_TIMER messages pumped every millisecond
 //	SetTimer( NULL, 0, 100, NULL );
 
-#ifdef DEBUG
-	cmdSystem->AddCommand( "createResourceIDs", CreateResourceIDs_f, CMD_FL_TOOL, "assigns resource IDs in _resouce.h files" );
-#endif
 #if 0
 	cmdSystem->AddCommand( "setAsyncSound", Sys_SetAsyncSound_f, CMD_FL_SYSTEM, "set the async sound option" );
 #endif

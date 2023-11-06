@@ -58,7 +58,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "InspectorDialog.h"
 #include "autocaulk.h"
 
-#include "../../sys/win32/rc/common_resource.h"
+#include "../../sys/win32/rc/resource.h"
 #include "../comafx/DialogName.h"
 #include "../comafx/DialogColorPicker.h"
 
@@ -402,7 +402,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_TEXTURES_SHOWINUSE, OnTexturesShowinuse)
 	ON_COMMAND(ID_TEXTURES_INSPECTOR, OnTexturesInspector)
 	ON_COMMAND(ID_MISC_FINDBRUSH, OnMiscFindbrush)
-	ON_COMMAND(ID_MISC_GAMMA, OnMiscGamma)
 	ON_COMMAND(ID_MISC_NEXTLEAKSPOT, OnMiscNextleakspot)
 	ON_COMMAND(ID_MISC_PREVIOUSLEAKSPOT, OnMiscPreviousleakspot)
 	ON_COMMAND(ID_MISC_SELECTENTITYCOLOR, OnMiscSelectentitycolor)
@@ -1023,7 +1022,6 @@ void MFCCreate( HINSTANCE hInstance )
 	if (g_qeglobals.d_savedinfo.iSize != sizeof(g_qeglobals.d_savedinfo)) {
 		// fill in new defaults
 		g_qeglobals.d_savedinfo.iSize = sizeof(g_qeglobals.d_savedinfo);
-		g_qeglobals.d_savedinfo.fGamma = 1.0;
 		g_qeglobals.d_savedinfo.iTexMenu = ID_VIEW_BILINEARMIPMAP;
 		g_qeglobals.d_savedinfo.m_nTextureTweak = 1.0;
 
@@ -1182,9 +1180,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 
 	Sys_UpdateWindows ( W_ALL );
 
-
-	#define IDI_ICON1 4001
-	SetIcon(AfxGetApp()->LoadIcon(IDI_ICON1), false);
+	// Load the icon
+	HICON hIcon = AfxGetApp()->LoadIconA( IDI_MAINFRAME_RADIANT );
+	if ( hIcon ) {
+		SetIcon( hIcon, TRUE );
+		SetIcon( hIcon, FALSE );
+	}
 
 	SetWindowTheme(GetSafeHwnd(), L"EXPLORER", NULL);
 	return 0;
@@ -2608,18 +2609,6 @@ void CMainFrame::OnMiscFindbrush() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnMiscGamma() {
-	float	fSave = g_qeglobals.d_savedinfo.fGamma;
-	DoGamma();
-	if (fSave != g_qeglobals.d_savedinfo.fGamma) {
-		MessageBox("You must restart Q3Radiant for Gamma settings to take place");
-	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::OnMiscNextleakspot() {
 	Pointfile_Next();
 }
@@ -3536,12 +3525,19 @@ void CMainFrame::OnSelectionUngroupentity() {
 	Select_Ungroup();
 }
 
-void CMainFrame::OnAutocaulk()
-{
+/*
+=======================================================================================================================
+=======================================================================================================================
+*/
+void CMainFrame::OnAutocaulk() {
 	Select_AutoCaulk();
 }
-void CMainFrame::OnUpdateAutocaulk(CCmdUI* pCmdUI)
-{
+
+/*
+=======================================================================================================================
+=======================================================================================================================
+*/
+void CMainFrame::OnUpdateAutocaulk(CCmdUI* pCmdUI) {
 	pCmdUI->Enable( selected_brushes.next != &selected_brushes);
 }
 

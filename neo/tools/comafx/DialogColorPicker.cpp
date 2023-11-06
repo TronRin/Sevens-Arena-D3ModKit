@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "tools/edit_gui_common.h"
 
 
-#include "../../sys/win32/rc/Radiant_resource.h"
+#include "../../sys/win32/rc/resource.h"
 #include "DialogColorPicker.h"
 
 #ifdef ID_DEBUG_MEMORY

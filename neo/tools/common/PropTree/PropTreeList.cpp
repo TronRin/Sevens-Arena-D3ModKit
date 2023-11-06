@@ -21,7 +21,7 @@
 
 
 #include "PropTree.h"
-#include "../../../sys/win32/rc/proptree_Resource.h"
+#include "../../../sys/win32/rc/resource.h"
 #include "PropTreeList.h"
 
 #ifdef _DEBUG

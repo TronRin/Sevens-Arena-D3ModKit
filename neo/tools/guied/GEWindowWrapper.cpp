@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "tools/edit_gui_common.h"
 
 
-#include "../../sys/win32/rc/guied_resource.h"
+#include "../../sys/win32/rc/resource.h"
 #include "../../renderer/tr_local.h"
 #include "../../ui/EditWindow.h"
 #include "../../ui/ListWindow.h"

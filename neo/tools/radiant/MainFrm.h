@@ -239,7 +239,6 @@ public:
 	afx_msg void OnTexturesShowinuse();
 	afx_msg void OnTexturesInspector();
 	afx_msg void OnMiscFindbrush();
-	afx_msg void OnMiscGamma();
 	afx_msg void OnMiscNextleakspot();
 	afx_msg void OnMiscPreviousleakspot();
 	afx_msg void OnMiscSelectentitycolor();

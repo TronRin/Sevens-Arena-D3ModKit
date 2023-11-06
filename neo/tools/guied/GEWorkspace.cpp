@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "tools/edit_gui_common.h"
 
 
-#include "../../sys/win32/rc/guied_resource.h"
+#include "../../sys/win32/rc/resource.h"
 #include "../../renderer/tr_local.h"
 #include "../../sys/win32/win_local.h"
 #include "../../ui/DeviceContext.h"
@@ -70,7 +70,6 @@ rvGEWorkspace::rvGEWorkspace ( rvGEApp* app ) : mApplication ( app )
 	mModified			= false;
 	mNew				= false;
 	mDragScroll			= false;
-	mSourceControlState = SCS_CHECKEDOUT;
 	mFilename			= "guis/Untitled.gui";
 	mDragType			= rvGESelectionMgr::HT_NONE;
 	mHandCursor			= LoadCursor ( app->GetInstance(), MAKEINTRESOURCE(IDC_GUIED_HAND) );

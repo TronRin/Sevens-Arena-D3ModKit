@@ -31,8 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Common.h"
 #include "framework/KeyInput.h"
 #include "framework/EditField.h"
-#include "sys/win32/rc/AFEditor_resource.h"
-#include "sys/win32/rc/doom_resource.h"
+#include "sys/win32/rc/resource.h"
 
 #include "sys/win32/win_local.h"
 
