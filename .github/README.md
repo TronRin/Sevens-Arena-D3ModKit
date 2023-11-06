@@ -40,6 +40,8 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
     - Added Camera Background Color Selection.
     - Selection Centers views on entity.
     - Restore Command List windows.
+  - Added Background music support for maps.
+  - Added More Console Information.
 - The Dark Mod / Hardcorps
   - Re-implemented water system
 - Original Changes:
@@ -49,6 +51,12 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Enable Common Controls theme engine for the tools.
   - D3XP And Game dlls are in one folder.
   - WIP Template base for TC Games.
+  - Update The Sys Console to use different colors and font.
+  - Restored Footsteps sounds by using Prey 06 Code.
+  - Set gui_mediumFontLimit and gui_smallFontLimit to "0"
+  - Added Missing Material Editor models.
+  - Added .guide Support from Quake 4.
+  - Refactored MFC Tools
 
 See [Changelog](./CHANGELOG.md) for the original dhewn3 changelog.
 
