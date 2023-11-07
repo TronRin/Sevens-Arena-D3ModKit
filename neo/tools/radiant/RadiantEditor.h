@@ -26,54 +26,28 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#if !defined(AFX_RADIANT_H__330BBF06_731C_11D1_B539_00AA00A410FC__INCLUDED_)
-#define AFX_RADIANT_H__330BBF06_731C_11D1_B539_00AA00A410FC__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
-#ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
-#endif
+extern HINSTANCE g_DoomInstance;
+extern bool g_editorAlive;
 
-/////////////////////////////////////////////////////////////////////////////
-// CRadiantApp:
-// See Radiant.cpp for the implementation of this class
-//
+/*
+=================================
+Radiant "Editor" Implementation
+=================================
+*/
+void RadiantPrint( const char* text );
+void RadiantShutdown( void );
+void RadiantInit( void );
+extern void Map_VerifyCurrentMap( const char* map );
+void RadiantSync( const char* mapName, const idVec3& viewOrg, const idAngles& viewAngles );
+void RadiantRun( void );
 
-class CRadiantApp : public CWinAppEx
-{
+bool SaveRegistryInfo( const char* pszName, void* pvBuf, long lSize );
+bool LoadRegistryInfo( const char* pszName, void* pvBuf, long* plSize );
 
-public:
-	CRadiantApp();
+bool SaveWindowState( HWND hWnd, const char* pszName );
+bool LoadWindowState( HWND hWnd, const char* pszName );
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CRadiantApp)
-	public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
-	virtual BOOL OnIdle(LONG lCount);
-	virtual int Run( void );
-	//}}AFX_VIRTUAL
-
-// Implementation
-
-	//{{AFX_MSG(CRadiantApp)
-	afx_msg void OnHelp();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-};
-
-extern CRadiantApp theApp;
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#define DATA_TO_DIALOG FALSE
-#define DIALOG_TO_DATA TRUE
-
-#endif // !defined(AFX_RADIANT_H__330BBF06_731C_11D1_B539_00AA00A410FC__INCLUDED_)
+void Sys_UpdateStatusBar( void );
+void Sys_Status( const char* psz, int part );
