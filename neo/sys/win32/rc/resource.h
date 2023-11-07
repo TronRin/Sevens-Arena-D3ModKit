@@ -1320,6 +1320,7 @@
 #define ID_BRUSH_SCRIPTS                30032
 #define ID_VIEW_NEXTVIEW                30033
 #define ID_HELP_COMMANDLIST             30034
+#define ID_FILE_NEWPROJECT				30035
 #define ID_SNAPTOGRID                   30036
 #define ID_SPLIT_SELECTED               30037
 #define ID_CLIP_SELECTED                30038
@@ -1583,6 +1584,7 @@
 #define ID_COLORS_MAJOR                 30298
 #define ID_COLORS_MINOR                 30299
 #define ID_SELECTION_CONNECT            30300
+#define ID_FILE_LOADPROJECT             30301
 #define ID_MISC_FINDBRUSH               30302
 #define ID_MISC_NEXTLEAKSPOT            30303
 #define ID_MISC_PREVIOUSLEAKSPOT        30304
@@ -1715,9 +1717,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        9016
+#define _APS_NEXT_RESOURCE_VALUE        9018
 #define _APS_NEXT_COMMAND_VALUE         29002
 #define _APS_NEXT_CONTROL_VALUE         9207
-#define _APS_NEXT_SYMED_VALUE           9004
+#define _APS_NEXT_SYMED_VALUE           9005
 #endif
 #endif
