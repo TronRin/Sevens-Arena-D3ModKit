@@ -1046,9 +1046,7 @@ dkms.conf
 
 # Doom 3: Build directory & log directory
 buildlog/
-buildx64/
-buildx86/
-buildDb/
+build*/
 
 # Doom 3: Ignore PK4 & Keys
 config.spec
