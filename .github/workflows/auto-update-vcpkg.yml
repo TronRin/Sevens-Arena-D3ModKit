@@ -1,0 +1,43 @@
+name: Auto Update VCPKG
+on:
+  schedule:
+    - cron: '0 0 1,25,29 * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Import GPG
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_tag_gpgsign: true
+          git_committer_name: ${{ env.USER_GIT_NAME }}
+          git_committer_email: ${{ env.USER_GIT_EMAIL }}
+        env:
+          USER_GIT_NAME: ${{ secrets.USER_GIT_NAME }}
+          USER_GIT_EMAIL: ${{ secrets.USER_GIT_EMAIL }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+          
+      - name: Keep up with master
+        id: get_commit_id
+        run: |
+          cd vcpkg
+          git pull origin master
+          echo "::set-output name=commit_id::$(git rev-parse HEAD)"
+
+      - name: Git commit
+        run: |
+          git config --global commit.gpgsign true
+          git config --global user.email "${{ env.USER_GIT_EMAIL }}"
+          git config --global user.name "{{ env.USER_GIT_NAME }}"
+          git add vcpkg
+          git commit -S -m "Update VCPKG to ${{ steps.get_commit_id.outputs.commit_id }}"
+          git push
