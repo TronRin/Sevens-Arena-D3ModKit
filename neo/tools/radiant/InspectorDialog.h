@@ -62,6 +62,8 @@ public:
 	void SetDockedTabs(bool docked, int ID);
 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
+	afx_msg void OnMoving(UINT nSide, LPRECT lpRect);
 	afx_msg void OnDestroy();
 	afx_msg void OnClose();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

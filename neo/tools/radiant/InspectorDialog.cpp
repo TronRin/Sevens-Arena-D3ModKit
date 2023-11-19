@@ -62,6 +62,8 @@ CInspectorDialog::~CInspectorDialog()
 BEGIN_MESSAGE_MAP(CInspectorDialog, CTabsDlg)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB_INSPECTOR, OnTcnSelchange )
 	ON_WM_SIZE()
+	ON_WM_SIZING()
+	ON_WM_MOVING()
 	ON_WM_DESTROY()
 	ON_WM_CLOSE()
 END_MESSAGE_MAP()
@@ -172,6 +174,18 @@ void CInspectorDialog::OnSize(UINT nType, int cx, int cy)
 			info->m_Window->SetWindowPos(NULL, rect.left, rect.top, rect.Width(), rect.Height(), 0);
 		}
 
+	}
+}
+
+void CInspectorDialog::OnSizing( UINT nSide, LPRECT lpRect ) {
+	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) ) {
+		return;
+	}
+}
+
+void CInspectorDialog::OnMoving( UINT nSide, LPRECT lpRect ) {
+	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) ) {
+		return;
 	}
 }
 
