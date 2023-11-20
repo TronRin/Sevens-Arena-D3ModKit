@@ -1,23 +1,3 @@
-cmake_minimum_required(VERSION 2.6...3.22 FATAL_ERROR)
-
-# Check if vcpkg exist in our source folder
-if(EXISTS "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake")
-	set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-else()
-	message( FATAL_ERROR "Vcpkg wasn't not found, aborting, make sure to git clone this with all submodules!")
-endif()
-
-project(dhewm3)
-
-# Drop the binaries in the output/ folder
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../output)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/../output)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/../output)
-
-# Enable folder groups
-set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER  "" )
-set_property( GLOBAL PROPERTY USE_FOLDERS ON )
-
 # TODO
 
 # osx: place game .dylib's in the bundle (next to the binary)
@@ -34,440 +14,313 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 # LIBC_MALLOC		-DUSE_LIBC_MALLOC=0
 # ID_NOLANADDRESS	-DID_NOLANADDRESS
 
-# fallback for cmake versions without add_compile_options
-if(NOT COMMAND add_compile_options)
-	function(add_compile_options)
-		foreach(arg ${ARGN})
-			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${arg}" PARENT_SCOPE)
-			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}" PARENT_SCOPE)
-		endforeach()
-	endfunction()
-endif()
+cmake_minimum_required( VERSION 3.27.8 )
 
-option(LINUX_RELEASE_BINS "Set RPATH to \$ORIGIN/libs/ for Linux binary releases" OFF)
-
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/sys/cmake")
-
-if(LINUX_RELEASE_BINS)
-	message(STATUS "Setting RPATH to \$ORIGIN/libs/ so you can put dependencies in there")
-	set(CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE)
-	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-	set(CMAKE_INSTALL_RPATH "$ORIGIN/libs")
-	set(ldflags "${ldflags} -Wl,-z,origin") # not sure this is even needed, but shouldn't hurt
+# Check if vcpkg exist in our source folder
+if ( EXISTS "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" )
+	set( CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file" )
 else()
-	set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
+	message( FATAL_ERROR "Vcpkg wasn't not found, aborting, make sure to git clone this with all submodules!")
 endif()
 
-set(DHEWM3BINARY "dhewm3")
+# Drop the binaries in the output/ folder
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../output" )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/../output" )
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/../output" )
 
-include(CheckCXXCompilerFlag)
-include(GNUInstallDirs OPTIONAL RESULT_VARIABLE GNUINSTALLDIRS)
+# Enable folder groups
+set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER  "" )
+set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
-option(CORE			"Build the core" ON)
-option(BASE			"Build the base game code" ON)
-option(D3XP			"Build the d3xp game code" ON)
-if(MSVC)
-	option(TOOLS			"Build the tools game code (Visual Studio+SDL2 only)" ON) # OFF
-endif()
-option(TYPEINFOGEN	"Build the TypeInfoGen tool (useful for C++ only mods/games)" ON)
-option(DEDICATED	"Build the dedicated server" ON) # OFF
-option(ONATIVE		"Optimize for the host CPU" OFF)
-option(SDL2			"Use SDL2 instead of SDL1.2" ON)
-option(REPRODUCIBLE_BUILD "Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds" OFF)
+set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" )
 
-option(HARDLINK_GAME "Compile gamecode into executable (no game DLLs)" OFF)
-
-if(NOT MSVC) # GCC/clang or compatible, hopefully
-	option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with ninja)." OFF)
-	option(ASAN		"Enable GCC/Clang Adress Sanitizer (ASan)" OFF) # TODO: MSVC might also support this, somehow?
-	option(UBSAN	"Enable GCC/Clang Undefined Behavior Sanitizer (UBSan), implies HARDLINK_GAME" OFF)
-
-	if(UBSAN AND NOT HARDLINK_GAME)
-		message(STATUS "UBSAN requires linking the gamecode into the executable, will enable HARDLINK_GAME")
-		set(HARDLINK_GAME ON)
-	endif()
-endif()
-
-if(NOT CMAKE_SYSTEM_PROCESSOR)
-	message(FATAL_ERROR "No target CPU architecture set")
-endif()
-
-if(NOT CMAKE_SYSTEM_NAME)
-	message(FATAL_ERROR "No target OS set")
-endif()
-
-# This gets the current git branch we're running
-# We only use this for source builds so, this shouldn't be shipped!
-# Maybe..
-function(get_git_branch BRANCH_NAME)
-    find_package(Git)
-    if(GIT_FOUND)
-        execute_process(
-            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            OUTPUT_VARIABLE GIT_BRANCH
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-        set(${BRANCH_NAME} ${GIT_BRANCH} PARENT_SCOPE)
-    else()
-        message(WARNING "Git not found, not setting ${BRANCH_NAME}")
-        set(${BRANCH_NAME} "" PARENT_SCOPE)
-    endif()
-endfunction()
-
-
-# target cpu
-set(cpu ${CMAKE_SYSTEM_PROCESSOR})
-
-# Originally, ${CMAKE_SYSTEM_PROCESSOR} was supposed to contain the *target* CPU, according to CMake's documentation.
-# As far as I can tell this has always been broken (always returns host CPU) at least on Windows
-# (see e.g. https://cmake.org/pipermail/cmake-developers/2014-September/011405.html) and wasn't reliable on
-# other systems either, for example on Linux with 32bit userland but 64bit kernel it returned the kernel CPU type
-# (e.g. x86_64 instead of i686). Instead of fixing this, CMake eventually updated their documentation in 3.20,
-# now it's officially the same as CMAKE_HOST_SYSTEM_PROCESSOR except when cross-compiling (where it's explicitly set)
-# So we gotta figure out the actual target CPU type ourselves.. (why am I sticking to this garbage buildsystem?)
-if(NOT (CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR))
-	# special case: cross-compiling, here CMAKE_SYSTEM_PROCESSOR should be correct, hopefully
-	# (just leave cpu at ${CMAKE_SYSTEM_PROCESSOR})
-elseif(MSVC)
-	# because all this wasn't ugly enough, it turned out that, unlike standalone CMake, Visual Studio's
-	# integrated CMake doesn't set CMAKE_GENERATOR_PLATFORM, so I gave up on guessing the CPU arch here
-	# and moved the CPU detection to MSVC-specific code in neo/sys/platform.h
-else() # not MSVC and not cross-compiling, assume GCC or clang (-compatible), seems to work for MinGW as well
-	execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
-					RESULT_VARIABLE cc_dumpmachine_res
-					OUTPUT_VARIABLE cc_dumpmachine_out)
-	if(cc_dumpmachine_res EQUAL 0)
-		string(STRIP ${cc_dumpmachine_out} cc_dumpmachine_out) # get rid of trailing newline
-		message(STATUS "`${CMAKE_C_COMPILER} -dumpmachine` says: \"${cc_dumpmachine_out}\"")
-		# gcc -dumpmachine and clang -dumpmachine seem to print something like "x86_64-linux-gnu" (gcc)
-		# or "x64_64-pc-linux-gnu" (clang) or "i686-w64-mingw32" (32bit mingw-w64) i.e. starting with the CPU,
-		# then "-" and then OS or whatever - so use everything up to first "-"
-		string(REGEX MATCH "^[^-]+" cpu ${cc_dumpmachine_out})
-		message(STATUS "  => CPU architecture extracted from that: \"${cpu}\"")
-	else()
-		message(WARNING "${CMAKE_C_COMPILER} -dumpmachine failed with error (code) ${cc_dumpmachine_res}")
-		message(WARNING "will use the (sometimes incorrect) CMAKE_SYSTEM_PROCESSOR (${cpu}) to determine D3_ARCH")
-	endif()
-endif()
-
-if(cpu STREQUAL "powerpc")
-	set(cpu "ppc")
-elseif(cpu STREQUAL "aarch64")
-	# "arm64" is more obvious, and some operating systems (like macOS) use it instead of "aarch64"
-	set(cpu "arm64")
-elseif(cpu MATCHES "i.86")
-	set(cpu "x86")
-elseif(cpu MATCHES "[aA][mM][dD]64" OR cpu MATCHES "[xX]64")
-	set(cpu "x86_64")
-elseif(cpu MATCHES "[aA][rR][mM].*") # some kind of arm..
-	# On 32bit Raspbian gcc -dumpmachine returns sth starting with "arm-",
-	# while clang -dumpmachine says "arm6k-..." - try to unify that to "arm"
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8) # sizeof(void*) == 8 => must be arm64
-		set(cpu "arm64")
-	else() # should be 32bit arm then (probably "armv7l" "armv6k" or sth like that)
-		set(cpu "arm")
-	endif()
-endif()
-
-# target os
-if(APPLE)
-	set(os "macosx")
-else()
-	string(TOLOWER "${CMAKE_SYSTEM_NAME}" os)
-endif()
-
-add_definitions(-DD3_OSTYPE="${os}" -DD3_SIZEOFPTR=${CMAKE_SIZEOF_VOID_P})
-
-if(MSVC)
-	# for MSVC D3_ARCH is set in code (in neo/sys/platform.h)
-	message(STATUS "Setting -DD3_SIZEOFPTR=${CMAKE_SIZEOF_VOID_P} -DD3_OSTYPE=\"${os}\" - NOT setting D3_ARCH, because we're targeting MSVC (VisualC++)")
-	# make sure ${cpu} isn't (cant't be) used by CMake when building with MSVC
-	unset(cpu)
-else()
-	add_definitions(-DD3_ARCH="${cpu}")
-	message(STATUS "Setting -DD3_ARCH=\"${cpu}\" -DD3_SIZEOFPTR=${CMAKE_SIZEOF_VOID_P} -DD3_OSTYPE=\"${os}\" ")
-
-	if(cpu MATCHES ".*64.*" AND NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-		# tough luck if some CPU architecture has "64" in its name but uses 32bit pointers
-		message(SEND_ERROR "CMake thinks sizeof(void*) == 4, but the target CPU ${cpu} looks like a 64bit CPU!")
-		message(FATAL_ERROR "If you're building in a 32bit chroot on a 64bit host, switch to it with 'linux32 chroot' or at least call cmake with linux32 (or your OSs equivalent)!")
-	endif()
-endif()
+project( dhewm3 )
 
 # build type
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+if( NOT CMAKE_BUILD_TYPE )
+	set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
 endif()
 
-# precompiled libraries from the dhewm3-libs repo
-if(DHEWM3LIBS)
-	if(CMAKE_CROSSCOMPILING)
-		set(CMAKE_FIND_ROOT_PATH ${DHEWM3LIBS})
-	else()
-		set(ENV{CMAKE_PREFIX_PATH} ${DHEWM3LIBS})
+set( DHEWM3BINARY "dhewm3" )
+
+include( CheckCXXCompilerFlag )
+include( GNUInstallDirs OPTIONAL RESULT_VARIABLE GNUINSTALLDIRS )
+include( GitBranch )
+include( GlobbedHeaders )
+
+option( CORE						"Build the core" ON )
+option( BASE						"Build the base game code" ON )
+option( D3XP						"Build the d3xp game code" ON )
+option( TOOLS						"Build the tools game code." ON )
+option( TYPEINFOGEN					"Build the TypeInfoGen tool (useful for C++ only mods/games)" ON )
+option( DEDICATED					"Build the dedicated server" ON ) # OFF
+option( ONATIVE						"Optimize for the host CPU" OFF )
+option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
+option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases" OFF )
+option( HARDLINK_GAME				"Compile gamecode into executable (no game DLLs)" OFF )
+if( NOT MSVC ) # GCC/clang or compatible, hopefully
+	option( FORCE_COLORED_OUTPUT	"Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with ninja)." OFF )
+	option( ASAN					"Enable GCC/Clang Adress Sanitizer (ASan)" OFF) # TODO: MSVC might also support this, somehow?
+	option( UBSAN					"Enable GCC/Clang Undefined Behavior Sanitizer (UBSan), implies HARDLINK_GAME" OFF )
+
+	if( UBSAN AND NOT HARDLINK_GAME )
+		message( STATUS "UBSAN requires linking the gamecode into the executable, will enable HARDLINK_GAME" )
+		set( HARDLINK_GAME ON )
 	endif()
-
-	# these are too stupid, give them a hint
-	set(ENV{OPENALDIR} ${DHEWM3LIBS})
-	set(ENV{SDLDIR} ${DHEWM3LIBS})
-	set(ENV{SDL2DIR} ${DHEWM3LIBS})
 endif()
 
-if(CMAKE_MAJOR_VERSION LESS 3 OR ( CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION LESS 8 ))
-	# cmake < 3.8 doesn't support source_group(TREE ...) so replace it with a dummy
-	# (it's only cosmetical anyway, to make source files show up properly in Visual Studio)
-	function(source_group)
-	endfunction()
-	message(STATUS "Using CMake < 3.8, doesn't support source_group(TREE ...), replacing it with a dummy")
-	message(STATUS "  (this is only relevants for IDEs, doesn't matter for just compiling dhewm3)")
-#else()
-#	message(STATUS "Using CMake >= 3.8, supports source_group(TREE ...)")
+if ( LINUX_RELEASE_BINS )
+	message( STATUS "Setting RPATH to \$ORIGIN/libs/ so you can put dependencies in there" )
+	set( CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE )
+	set( CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE )
+	set( CMAKE_BUILD_WITH_INSTALL_RPATH TRUE )
+	set( CMAKE_INSTALL_RPATH "$ORIGIN/libs" )
+	set( ldflags "${ldflags} -Wl,-z,origin" ) # not sure this is even needed, but shouldn't hurt
+else()
+	set( CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE )
 endif()
+
+if( REPRODUCIBLE_BUILD )
+	# don't use __DATE__ and __TIME__ macros so builds are reproducible
+	add_definitions( -DID_REPRODUCIBLE_BUILD )
+endif()
+
+# Set these if we found either MFC or any UI toolkit, turn off TOOLS if we didn't found neither of theses
+set( MFC_TOOLS OFF ) # (Visual Studio + SDL2 only)
+
+# Define our cpu variable
+include( CPUDefine )
 
 # libs
-find_package(Stb REQUIRED)
-include_directories(${Stb_INCLUDE_DIR})
+find_package( Stb REQUIRED )
+include_directories( ${Stb_INCLUDE_DIR} )
 
-find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIRS})
+find_package( ZLIB REQUIRED )
+include_directories( ${ZLIB_INCLUDE_DIRS} )
 
-find_package(OpenAL REQUIRED)
-include_directories(${OPENAL_INCLUDE_DIR})
+find_package( OpenAL REQUIRED )
+include_directories( ${OPENAL_INCLUDE_DIR} )
 
-if (SDL2)
-	# skip SDL2main
-	if(APPLE OR WIN32)
-		set(SDL2_BUILDING_LIBRARY TRUE)
-	endif()
-	find_package(SDL2 REQUIRED)
-	include_directories(${SDL2_INCLUDE_DIR})
-	set(SDLx_LIBRARY ${SDL2_LIBRARY})
+find_package( SDL2 REQUIRED )
+include_directories( ${SDL2_INCLUDE_DIR} )
+set( SDL2_LIBRARY SDL2::SDL2 )
+
+# Curl
+find_package( CURL QUIET )
+if( CURL_FOUND )
+	set( ID_ENABLE_CURL ON )
+	include_directories( ${CURL_INCLUDE_DIR} )
+	message( STATUS "libcurl found and enabled" )
 else()
-	# skip SDLmain
-	if(APPLE OR WIN32)
-		set(SDL_BUILDING_LIBRARY TRUE)
+	message( WARNING "libcurl not found, server downloads won't be available (apart from that the engine will work)" )
+	set( ID_ENABLE_CURL OFF )
+	set( CURL_LIBRARY "" )
+endif()
+
+if( TOOLS )
+	if( MSVC )
+		# This is required for tools on windows.
+		find_package( MFC )
+		if( NOT MFC_FOUND )
+			message( WARNING "MFC ('Microsoft Foundation Classes for C++') couldn't be found, but is needed for TOOLS!" )
+			message( WARNING "If you're using VS2013, you'll also need the 'Multibyte MFC Library for Visual Studio 2013': https://www.microsoft.com/en-us/download/details.aspx?id=40770 (VS2015 and 2017 include that in the default MFC package)" )
+		else()
+			set( MFC_TOOLS ON )
+		endif()
 	endif()
-	find_package(SDL REQUIRED)
-	include_directories(${SDL_INCLUDE_DIR})
-	set(SDLx_LIBRARY ${SDL_LIBRARY})
 endif()
 
-if(REPRODUCIBLE_BUILD)
-	# don't use __DATE__ and __TIME__ macros so builds are reproducible
-	add_definitions(-DID_REPRODUCIBLE_BUILD)
-endif()
+set( D3_COMPILER_IS_CLANG FALSE )
+set( D3_COMPILER_IS_GCC_OR_CLANG FALSE )
 
+if( NOT MSVC )
+	#if( NOT WIN32 )
+		# libbacktrace support - TODO: might work with MinGW? we don't have a crash handler for win32 though..
+		include( CheckCSourceCompiles )
+		set( CMAKE_REQUIRED_LIBRARIES backtrace )
+		check_c_source_compiles( "#include <backtrace.h>
+		int main() { backtrace_create_state(NULL, 0, NULL, NULL); return 0; }" HAVE_LIBBACKTRACE )
+		unset( CMAKE_REQUIRED_LIBRARIES )
 
-find_package(CURL QUIET)
-if(CURL_FOUND)
-	set(ID_ENABLE_CURL ON)
-	include_directories(${CURL_INCLUDE_DIR})
-	message(STATUS "libcurl found and enabled")
-else()
-	message(WARNING "libcurl not found, server downloads won't be available (apart from that dhewm3 will work)")
-	set(ID_ENABLE_CURL OFF)
-	set(CURL_LIBRARY "")
-endif()
+		if( HAVE_LIBBACKTRACE )
+			set( sys_libs ${sys_libs} backtrace )
+			add_definitions( -DD3_HAVE_LIBBACKTRACE )
+			message( STATUS "Using libbacktrace" )
+		else()
+			message( WARNING "libbacktrace wasn't found. It's not required but recommended, because it provides useful backtraces if engine/game crashes" )
+		endif()
+	#endif() # NOT WIN32
 
-set(D3_COMPILER_IS_CLANG FALSE)
-set(D3_COMPILER_IS_GCC_OR_CLANG FALSE)
-
-if(MSVC)
-	# This is required for tools on windows.
-	find_package(MFC)
-	
-	if(TOOLS AND NOT MFC_FOUND)
-		message(SEND_ERROR "MFC ('Microsoft Foundation Classes for C++') couldn't be found, but is needed for TOOLS!")
-		message(FATAL_ERROR "If you're using VS2013, you'll also need the 'Multibyte MFC Library for Visual Studio 2013': https://www.microsoft.com/en-us/download/details.aspx?id=40770 (VS2015 and 2017 include that in the default MFC package)")
+	# check if this is some kind of clang (Clang, AppleClang, whatever)
+	# (convert compiler ID to lowercase so we match Clang, clang, AppleClang etc, regardless of case)
+	string( TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id_lower )
+	if( compiler_id_lower MATCHES ".*clang.*" )
+		message( STATUS "Compiler \"${CMAKE_CXX_COMPILER_ID}\" detected as some kind of clang" )
+		set( D3_COMPILER_IS_CLANG TRUE )
+		set( D3_COMPILER_IS_GCC_OR_CLANG TRUE )
+	elseif( CMAKE_COMPILER_IS_GNUCC )
+		set( D3_COMPILER_IS_GCC_OR_CLANG TRUE )
 	endif()
-
-else() # not MSVC
-
-if(NOT WIN32)
-	# libbacktrace support - TODO: might work with MinGW? we don't have a crash handler for win32 though..
-	include(CheckCSourceCompiles)
-	set(CMAKE_REQUIRED_LIBRARIES backtrace)
-	check_c_source_compiles( "#include <backtrace.h>
-	int main() { backtrace_create_state(NULL, 0, NULL, NULL); return 0; }" HAVE_LIBBACKTRACE )
-	unset(CMAKE_REQUIRED_LIBRARIES)
-
-	if(HAVE_LIBBACKTRACE)
-		set(sys_libs ${sys_libs} backtrace)
-		add_definitions(-DD3_HAVE_LIBBACKTRACE)
-		message(STATUS "Using libbacktrace")
-	else()
-		message(WARNING "libbacktrace wasn't found. It's not required but recommended, because it provides useful backtraces if dhewm3 crashes")
-	endif()
-endif() # NOT WIN32
-
-# check if this is some kind of clang (Clang, AppleClang, whatever)
-# (convert compiler ID to lowercase so we match Clang, clang, AppleClang etc, regardless of case)
-string(TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id_lower)
-if(compiler_id_lower MATCHES ".*clang.*")
-	message(STATUS "Compiler \"${CMAKE_CXX_COMPILER_ID}\" detected as some kind of clang")
-	set(D3_COMPILER_IS_CLANG TRUE)
-	set(D3_COMPILER_IS_GCC_OR_CLANG TRUE)
-elseif(CMAKE_COMPILER_IS_GNUCC)
-	set(D3_COMPILER_IS_GCC_OR_CLANG TRUE)
-endif()
-unset(compiler_id_lower)
-
+	unset( compiler_id_lower )
 endif() # not MSVC
 
 # compiler specific flags
-if(D3_COMPILER_IS_GCC_OR_CLANG)
-	add_compile_options(-pipe)
-	add_compile_options(-Wall)
+if( D3_COMPILER_IS_GCC_OR_CLANG )
+	add_compile_options( -pipe )
+	add_compile_options( -Wall )
 
-	if(NOT CMAKE_CROSSCOMPILING AND ONATIVE)
-		add_compile_options(-march=native)
-	elseif(NOT APPLE AND cpu STREQUAL "x86")
-		add_compile_options(-march=pentium3)
+	if( NOT CMAKE_CROSSCOMPILING AND ONATIVE )
+		add_compile_options( -march=native)
+	elseif( NOT APPLE AND cpu STREQUAL "x86" )
+		add_compile_options( -march=pentium3 )
 	endif()
 
-	if(FORCE_COLORED_OUTPUT)
-		if(CMAKE_COMPILER_IS_GNUCC)
-		   add_compile_options (-fdiagnostics-color=always)
-		elseif (D3_COMPILER_IS_CLANG)
-		   add_compile_options (-fcolor-diagnostics)
+	if( FORCE_COLORED_OUTPUT)
+		if( CMAKE_COMPILER_IS_GNUCC )
+		   add_compile_options ( -fdiagnostics-color=always )
+		elseif ( D3_COMPILER_IS_CLANG )
+		   add_compile_options ( -fcolor-diagnostics )
 		endif ()
 	endif ()
 
-	set(CMAKE_C_FLAGS_DEBUG "-g -ggdb -D_DEBUG -O0")
-	set(CMAKE_C_FLAGS_DEBUGALL "-g -ggdb -D_DEBUG")
-	set(CMAKE_C_FLAGS_PROFILE "-g -ggdb -D_DEBUG -O1 -fno-omit-frame-pointer")
-	set(CMAKE_C_FLAGS_RELEASE "-O2 -fno-math-errno -fno-trapping-math -fomit-frame-pointer")
-	set(CMAKE_C_FLAGS_RELWITHDEBINFO "-g -ggdb -O2 -fno-math-errno -fno-trapping-math -fno-omit-frame-pointer")
-	set(CMAKE_C_FLAGS_MINSIZEREL "-Os -fno-math-errno -fno-trapping-math -fomit-frame-pointer")
+	set( CMAKE_C_FLAGS_DEBUG "-g -ggdb -D_DEBUG -O0" )
+	set( CMAKE_C_FLAGS_DEBUGALL "-g -ggdb -D_DEBUG" )
+	set( CMAKE_C_FLAGS_PROFILE "-g -ggdb -D_DEBUG -O1 -fno-omit-frame-pointer" )
+	set( CMAKE_C_FLAGS_RELEASE "-O2 -fno-math-errno -fno-trapping-math -fomit-frame-pointer" )
+	set( CMAKE_C_FLAGS_RELWITHDEBINFO "-g -ggdb -O2 -fno-math-errno -fno-trapping-math -fno-omit-frame-pointer" )
+	set( CMAKE_C_FLAGS_MINSIZEREL "-Os -fno-math-errno -fno-trapping-math -fomit-frame-pointer" )
 
-	set(CMAKE_CXX_FLAGS_DEBUGALL ${CMAKE_C_FLAGS_DEBUGALL})
-	set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_C_FLAGS_PROFILE})
+	set( CMAKE_CXX_FLAGS_DEBUGALL ${CMAKE_C_FLAGS_DEBUGALL} )
+	set( CMAKE_CXX_FLAGS_PROFILE ${CMAKE_C_FLAGS_PROFILE} )
 
 	add_compile_options(-fno-strict-aliasing)
+
 	# dear idiot compilers, don't fuck up math code with useless FMA "optimizations"
 	# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100839)
-	add_compile_options(-ffp-contract=off)
+	add_compile_options( -ffp-contract=off )
 	
-	if(ASAN)
+	if( ASAN )
 		# if this doesn't work, ASan might not be available on your platform, don't set ASAN then..
-		add_compile_options(-fsanitize=address)
-		set(sys_libs ${sys_libs} -fsanitize=address)
-	endif()
-	if(UBSAN)
-		# if this doesn't work, UBSan might not be available on your platform, don't set UBSAN then..
-		add_compile_options(-fsanitize=undefined)
-		set(sys_libs ${sys_libs} -fsanitize=undefined)
+		add_compile_options( -fsanitize=address )
+		set( sys_libs ${sys_libs} -fsanitize=address )
 	endif()
 
-	if(NOT AROS)
-		CHECK_CXX_COMPILER_FLAG("-fvisibility=hidden" cxx_has_fvisibility)
-		if(NOT cxx_has_fvisibility)
-			message(FATAL_ERROR "Compiler does not support -fvisibility")
+	if( UBSAN )
+		# if this doesn't work, UBSan might not be available on your platform, don't set UBSAN then..
+		add_compile_options( -fsanitize=undefined )
+		set( sys_libs ${sys_libs} -fsanitize=undefined )
+	endif()
+
+	if( NOT AROS )
+		CHECK_CXX_COMPILER_FLAG( "-fvisibility=hidden" cxx_has_fvisibility )
+		if( NOT cxx_has_fvisibility )
+			message( FATAL_ERROR "Compiler does not support -fvisibility" )
 		endif()
-		add_compile_options(-fvisibility=hidden)
+		add_compile_options( -fvisibility=hidden )
 	endif()
 
 	# TODO fix these warnings
-	add_compile_options(-Wno-sign-compare)
-	add_compile_options(-Wno-switch)
+	add_compile_options( -Wno-sign-compare )
+	add_compile_options( -Wno-switch )
 
-	CHECK_CXX_COMPILER_FLAG("-Woverloaded-virtual" cxx_has_Woverload_virtual)
-	if(cxx_has_Woverload_virtual)
-		add_compile_options(-Woverloaded-virtual)
+	CHECK_CXX_COMPILER_FLAG( "-Woverloaded-virtual" cxx_has_Woverload_virtual )
+	if( cxx_has_Woverload_virtual )
+		add_compile_options( -Woverloaded-virtual )
 	endif()
 	
 	# shut up about using memcpy() on classes, in the cases doom3 uses it it seems to be fine
-	CHECK_CXX_COMPILER_FLAG("-Wno-class-memaccess" cxx_has_Wno-class-memaccess)
-	if(cxx_has_Wno-class-memaccess)
-		add_compile_options(-Wno-class-memaccess)
+	CHECK_CXX_COMPILER_FLAG( "-Wno-class-memaccess" cxx_has_Wno-class-memaccess )
+	if( cxx_has_Wno-class-memaccess )
+		add_compile_options( -Wno-class-memaccess )
 	endif()
 
-	if(AROS)
-		set(CMAKE_SHARED_LIBRARY_SUFFIX ".aros-${cpu}")
-		add_definitions(-DIOAPI_NO_64)
-	elseif(APPLE)
-		add_definitions(-DMACOS_X=1)
+	if( AROS )
+		set( CMAKE_SHARED_LIBRARY_SUFFIX ".aros-${cpu}" )
+		add_definitions( -DIOAPI_NO_64 )
+	elseif( APPLE )
+		add_definitions( -DMACOS_X=1 )
 
-		if(cpu STREQUAL "x86_64")
-			add_compile_options(-arch x86_64 -mmacosx-version-min=10.9)
-			set(ldflags "${ldflags} -arch x86_64 -mmacosx-version-min=10.9")
-		elseif(cpu STREQUAL "arm64")
-			add_compile_options(-arch arm64 -mmacosx-version-min=11.0)
-			set(ldflags "${ldflags} -arch arm64 -mmacosx-version-min=11.0")
-		elseif(cpu STREQUAL "x86")
-			CHECK_CXX_COMPILER_FLAG("-arch i386" cxx_has_arch_i386)
-			if(cxx_has_arch_i386)
-				add_compile_options(-arch i386)
-				set(ldflags "${ldflags} -arch i386")
+		if( cpu STREQUAL "x86_64" )
+			add_compile_options( -arch x86_64 -mmacosx-version-min=10.9 )
+			set( ldflags "${ldflags} -arch x86_64 -mmacosx-version-min=10.9" )
+		elseif( cpu STREQUAL "arm64" )
+			add_compile_options( -arch arm64 -mmacosx-version-min=11.0 )
+			set( ldflags "${ldflags} -arch arm64 -mmacosx-version-min=11.0" )
+		elseif( cpu STREQUAL "x86" )
+			CHECK_CXX_COMPILER_FLAG( "-arch i386" cxx_has_arch_i386 )
+			if( cxx_has_arch_i386 )
+				add_compile_options( -arch i386 )
+				set( ldflags "${ldflags} -arch i386" )
 			endif()
 
-			add_compile_options(-mmacosx-version-min=10.4)
-			set(ldflags "${ldflags} -mmacosx-version-min=10.4")
-		elseif(cpu STREQUAL "ppc")
-			CHECK_CXX_COMPILER_FLAG("-arch ppc" cxx_has_arch_ppc)
-			if(cxx_has_arch_ppc)
-				add_compile_options(-arch ppc -mone-byte-bool)
-				set(ldflags "${ldflags} -arch ppc -mone-byte-bool")
+			add_compile_options( -mmacosx-version-min=10.4 )
+			set( ldflags "${ldflags} -mmacosx-version-min=10.4" )
+		elseif( cpu STREQUAL "ppc" )
+			CHECK_CXX_COMPILER_FLAG( "-arch ppc" cxx_has_arch_ppc )
+			if( cxx_has_arch_ppc )
+				add_compile_options( -arch ppc -mone-byte-bool )
+				set( ldflags "${ldflags} -arch ppc -mone-byte-bool" )
 			endif()
 
-			add_compile_options(-mmacosx-version-min=10.4)
-			set(ldflags "${ldflags} -mmacosx-version-min=10.4")
+			add_compile_options( -mmacosx-version-min=10.4 )
+			set( ldflags "${ldflags} -mmacosx-version-min=10.4" )
 		else()
-			message(FATAL_ERROR "Unsupported CPU architecture for OSX")
+			message( FATAL_ERROR "Unsupported CPU architecture for OSX" )
 		endif()
 
-		set(sys_libs ${sys_libs} "-framework Carbon -framework Cocoa -framework IOKit")
-	elseif(WIN32)
+		set( sys_libs ${sys_libs} "-framework Carbon -framework Cocoa -framework IOKit" )
+	elseif( WIN32 )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
-		set(ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608")
-	elseif(os STREQUAL "linux")
-		set(sys_libs ${sys_libs} dl)
-	elseif(os STREQUAL "freebsd")
-		find_library(EXECINFO_LIBRARIES execinfo /usr/lib /usr/local/lib)
-		set(sys_libs ${sys_libs} ${EXECINFO_LIBRARIES})
+		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608" )
+	elseif( os STREQUAL "linux" )
+		set( sys_libs ${sys_libs} dl )
+	elseif( os STREQUAL "freebsd" )
+		find_library( EXECINFO_LIBRARIES execinfo /usr/lib /usr/local/lib )
+		set( sys_libs ${sys_libs} ${EXECINFO_LIBRARIES} )
 	endif()
-elseif(MSVC)
-	add_compile_options(/MP) # parallel build (use all cores, or as many as configured in VS)
-	
-	add_compile_options(/W3) # TODO: was /W4, caused trouble with VS2019 (and/or its integrated CMake? or only HarrieVG's setup?)
-	add_compile_options(/we4840) # treat as error when passing a class to a vararg-function (probably printf-like)
-	# treat several kinds of truncating int<->pointer conversions as errors (for more 64bit-safety)
-	add_compile_options(/we4306 /we4311 /we4312 /we4302)
+elseif( MSVC )
+	add_compile_options( /MP ) # parallel build (use all cores, or as many as configured in VS)
+	add_compile_options( /W3 ) # TODO: was /W4, caused trouble with VS2019 (and/or its integrated CMake? or only HarrieVG's setup?)
+
+	add_compile_options( /we4840 ) # treat as error when passing a class to a vararg-function (probably printf-like)
+	add_compile_options( /we4306 /we4311 /we4312 /we4302 )	# treat several kinds of truncating int<->pointer conversions as errors (for more 64bit-safety)
 	# ignore the following warnings:
-	add_compile_options(/wd4100) # unreferenced formal parameter
-	add_compile_options(/wd4127) # conditional expression is constant
-	add_compile_options(/wd4244) # possible loss of data
-	add_compile_options(/wd4245) # signed/unsigned mismatch
-	add_compile_options(/wd4267) # possible loss of data
-	add_compile_options(/wd4714) # 'function' marked as __forceinline not inlined
-	add_compile_options(/wd4996) # 'function': was declared deprecated
-	add_compile_options(/wd4068) # unknown pragma
-	add_compile_options(/wd4458) # declaration of 'variable' hides class member
-	add_definitions(-D_ALLOW_KEYWORD_MACROS) # because of the "#define private public" and "#define protected public" in TypeInfo.cpp
-	set(CMAKE_C_FLAGS_DEBUG "-D_DEBUG /Od /Zi /MDd")
-	set(CMAKE_C_FLAGS_RELEASE "/Ox /Oy /MD")
-	set(CMAKE_C_FLAGS_RELWITHDEBINFO "/Ox /Oy /Zi /MD")
-	set(CMAKE_C_FLAGS_MINSIZEREL "/Ox /Oy /Os /MD")
+	add_compile_options( /wd4100 ) # unreferenced formal parameter
+	add_compile_options( /wd4127 ) # conditional expression is constant
+	add_compile_options( /wd4244 ) # possible loss of data
+	add_compile_options( /wd4245 ) # signed/unsigned mismatch
+	add_compile_options( /wd4267 ) # possible loss of data
+	add_compile_options( /wd4714 ) # 'function' marked as __forceinline not inlined
+	add_compile_options( /wd4996 ) # 'function': was declared deprecated
+	add_compile_options( /wd4068 ) # unknown pragma
+	add_compile_options( /wd4458 ) # declaration of 'variable' hides class member
+	
+	add_definitions( -D_ALLOW_KEYWORD_MACROS ) # because of the "#define private public" and "#define protected public" in TypeInfo.cpp
+	
+	set( CMAKE_C_FLAGS_DEBUG "-D_DEBUG /Od /Zi /MDd" )
+	set( CMAKE_C_FLAGS_RELEASE "/Ox /Oy /MD" )
+	set( CMAKE_C_FLAGS_RELWITHDEBINFO "/Ox /Oy /Zi /MD" )
+	set( CMAKE_C_FLAGS_MINSIZEREL "/Ox /Oy /Os /MD" )
+	
 	# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
-	set(ldflags "${ldflags} /STACK:8388608")
+	set( ldflags "${ldflags} /STACK:8388608" )
 else()
-	message(FATAL_ERROR "Unsupported compiler")
+	message( FATAL_ERROR "Unsupported compiler" )
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO})
+set( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} )
+set( CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} )
+
 # disable assertions in release builds
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${CMAKE_C_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_MINSIZEREL "-DNDEBUG ${CMAKE_C_FLAGS_MINSIZEREL}")
+set( CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${CMAKE_C_FLAGS_RELEASE}" )
+set( CMAKE_CXX_FLAGS_MINSIZEREL "-DNDEBUG ${CMAKE_C_FLAGS_MINSIZEREL}" )
 
 # mingw and msvc
-if(WIN32)
-	add_definitions(-DWINVER=0x0501)
-	add_definitions(-D_WIN32_WINNT=0x0501)
+if( WIN32 )
+	add_definitions( -DWINVER=0x0501 )
+	add_definitions( -D_WIN32_WINNT=0x0501 )
 
-	set(sys_libs ${sys_libs}
+	set( sys_libs ${sys_libs}
 		winmm
 		iphlpapi
 		wsock32
@@ -475,49 +328,28 @@ if(WIN32)
 	)
 endif()
 
-# fallback for cmake versions without GNUInstallDirs
-if(GNUINSTALLDIRS MATCHES "NOTFOUND")
-	set(CMAKE_INSTALL_BINDIR		"bin"
-		CACHE PATH "user executables (bin)")
-	set(CMAKE_INSTALL_LIBDIR		"lib${LIB_SUFFIX}"
-		CACHE PATH "object code libraries (lib${LIB_SUFFIX})")
-	set(CMAKE_INSTALL_DATAROOTDIR	"share"
-		CACHE PATH "read-only architecture-independent data root (share)")
-	set(CMAKE_INSTALL_DATADIR		"${CMAKE_INSTALL_DATAROOTDIR}"
-		CACHE PATH "read-only architecture-independent data (DATAROOTDIR)")
-
-	mark_as_advanced(CMAKE_INSTALL_BINDIR CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_DATAROOTDIR CMAKE_INSTALL_DATADIR)
-	foreach(dir BINDIR LIBDIR DATAROOTDIR DATADIR)
-		if(NOT IS_ABSOLUTE ${CMAKE_INSTALL_${dir}})
-			set(CMAKE_INSTALL_FULL_${dir} "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_${dir}}")
-		else()
-			set(CMAKE_INSTALL_FULL_${dir} "${CMAKE_INSTALL_${dir}}")
-		endif()
-	endforeach()
-endif()
-
 # Inform us of the current branch we're on.
-get_git_branch(branch)
-message(STATUS "Setting project on git branch: ${branch}")
+get_git_branch( branch )
+message( STATUS "Setting project on git branch: ${branch}" )
 
-set(bindir		"${CMAKE_INSTALL_FULL_BINDIR}")
-set(libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/dhewm3")
-set(datadir		"${CMAKE_INSTALL_FULL_DATADIR}/dhewm3")
+set( bindir		"${CMAKE_INSTALL_FULL_BINDIR}" )
+set( libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/dhewm3" )
+set( datadir	"${CMAKE_INSTALL_FULL_DATADIR}/dhewm3" )
 
 configure_file(
 	"${CMAKE_SOURCE_DIR}/config.h.in"
 	"${CMAKE_BINARY_DIR}/config.h"
 )
 
-if(NOT MSVC)
-message(STATUS "Building ${CMAKE_BUILD_TYPE} for ${os}-${cpu}")
+if( NOT MSVC )
+	message( STATUS "Building ${CMAKE_BUILD_TYPE} for ${os}-${cpu}" )
 endif()
 
-if(NOT APPLE AND NOT WIN32)
-	message(STATUS "The install target will use the following directories:")
-	message(STATUS "  Binary directory:  ${bindir}")
-	message(STATUS "  Library directory: ${libdir}")
-	message(STATUS "  Data directory:    ${datadir}")
+if( NOT APPLE AND NOT WIN32 )
+	message( STATUS "The install target will use the following directories:" )
+	message( STATUS "  Binary directory:  ${bindir}" )
+	message( STATUS "  Library directory: ${libdir}" )
+	message( STATUS "  Data directory:    ${datadir}" )
 endif()
 
 set(src_renderer
@@ -572,15 +404,6 @@ set(src_renderer
 	renderer/tr_trisurf.cpp
 	renderer/tr_turboshadow.cpp
 )
-
-# I'm a bit sloppy with headers and just glob them in..
-# they're only handled in CMake at all so they turn up in Visual Studio solutions..
-
-# globs all the headers from ${PATHPREFIX}/ and adds them to ${SRCLIST}
-function(add_globbed_headers SRCLIST PATHPREFIX)
-	file(GLOB_RECURSE tmp_hdrs RELATIVE "${CMAKE_SOURCE_DIR}" "${PATHPREFIX}/*.h")
-	set(${SRCLIST} ${tmp_hdrs} ${${SRCLIST}} PARENT_SCOPE)
-endfunction()
 
 add_globbed_headers(src_renderer "renderer")
 
@@ -975,8 +798,8 @@ set(src_tools
 
 # TODO: add_globbed_headers(src_tools "tools/guied")
 
-# Begin normal tools code
-if (TOOLS AND MFC_FOUND AND MSVC)
+# Begin normal (MFC) tools code
+if (TOOLS AND MFC_TOOLS AND MSVC)
 	set(ALLOWRESOURCES ON)
 	# Common files.
 	file(GLOB src_comafx "tools/comafx/*.cpp")
@@ -1244,8 +1067,7 @@ if(CORE)
 		${src_editor_tools}
 	)
 	
-	if(MSVC AND CMAKE_MAJOR_VERSION GREATER 3 OR ( CMAKE_MAJOR_VERSION EQUAL 3 AND CMAKE_MINOR_VERSION GREATER_EQUAL 6 ))
-		# CMake >= 3.6 supports setting the default project started for debugging (instead of trying to launch ALL_BUILD ...)
+	if( MSVC )
 		set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DHEWM3BINARY})
 	endif()
 
@@ -1277,7 +1099,7 @@ endif()
 		${OPENAL_LIBRARY}
 		${CURL_LIBRARY}
 		${ZLIB_LIBRARY}
-		${SDLx_LIBRARY}
+		${SDL2_LIBRARY}
 		${sys_libs}
 	)
 
