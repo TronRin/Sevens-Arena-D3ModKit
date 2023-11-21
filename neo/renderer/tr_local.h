@@ -1697,6 +1697,15 @@ idScreenRect R_CalcIntersectionScissor( const idRenderLightLocal * lightDef,
 										const idRenderEntityLocal * entityDef,
 										const viewDef_t * viewDef );
 
-//=============================================
+/*
+=============================================================
+
+TR_FONT
+
+=============================================================
+*/
+
+void R_InitFreeType();
+void R_DoneFreeType();
 
 #endif /* !__TR_LOCAL_H__ */

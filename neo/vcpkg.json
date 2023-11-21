@@ -10,6 +10,7 @@
 		"name": "libbacktrace",
 		"platform": "!windows"
 	},
-	"stb"
+	"stb",
+	"freetype"
   ]
 }

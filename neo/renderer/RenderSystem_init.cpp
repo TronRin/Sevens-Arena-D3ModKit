@@ -2257,6 +2257,10 @@ void idRenderSystemLocal::Init( void ) {
 
 	R_InitTriSurfData();
 
+#ifdef ID_BUILD_FREETYPE
+	R_InitFreeType();
+#endif // ID_BUILD_FREETYPE
+
 	globalImages->Init();
 
 	idCinematic::InitCinematic( );
@@ -2283,7 +2287,9 @@ void idRenderSystemLocal::Shutdown( void ) {
 
 	common->SetRefreshOnPrint( false ); // without a renderer there's nothing to refresh
 
+#ifdef ID_BUILD_FREETYPE
 	R_DoneFreeType( );
+#endif // ID_BUILD_FREETYPE
 
 	if ( glConfig.isInitialized ) {
 		globalImages->PurgeAllImages();

@@ -58,6 +58,7 @@ option( ONATIVE						"Optimize for the host CPU" OFF )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
 option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases" OFF )
 option( HARDLINK_GAME				"Compile gamecode into executable (no game DLLs)" OFF )
+option( FREETYPE					"Enable Freetype support." ON )
 if( NOT MSVC ) # GCC/clang or compatible, hopefully
 	option( FORCE_COLORED_OUTPUT	"Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with ninja)." OFF )
 	option( ASAN					"Enable GCC/Clang Adress Sanitizer (ASan)" OFF) # TODO: MSVC might also support this, somehow?
@@ -104,6 +105,13 @@ include_directories( ${OPENAL_INCLUDE_DIR} )
 find_package( SDL2 REQUIRED )
 include_directories( ${SDL2_INCLUDE_DIR} )
 set( SDL2_LIBRARY SDL2::SDL2 )
+
+if ( FREETYPE )
+	find_package(Freetype REQUIRED)
+	find_path( FREETYPE_INCLUDE_DIR "fttypes.h" PATH_SUFFIXES "freetype" )
+	include_directories( ${FREETYPE_INCLUDE_DIR} )
+	add_definitions( -DID_BUILD_FREETYPE )
+endif()
 
 # Curl
 find_package( CURL QUIET )
@@ -1096,6 +1104,7 @@ endif()
 	target_link_libraries(${DHEWM3BINARY}
 		idlib
 		mikktspace # RBMIKKT_TANGENT
+		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${OPENAL_LIBRARY}
 		${CURL_LIBRARY}
 		${ZLIB_LIBRARY}
@@ -1145,9 +1154,10 @@ endif()
 	target_link_libraries(${DHEWM3BINARY}ded
 		idlib
 		mikktspace # RBMIKKT_TANGENT
+		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${CURL_LIBRARY}
 		${ZLIB_LIBRARY}
-		${SDLx_LIBRARY}
+		${SDL2_LIBRARY}
 		${sys_libs}
 	)
 
