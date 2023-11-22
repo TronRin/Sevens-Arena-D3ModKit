@@ -645,7 +645,7 @@ void DrawBrushEntityName(brush_t *b) {
 		}
 	}
 
-	int viewType = g_pParentWnd->ActiveXY()->GetViewType();
+	ViewType viewType = g_pParentWnd->ActiveXY()->GetViewType();
 	float scale = g_pParentWnd->ActiveXY()->Scale();
 
 	if (g_qeglobals.d_savedinfo.show_names && scale >= 1.0f) {
@@ -662,15 +662,15 @@ void DrawBrushEntityName(brush_t *b) {
 			float halfHeight = 4.0f / scale;
 
 			switch (viewType) {
-			case XY:
+			case ViewType::XY:
 				origin.x -= halfWidth;
 				origin.y += halfHeight;
 				break;
-			case XZ:
+			case ViewType::XZ:
 				origin.x -= halfWidth;
 				origin.z += halfHeight;
 				break;
-			case YZ:
+			case ViewType::YZ:
 				origin.y -= halfWidth;
 				origin.z += halfHeight;
 				break;
@@ -2172,13 +2172,13 @@ void Brush_MakeSided(int sides) {
 	if (g_pParentWnd->ActiveXY()) {
 		switch (g_pParentWnd->ActiveXY()->GetViewType())
 		{
-			case XY:
+			case ViewType::XY:
 				axis = 2;
 				break;
-			case XZ:
+			case ViewType::XZ:
 				axis = 1;
 				break;
-			case YZ:
+			case ViewType::YZ:
 				axis = 0;
 				break;
 		}
@@ -4569,7 +4569,7 @@ void Brush_DrawCurve( const brush_t *b, bool bSelected, bool cam ) {
 Brush_DrawXY
 ================
 */
-void Brush_DrawXY(brush_t *b, int nViewType, bool bSelected, bool ignoreViewType) {
+void Brush_DrawXY(brush_t *b, ViewType nViewType, bool bSelected, bool ignoreViewType) {
 	face_t		*face;
 	int			order;
 	idWinding	*w;
@@ -4742,12 +4742,12 @@ void Brush_DrawXY(brush_t *b, int nViewType, bool bSelected, bool ignoreViewType
 
 		// only draw polygons facing in a direction we care about
 		if (!ignoreViewType) {
-			if (nViewType == XY) {
+			if (nViewType == ViewType::XY) {
 				if (face->plane[2] <= 0) {
 					continue;
 				}
 			} else {
-				if (nViewType == XZ) {
+				if (nViewType == ViewType::XZ) {
 					if (face->plane[1] <= 0) {
 						continue;
 					}

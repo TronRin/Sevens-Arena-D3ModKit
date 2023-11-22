@@ -125,15 +125,15 @@ static bool			activeDragging = false;
  =======================================================================================================================
  =======================================================================================================================
  */
-bool CDragPoint::PointWithin(idVec3 p, int nView) {
-	if (nView == -1) {
+bool CDragPoint::PointWithin(idVec3 p, ViewType nView) {
+	if (nView == (ViewType)-1) {
 		if (idMath::Diff(p[0], vec[0]) <= 3 && idMath::Diff(p[1], vec[1]) <= 3 && idMath::Diff(p[2], vec[2]) <= 3) {
 			return true;
 		}
 	}
 	else {
-		int nDim1 = (nView == YZ) ? 1 : 0;
-		int nDim2 = (nView == XY) ? 1 : 2;
+		int nDim1 = (nView == ViewType::YZ) ? 1 : 0;
+		int nDim2 = (nView == ViewType::XY) ? 1 : 2;
 		if (idMath::Diff(p[nDim1], vec[nDim1]) <= 3 && idMath::Diff(p[nDim2], vec[nDim2]) <= 3) {
 			return true;
 		}
@@ -455,7 +455,7 @@ bool UpdateActiveDragPoint(const idVec3 &move) {
  =======================================================================================================================
  =======================================================================================================================
 */
-bool SetDragPointCursor(idVec3 p, int nView) {
+bool SetDragPointCursor(idVec3 p, ViewType nView) {
 	activeDrag = NULL;
 
 	int numDragPoints = dragPoints.GetSize();
@@ -710,13 +710,13 @@ void CXYWnd::DropClipPoint(UINT nFlags, CPoint point) {
 				idVec3	smins, smaxs;
 				Select_GetBounds( smins, smaxs );
 
-				if ( m_nViewType == XY ) {
+				if ( m_nViewType == ViewType::XY ) {
 					if ( GetAsyncKeyState(VK_SHIFT) & 0x8000 ) {
 						pPt->z = smaxs.z;
 					} else {
 						pPt->z = smins.z;
 					}
-				} else if ( m_nViewType == YZ ) {
+				} else if ( m_nViewType == ViewType::YZ ) {
 					if ( GetAsyncKeyState(VK_SHIFT) & 0x8000 ) {
 						pPt->x = smaxs.x;
 					} else {
@@ -733,7 +733,7 @@ void CXYWnd::DropClipPoint(UINT nFlags, CPoint point) {
 		}
 	}
 
-	Sys_UpdateWindows(XY | W_CAMERA_ICON);
+	Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 }
 
 /*
@@ -763,7 +763,7 @@ void CXYWnd::DropPathPoint(UINT nFlags, CPoint point) {
 		}
 	}
 
-	Sys_UpdateWindows(XY | W_CAMERA_ICON);
+	Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 }
 
 /*
@@ -777,7 +777,7 @@ void CXYWnd::AddPointPoint(UINT nFlags, idVec3 *pVec) {
 	g_PointPoints[g_nPointCount].m_ptClip = *pVec;
 	g_PointPoints[g_nPointCount].SetPointPtr(pVec);
 	g_nPointCount++;
-	Sys_UpdateWindows(XY | W_CAMERA_ICON);
+	Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 }
 
 /*
@@ -852,14 +852,14 @@ void CXYWnd::ProduceSplits(brush_t **pFront, brush_t **pBack) {
 			VectorCopy(g_Clip3.m_ptClip, face.planepts[2]);
 			if (selected_brushes.next && (selected_brushes.next->next == &selected_brushes)) {
 				if (g_Clip3.Set() == false) {
-					if (m_nViewType == XY) {
+					if (m_nViewType == ViewType::XY) {
 						face.planepts[0][2] = selected_brushes.next->mins[2];
 						face.planepts[1][2] = selected_brushes.next->mins[2];
 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
 						face.planepts[2][2] = selected_brushes.next->maxs[2];
 					}
-					else if (m_nViewType == YZ) {
+					else if (m_nViewType == ViewType::YZ) {
 						face.planepts[0][0] = selected_brushes.next->mins[0];
 						face.planepts[1][0] = selected_brushes.next->mins[0];
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
@@ -929,14 +929,14 @@ void CXYWnd::ProduceSplitLists() {
 				VectorCopy(g_Clip2.m_ptClip, face.planepts[1]);
 				VectorCopy(g_Clip3.m_ptClip, face.planepts[2]);
 				if (g_Clip3.Set() == false) {
-					if (g_pParentWnd->ActiveXY()->GetViewType() == XY) {
+					if (g_pParentWnd->ActiveXY()->GetViewType() == ViewType::XY) {
 						face.planepts[0][2] = pBrush->mins[2];
 						face.planepts[1][2] = pBrush->mins[2];
 						face.planepts[2][0] = Betwixt(g_Clip1.m_ptClip[0], g_Clip2.m_ptClip[0]);
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
 						face.planepts[2][2] = pBrush->maxs[2];
 					}
-					else if (g_pParentWnd->ActiveXY()->GetViewType() == YZ) {
+					else if (g_pParentWnd->ActiveXY()->GetViewType() == ViewType::YZ) {
 						face.planepts[0][0] = pBrush->mins[0];
 						face.planepts[1][0] = pBrush->mins[0];
 						face.planepts[2][1] = Betwixt(g_Clip1.m_ptClip[1], g_Clip2.m_ptClip[1]);
@@ -1162,13 +1162,13 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingPoint->m_ptClip);
 				g_pMovingPoint->UpdatePointPtr();
-				Sys_UpdateWindows(XY | W_CAMERA_ICON);
+				Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingPoint = NULL;
 
-				int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-				int nDim2 = (m_nViewType == XY) ? 1 : 2;
+				int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+				int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 				for (int n = 0; n < g_nPointCount; n++) {
 					if
 					(
@@ -1185,13 +1185,13 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 			if (g_pMovingClip && GetCapture() == this) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingClip->m_ptClip);
-				Sys_UpdateWindows(XY | W_CAMERA_ICON);
+				Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingClip = NULL;
 
-				int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-				int nDim2 = (m_nViewType == XY) ? 1 : 2;
+				int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+				int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 				if (g_Clip1.Set()) {
 					if
 					(
@@ -1234,13 +1234,13 @@ void CXYWnd::OnMouseMove(UINT nFlags, CPoint point) {
 			if (g_pMovingPath && GetCapture() == this) {
 				bCrossHair = true;
 				SnapToPoint(point.x, m_nHeight - 1 - point.y, g_pMovingPath->m_ptClip);
-				Sys_UpdateWindows(XY | W_CAMERA_ICON);
+				Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 			}
 			else {
 				g_pMovingPath = NULL;
 
-				int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-				int nDim2 = (m_nViewType == XY) ? 1 : 2;
+				int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+				int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 				for (int n = 0; n < g_nPathCount; n++) {
 					if
 					(
@@ -1317,7 +1317,7 @@ void CXYWnd::SetClipMode(bool bMode) {
 		CleanList(&g_brBackSplits);
 		g_brFrontSplits.next = &g_brFrontSplits;
 		g_brBackSplits.next = &g_brBackSplits;
-		Sys_UpdateWindows(XY | W_CAMERA_ICON);
+		Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 	}
 }
 
@@ -1382,9 +1382,9 @@ void CXYWnd::OnPaint() {
 		XY_Draw();
 		QE_CheckOpenGLForErrors();
 
-		if (m_nViewType != XY) {
+		if (m_nViewType != ViewType::XY) {
 			qglPushMatrix();
-			if (m_nViewType == YZ) {
+			if (m_nViewType == ViewType::YZ) {
 				qglRotatef(-90, 0, 1, 0);	// put Z going up
 			}
 
@@ -1394,13 +1394,13 @@ void CXYWnd::OnPaint() {
 		if ( g_bCrossHairs ) {
 			qglColor4f( 0.2f, 0.9f, 0.2f, 0.8f );
 			qglBegin(GL_LINES);
-			if (m_nViewType == XY) {
+			if (m_nViewType == ViewType::XY) {
 				qglVertex2f(-16384, tdp[1]);
 				qglVertex2f(16384, tdp[1]);
 				qglVertex2f(tdp[0], -16384);
 				qglVertex2f(tdp[0], 16384);
 			}
-			else if (m_nViewType == YZ) {
+			else if (m_nViewType == ViewType::YZ) {
 				qglVertex3f(tdp[0], -16384, tdp[2]);
 				qglVertex3f(tdp[0], 16384, tdp[2]);
 				qglVertex3f(tdp[0], tdp[1], -16384);
@@ -1464,7 +1464,7 @@ void CXYWnd::OnPaint() {
 				ProduceSplitLists();
 
 				brush_t *pBrush;
-				brush_t *pList = ((m_nViewType == XZ) ? !g_bSwitch : g_bSwitch) ? &g_brBackSplits : &g_brFrontSplits;
+				brush_t *pList = ((m_nViewType == ViewType::XZ) ? !g_bSwitch : g_bSwitch) ? &g_brBackSplits : &g_brFrontSplits;
 				for (pBrush = pList->next; pBrush != NULL && pBrush != pList; pBrush = pBrush->next) {
 					qglColor3f(1, 1, 0);
 
@@ -1514,7 +1514,7 @@ void CXYWnd::OnPaint() {
 			}
 		}
 
-		if (m_nViewType != XY) {
+		if (m_nViewType != ViewType::XY) {
 			qglPopMatrix();
 		}
 
@@ -1618,7 +1618,7 @@ brush_t *CreateEntityBrush(int x, int y, CXYWnd *pWnd) {
 	y += 32;
 	pWnd->SnapToPoint(x, y, maxs);
 
-	int nDim = (pWnd->GetViewType() == XY) ? 2 : (pWnd->GetViewType() == YZ) ? 0 : 1;
+	int nDim = (pWnd->GetViewType() == ViewType::XY) ? 2 : (pWnd->GetViewType() == ViewType::YZ) ? 0 : 1;
 	mins[nDim] = g_qeglobals.d_gridsize * ((int)(g_qeglobals.d_new_brush_bottom[nDim] / g_qeglobals.d_gridsize));
 	maxs[nDim] = g_qeglobals.d_gridsize * ((int)(g_qeglobals.d_new_brush_top[nDim] / g_qeglobals.d_gridsize));
 
@@ -2146,13 +2146,13 @@ void CXYWnd::XY_ToPoint(int x, int y, idVec3 &point) {
 	float	fy = y;
 	float	fw = m_nWidth;
 	float	fh = m_nHeight;
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		point[0] = m_vOrigin[0] + (fx - fw / 2) / m_fScale;
 		point[1] = m_vOrigin[1] + (fy - fh / 2) / m_fScale;
 
 		// point[2] = 0;
 	}
-	else if (m_nViewType == YZ) {
+	else if (m_nViewType == ViewType::YZ) {
 		//
 		// //point[0] = 0; point[1] = m_vOrigin[0] + (fx - fw / 2) / m_fScale; point[2] =
 		// m_vOrigin[1] + (fy - fh / 2 ) / m_fScale;
@@ -2177,7 +2177,7 @@ void CXYWnd::XY_ToPoint(int x, int y, idVec3 &point) {
  =======================================================================================================================
  */
 void CXYWnd::XY_ToGridPoint(int x, int y, idVec3 &point) {
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		point[0] = m_vOrigin[0] + (x - m_nWidth / 2) / m_fScale;
 		point[1] = m_vOrigin[1] + (y - m_nHeight / 2) / m_fScale;
 
@@ -2185,7 +2185,7 @@ void CXYWnd::XY_ToGridPoint(int x, int y, idVec3 &point) {
 		point[0] = floor(point[0] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
 		point[1] = floor(point[1] / g_qeglobals.d_gridsize + 0.5) * g_qeglobals.d_gridsize;
 	}
-	else if (m_nViewType == YZ) {
+	else if (m_nViewType == ViewType::YZ) {
 		//
 		// point[0] = 0; point[1] = m_vOrigin[0] + (x - m_nWidth / 2) / m_fScale; point[2]
 		// = m_vOrigin[1] + (y - m_nHeight / 2) / m_fScale;
@@ -2232,7 +2232,7 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 	VectorCopy(point, origin);
 
 	dir.Zero();
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		origin[2] = HUGE_DISTANCE;
 		dir[2] = -1;
 		right[0] = 1 / m_fScale;
@@ -2243,7 +2243,7 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 		up[2] = 0;
 		point[2] = g_pParentWnd->GetCamera()->Camera().origin[2];
 	}
-	else if (m_nViewType == YZ) {
+	else if (m_nViewType == ViewType::YZ) {
 		origin[0] = HUGE_DISTANCE;
 		dir[0] = -1;
 		right[1] = 1 / m_fScale;
@@ -2300,7 +2300,7 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 			return;
 		}
 
-		Patch_SetView((m_nViewType == XY) ? W_XY : (m_nViewType == YZ) ? W_YZ : W_XZ);
+		Patch_SetView((m_nViewType == ViewType::XY) ? W_XY : (m_nViewType == ViewType::YZ) ? W_YZ : W_XZ);
 		Drag_Begin(x, y, buttons, right, up, origin, dir);
 		return;
 	}
@@ -2321,9 +2321,9 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 	) {
 		VectorSubtract(point, g_pParentWnd->GetCamera()->Camera().origin, point);
 
-		int n1 = (m_nViewType == XY) ? 1 : 2;
-		int n2 = (m_nViewType == YZ) ? 1 : 0;
-		int nAngle = (m_nViewType == XY) ? YAW : PITCH;
+		int n1 = (m_nViewType == ViewType::XY) ? 1 : 2;
+		int n2 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+		int nAngle = (m_nViewType == ViewType::XY) ? YAW : PITCH;
 		if (point[n1] || point[n2]) {
 			g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG( atan2(point[n1], point[n2]) );
 			Sys_UpdateWindows(W_CAMERA_ICON | W_XY_OVERLAY);
@@ -2344,11 +2344,11 @@ void CXYWnd::XY_MouseDown(int x, int y, int buttons) {
 		}
 		else {
 			SnapToPoint(x, y, point);
-			if (m_nViewType == XY) {
+			if (m_nViewType == ViewType::XY) {
 				z.origin[0] = point[0];
 				z.origin[1] = point[1];
 			}
-			else if (m_nViewType == YZ) {
+			else if (m_nViewType == ViewType::YZ) {
 				z.origin[0] = point[1];
 				z.origin[1] = point[2];
 			}
@@ -2436,7 +2436,7 @@ void CXYWnd::NewBrushDrag(int x, int y) {
 
 	SnapToPoint(m_nPressx, m_nPressy, mins);
 
-	int nDim = (m_nViewType == XY) ? 2 : (m_nViewType == YZ) ? 0 : 1;
+	int nDim = (m_nViewType == ViewType::XY) ? 2 : (m_nViewType == ViewType::YZ) ? 0 : 1;
 
 	mins[nDim] = g_qeglobals.d_gridsize * ((int)(g_qeglobals.d_new_brush_bottom[nDim] / g_qeglobals.d_gridsize));
 	SnapToPoint(x, y, maxs);
@@ -2536,11 +2536,11 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 		}
 		else {
 			SnapToPoint(x, y, point);
-			if (m_nViewType == XY) {
+			if (m_nViewType == ViewType::XY) {
 				z.origin[0] = point[0];
 				z.origin[1] = point[1];
 			}
-			else if (m_nViewType == YZ) {
+			else if (m_nViewType == ViewType::YZ) {
 				z.origin[0] = point[1];
 				z.origin[1] = point[2];
 			}
@@ -2563,9 +2563,9 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 		SnapToPoint(x, y, point);
 		VectorSubtract(point, g_pParentWnd->GetCamera()->Camera().origin, point);
 
-		int n1 = (m_nViewType == XY) ? 1 : 2;
-		int n2 = (m_nViewType == YZ) ? 1 : 0;
-		int nAngle = (m_nViewType == XY) ? YAW : PITCH;
+		int n1 = (m_nViewType == ViewType::XY) ? 1 : 2;
+		int n2 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+		int nAngle = (m_nViewType == ViewType::XY) ? YAW : PITCH;
 		if (point[n1] || point[n2]) {
 			g_pParentWnd->GetCamera()->Camera().angles[nAngle] = RAD2DEG( atan2(point[n1], point[n2]) );
 			Sys_UpdateWindows(W_CAMERA_ICON | W_XY_OVERLAY);
@@ -2607,8 +2607,8 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 				Sys_UpdateWindows(W_XY | W_XY_OVERLAY);
 			}
 			else {
-				int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-				int nDim2 = (m_nViewType == XY) ? 1 : 2;
+				int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+				int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 				m_vOrigin[nDim1] -= (x - m_ptCursor.x) / m_fScale;
 				m_vOrigin[nDim2] += (y - m_ptCursor.y) / m_fScale;
 				SetCursorPos(m_ptCursor.x, m_ptCursor.y);
@@ -2643,8 +2643,8 @@ void CXYWnd::XY_DrawGrid() {
 	w = m_nWidth / 2 / m_fScale;
 	h = m_nHeight / 2 / m_fScale;
 
-	int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	int nDim2 = (m_nViewType == XY) ? 1 : 2;
+	int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+	int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 
 	// int nDim1 = 0; int nDim2 = 1;
 	xb = m_vOrigin[nDim1] - w;
@@ -2740,7 +2740,7 @@ void CXYWnd::XY_DrawGrid() {
 
 	// draw ZClip boundaries (if applicable)...
 	//
-	if (m_nViewType == XZ || m_nViewType == YZ)
+	if (m_nViewType == ViewType::XZ || m_nViewType == ViewType::YZ)
 	{
 		if (g_pParentWnd->GetZWnd()->m_pZClip)	// should always be the case at this point I think, but this is safer
 		{
@@ -2810,8 +2810,8 @@ void CXYWnd::XY_DrawBlockGrid() {
 	w = m_nWidth / 2 / m_fScale;
 	h = m_nHeight / 2 / m_fScale;
 
-	int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	int nDim2 = (m_nViewType == XY) ? 1 : 2;
+	int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+	int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 
 	xb = m_vOrigin[nDim1] - w;
 	if (xb < region_mins[nDim1]) {
@@ -2897,11 +2897,11 @@ void GLColoredBoxWithLabel(float x, float y, float size, idVec4 color, const cha
 void CXYWnd::DrawRotateIcon() {
 	float	x, y;
 
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		x = g_vRotateOrigin[0];
 		y = g_vRotateOrigin[1];
 	}
-	else if (m_nViewType == YZ) {
+	else if (m_nViewType == ViewType::YZ) {
 		x = g_vRotateOrigin[1];
 		y = g_vRotateOrigin[2];
 	}
@@ -2933,8 +2933,8 @@ void CXYWnd::DrawRotateIcon() {
 
 	int w = m_nWidth / 2 / m_fScale;
 	int h = m_nHeight / 2 / m_fScale;
-	int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	int nDim2 = (m_nViewType == XY) ? 1 : 2;
+	int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+	int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 	x = m_vOrigin[nDim1] - w + 35 / m_fScale;
 	y = m_vOrigin[nDim2] + h - 40 / m_fScale;
 	const char *p = "Rotate Z Axis";
@@ -2957,12 +2957,12 @@ void CXYWnd::DrawRotateIcon() {
 void CXYWnd::DrawCameraIcon() {
 	float	x, y, a;
 
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		x = g_pParentWnd->GetCamera()->Camera().origin[0];
 		y = g_pParentWnd->GetCamera()->Camera().origin[1];
 		a = g_pParentWnd->GetCamera()->Camera().angles[YAW] * idMath::M_DEG2RAD;
 	}
-	else if (m_nViewType == YZ) {
+	else if (m_nViewType == ViewType::YZ) {
 		x = g_pParentWnd->GetCamera()->Camera().origin[1];
 		y = g_pParentWnd->GetCamera()->Camera().origin[2];
 		a = g_pParentWnd->GetCamera()->Camera().angles[PITCH] * idMath::M_DEG2RAD;
@@ -3004,7 +3004,7 @@ void CXYWnd::DrawCameraIcon() {
 // DrawZIcon
 //========================
 void CXYWnd::DrawZIcon(void) {
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		float	x = z.origin[0];
 		float	y = z.origin[1];
 		qglEnable(GL_BLEND);
@@ -3302,7 +3302,7 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, idVec3 vMinBounds, idVec3 vMaxB
 		g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES][2] * .65
 	);
 
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		qglBegin(GL_LINES);
 
 		qglVertex3f(vMinBounds[nDim1], vMinBounds[nDim2] - 6.0f / m_fScale, 0.0f);
@@ -3337,7 +3337,7 @@ void CXYWnd::PaintSizeInfo(int nDim1, int nDim2, idVec3 vMinBounds, idVec3 vMaxB
 		g_strDim.Format(g_pOrgStrings[0], vMinBounds[nDim1], vMaxBounds[nDim2]);
 		qglCallLists(g_strDim.GetLength(), GL_UNSIGNED_BYTE, g_strDim);
 	}
-	else if (m_nViewType == XZ) {
+	else if (m_nViewType == ViewType::XZ) {
 		qglBegin(GL_LINES);
 
 		qglVertex3f(vMinBounds[nDim1], 0, vMinBounds[nDim2] - 6.0f / m_fScale);
@@ -3446,12 +3446,12 @@ void CXYWnd::XY_Draw() {
 	const float w = m_nWidth / 2 / m_fScale;
 	const float h = m_nHeight / 2 / m_fScale;
 
-	const int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	const int nDim2 = (m_nViewType == XY) ? 1 : 2;
+	const int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+	const int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 
 	idVec2		mins, maxs; //2D view port mins/max
 	idBounds viewBounds; //3D world space bounds	
-	if ( m_nViewType == XY ) {
+	if ( m_nViewType == ViewType::XY ) {
 		viewBounds[0].x = m_vOrigin.x - w;
 		viewBounds[1].x = m_vOrigin.x + w;
 		viewBounds[0].y = m_vOrigin.y - h;
@@ -3463,7 +3463,7 @@ void CXYWnd::XY_Draw() {
 		mins.y = m_vOrigin.y - h;
 		maxs.x = m_vOrigin.x + w;
 		maxs.y = m_vOrigin.y + h;
-	} else if( m_nViewType == XZ ) {
+	} else if( m_nViewType == ViewType::XZ ) {
 		viewBounds[0].x = m_vOrigin.x - w;
 		viewBounds[1].x = m_vOrigin.x + w;
 		viewBounds[0].y = MIN_WORLD_COORD;
@@ -3475,7 +3475,7 @@ void CXYWnd::XY_Draw() {
 		mins.y = m_vOrigin.z - h;
 		maxs.x = m_vOrigin.x + w;
 		maxs.y = m_vOrigin.z + h;
-	} else if( m_nViewType == YZ ) {
+	} else if( m_nViewType == ViewType::YZ ) {
 		viewBounds[0].x = MIN_WORLD_COORD;
 		viewBounds[1].x = MAX_WORLD_COORD;
 		viewBounds[0].y = m_vOrigin.y - h;
@@ -3500,9 +3500,9 @@ void CXYWnd::XY_Draw() {
 	int drawn = 0;
 	int culled = 0;
 
-	if (m_nViewType != XY) {
+	if (m_nViewType != ViewType::XY) {
 		qglPushMatrix();
-		if (m_nViewType == YZ) {
+		if (m_nViewType == ViewType::YZ) {
 			qglRotatef(-90, 0, 1, 0);	// put Z going up
 		}
 
@@ -3540,7 +3540,7 @@ void CXYWnd::XY_Draw() {
 	// draw pointfile
 	Pointfile_Draw();
 
-	if (!(m_nViewType == XY)) {
+	if (!(m_nViewType == ViewType::XY)) {
 		qglPopMatrix();
 	}
 
@@ -3550,9 +3550,9 @@ void CXYWnd::XY_Draw() {
 	}
 
 	// now draw selected brushes
-	if (m_nViewType != XY) {
+	if (m_nViewType != ViewType::XY) {
 		qglPushMatrix();
-		if (m_nViewType == YZ) {
+		if (m_nViewType == ViewType::YZ) {
 			qglRotatef(-90, 0, 1, 0);	// put Z going up
 		}
 
@@ -3679,7 +3679,7 @@ void CXYWnd::XY_Draw() {
 		-g_qeglobals.d_select_translate[2]
 	);
 
-	if (!(m_nViewType == XY)) {
+	if (!(m_nViewType == ViewType::XY)) {
 		qglPopMatrix();
 	}
 
@@ -3795,10 +3795,10 @@ void CXYWnd::Clip() {
 		// brush_t* pList = (g_bSwitch) ? &g_brFrontSplits : &g_brBackSplits;
 		brush_t *pList;
 		if (g_PrefsDlg.m_bSwitchClip) {
-			pList = ((m_nViewType == XZ) ? g_bSwitch : !g_bSwitch) ? &g_brFrontSplits : &g_brBackSplits;
+			pList = ((m_nViewType == ViewType::XZ) ? g_bSwitch : !g_bSwitch) ? &g_brFrontSplits : &g_brBackSplits;
 		}
 		else {
-			pList = ((m_nViewType == XZ) ? !g_bSwitch : g_bSwitch) ? &g_brFrontSplits : &g_brBackSplits;
+			pList = ((m_nViewType == ViewType::XZ) ? !g_bSwitch : g_bSwitch) ? &g_brFrontSplits : &g_brBackSplits;
 		}
 
 		if (pList->next != pList) {
@@ -3856,7 +3856,7 @@ void CXYWnd::SplitClip() {
  */
 void CXYWnd::FlipClip() {
 	g_bSwitch = !g_bSwitch;
-	Sys_UpdateWindows(XY | W_CAMERA_ICON);
+	Sys_UpdateWindows(W_XY | W_CAMERA_ICON);
 }
 
 //
@@ -3865,8 +3865,8 @@ void CXYWnd::FlipClip() {
 // =======================================================================================================================
 //
 void CXYWnd::PositionView() {
-	int		nDim1 = (m_nViewType == YZ) ? 1 : 0;
-	int		nDim2 = (m_nViewType == XY) ? 1 : 2;
+	int		nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+	int		nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 	brush_t *b = selected_brushes.next;
 	if (b && b->next != b) {
 		m_vOrigin[nDim1] = b->mins[nDim1];
@@ -3883,11 +3883,11 @@ void CXYWnd::PositionView() {
  =======================================================================================================================
  */
 void CXYWnd::VectorCopyXY(const idVec3 &in, idVec3 &out) {
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		out[0] = in[0];
 		out[1] = in[1];
 	}
-	else if (m_nViewType == XZ) {
+	else if (m_nViewType == ViewType::XZ) {
 		out[0] = in[0];
 		out[2] = in[2];
 	}
@@ -3903,7 +3903,7 @@ void CXYWnd::VectorCopyXY(const idVec3 &in, idVec3 &out) {
  */
 void CXYWnd::OnDestroy() {
 
-	if (m_nViewType == XY)
+	if (m_nViewType == ViewType::XY)
 	{
 		SaveDialogPlacement(this, "radiant_xywindow");
 		SaveDialogPlacement(this, "radiant_xzwindow");
@@ -3919,12 +3919,12 @@ void CXYWnd::OnDestroy() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CXYWnd::SetViewType(int n) {
+void CXYWnd::SetViewType(ViewType n) {
 	m_nViewType = n;
 	m_sViewName = "YZ Side";
-	if (m_nViewType == XY) {
+	if (m_nViewType == ViewType::XY) {
 		m_sViewName = "XY Top";
-	} else if (m_nViewType == XZ) {
+	} else if (m_nViewType == ViewType::XZ) {
 		m_sViewName = "XZ Front";
 	}
 	SetWindowText(m_sViewName);
@@ -4289,8 +4289,8 @@ idVec3 &CXYWnd::RotateOrigin() {
  */
 void CXYWnd::OnTimer(UINT_PTR nIDEvent) {
 	if (nIDEvent == 100) {
-		int nDim1 = (m_nViewType == YZ) ? 1 : 0;
-		int nDim2 = (m_nViewType == XY) ? 1 : 2;
+		int nDim1 = (m_nViewType == ViewType::YZ) ? 1 : 0;
+		int nDim2 = (m_nViewType == ViewType::XY) ? 1 : 2;
 		m_vOrigin[nDim1] += m_ptDragAdj.x / m_fScale;
 		m_vOrigin[nDim2] -= m_ptDragAdj.y / m_fScale;
 		Sys_UpdateWindows(W_XY | W_CAMERA);

@@ -96,7 +96,7 @@ brush_t *	Brush_Clone (brush_t *b);
 brush_t *	Brush_FullClone(brush_t *b);
 brush_t *	Brush_Create (idVec3 mins, idVec3 maxs, texdef_t *texdef);
 void		Brush_Draw( const brush_t *b, bool bSelected = false);
-void		Brush_DrawXY(brush_t *b, int nViewType, bool bSelected = false, bool ignoreViewType = false);
+void		Brush_DrawXY(brush_t *b, ViewType nViewType, bool bSelected = false, bool ignoreViewType = false);
 void		Brush_SplitBrushByFace (brush_t *in, face_t *f, brush_t **front, brush_t **back);
 void		Brush_SelectFaceForDragging (brush_t *b, face_t *f, bool shear);
 void		Brush_SetTexture (brush_t *b, texdef_t *texdef, brushprimit_texdef_t *brushprimit_texdef, bool bFitScale = false);
