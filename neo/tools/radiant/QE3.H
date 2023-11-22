@@ -77,10 +77,6 @@ const float	HUGE_DISTANCE = 100000;
 #include "undo.h"
 #include "PMESH.H"
 
-// the dec offset of macro doesn't work very well...
-#define myoffsetof(type,identifier) ((size_t)&((type *)0)->identifier)
-
-
 void	Error (char *error, ...);
 void	Warning (char *error, ...);
 
@@ -263,7 +259,6 @@ extern bool LoadRegistryInfo(const char *pszName, void *pvBuf, long *plSize);
 // win_dlg.c
 //========================
 void DoFind(void);
-void DoRotate(void);
 void DoSides(bool bCone = false, bool bSphere = false, bool bTorus = false);
 void DoAbout(void);
 void DoSurface();
@@ -287,9 +282,7 @@ bool TryDocking(HWND h, long side, LPRECT rect, int widthlimit);
 void	QE_CheckAutoSave( void );
 void	QE_CountBrushesAndUpdateStatusBar( void );
 void	WINAPI QE_CheckOpenGLForErrors(void);
-void	QE_ExpandBspString (char *bspaction, char *out, char *mapname, bool useTemps);
 void	QE_Init (void);
-bool	QE_KeyDown (int key, int nFlags = 0);
 bool	QE_LoadProject (char *projectfile);
 bool	QE_SingleBrush (bool bQuiet = false, bool entityOK = false);
 
@@ -339,8 +332,6 @@ void ConvertTexMatWithQTexture( brushprimit_texdef_t *texMat1, const idMaterial 
 void Face_MoveTexture_BrushPrimit(face_t *f, idVec3 delta);
 void Select_ShiftTexture_BrushPrimit( face_t *f, float x, float y, bool autoAdjust );
 void RotateFaceTexture_BrushPrimit(face_t *f, int nAxis, float fDeg, idVec3 vOrigin );
-// used in CCamWnd::ShiftTexture_BrushPrimit
-void ComputeBest2DVector( idVec3 v, idVec3 X, idVec3 Y, int &x, int &y );
 
 void ApplyMatrix_BrushPrimit(face_t *f, idMat3 matrix, idVec3 origin);
 // low level functions .. put in mathlib?

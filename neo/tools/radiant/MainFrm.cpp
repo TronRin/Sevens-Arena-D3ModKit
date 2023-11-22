@@ -3320,7 +3320,6 @@ void CMainFrame::OnSelectionArbitraryrotation() {
 	CRotateDlg	dlg;
 	dlg.DoModal();
 
-	// DoRotate ();
 	Undo_EndBrushList(&selected_brushes);
 	Undo_End();
 }
