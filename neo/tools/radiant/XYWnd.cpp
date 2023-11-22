@@ -513,6 +513,7 @@ CXYWnd::CXYWnd() {
 	g_nPathLimit = 0;
 	m_nTimerID = -1;
 	m_nButtonstate = 0;
+	m_sViewName = "?";
 	XY_Init();
 }
 
@@ -599,41 +600,6 @@ BOOL CXYWnd::PreCreateWindow(CREATESTRUCT &cs) {
 HDC				s_hdcXY;
 HGLRC			s_hglrcXY;
 
-static unsigned s_stipple[32] = {
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-	0xaaaaaaaa,
-	0x55555555,
-};
-
 /*
  =======================================================================================================================
 	WXY_WndProc
@@ -690,8 +656,6 @@ int CXYWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	s_hdcXY = ::GetDC(GetSafeHwnd());
 	QEW_SetupPixelFormat(s_hdcXY, false);
 
-	qglPolygonStipple((unsigned char *)s_stipple);
-	qglLineStipple(3, 0xaaaa);
 	return 0;
 }
 
@@ -2665,7 +2629,7 @@ bool CXYWnd::XY_MouseMoved(int x, int y, int buttons) {
 
 /*
  =======================================================================================================================
-	DRAWING £
+	DRAWING
 	XY_DrawGrid
  =======================================================================================================================
  */
@@ -2712,6 +2676,7 @@ void CXYWnd::XY_DrawGrid() {
 	ye = startPos * ceil(ye / startPos);
 
 	// draw major blocks
+	qglLineWidth(0.25);
 	qglColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR].ToFloatPtr());
 
 	int stepSize = 64 * 0.1 / m_fScale;
@@ -2823,18 +2788,7 @@ void CXYWnd::XY_DrawGrid() {
 
 		qglRasterPos2f(m_vOrigin[nDim1] - w + 35 / m_fScale, m_vOrigin[nDim2] + h - 20 / m_fScale);
 
-		char	cView[20];
-		if (m_nViewType == XY) {
-			strcpy(cView, "XY Top");
-		}
-		else if (m_nViewType == XZ) {
-			strcpy(cView, "XZ Front");
-		}
-		else {
-			strcpy(cView, "YZ Side");
-		}
-
-		qglCallLists(strlen(cView), GL_UNSIGNED_BYTE, cView);
+		qglCallLists(strlen(m_sViewName), GL_UNSIGNED_BYTE, m_sViewName);
 	}
 
 	/*
@@ -3507,7 +3461,6 @@ void CXYWnd::XY_Draw() {
 	// draw stuff
 	globalImages->BindNull();
 	// now draw the grid
-	qglLineWidth(0.25);
 	XY_DrawGrid();
 	qglLineWidth(0.5);
 
@@ -3594,13 +3547,6 @@ void CXYWnd::XY_Draw() {
 		qglColor3fv(g_qeglobals.d_savedinfo.colors[COLOR_SELBRUSHES].ToFloatPtr());
 	}
 
-	/*
-	if (g_PrefsDlg.m_bNoStipple == FALSE) {
-		qglEnable(GL_LINE_STIPPLE);
-		qglLineStipple(3, 0xaaaa);
-	}
-	*/
-
 	qglLineWidth(1);
 
 	idVec3	vMinBounds;
@@ -3632,12 +3578,6 @@ void CXYWnd::XY_Draw() {
 			}
 		}
 	}
-
-	/*
-	if (g_PrefsDlg.m_bNoStipple == FALSE) {
-		qglDisable(GL_LINE_STIPPLE);
-	}
-	*/
 
 	qglLineWidth(0.5);
 
@@ -3950,13 +3890,13 @@ void CXYWnd::OnDestroy() {
  */
 void CXYWnd::SetViewType(int n) {
 	m_nViewType = n;
-	char *p = "YZ Side";
+	m_sViewName = "YZ Side";
 	if (m_nViewType == XY) {
-		p = "XY Top";
+		m_sViewName = "XY Top";
 	} else if (m_nViewType == XZ) {
-		p = "XZ Front";
+		m_sViewName = "XZ Front";
 	}
-	SetWindowText(p);
+	SetWindowText(m_sViewName);
 };
 
 /*
