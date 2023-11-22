@@ -1151,16 +1151,6 @@ void setGLMode(int mode) {
 			qglEnable(GL_DEPTH_TEST);
 			qglDepthFunc(GL_LEQUAL);
 			break;
-
-		case cd_blend:
-			qglCullFace(GL_FRONT);
-			qglEnable(GL_CULL_FACE);
-			qglShadeModel(GL_FLAT);
-			qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			qglDisable(GL_DEPTH_TEST);
-			qglEnable(GL_BLEND);
-			qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			break;
 	}
 }
 

@@ -58,7 +58,7 @@ void DrawRenderModel( idRenderModel *model, idVec3 &origin, idMat3 &axis, bool c
 
 		int nDrawMode = g_pParentWnd->GetCamera()->Camera().draw_mode;
 
-		if ( cameraView && (nDrawMode == cd_texture || nDrawMode == cd_light) ) {
+		if ( cameraView && nDrawMode == cd_texture ) {
 			material->GetEditorImage()->Bind();
 		}
 
@@ -4421,7 +4421,7 @@ void Brush_Draw(const brush_t *b, bool bSelected) {
 			}
 		}
 
-		if ( (nDrawMode == cd_texture || nDrawMode == cd_light) && face->d_texture != prev && !b->forceWireFrame ) {
+		if ( nDrawMode == cd_texture && face->d_texture != prev && !b->forceWireFrame ) {
 			// set the texture for this face
 			prev = face->d_texture;
 			GL_SelectTexture( 0 );
@@ -4439,7 +4439,7 @@ void Brush_Draw(const brush_t *b, bool bSelected) {
 		qglBegin(GL_POLYGON);
 
 		for (i = 0; i < w->GetNumPoints(); i++) {
-			if ( !b->forceWireFrame && ( nDrawMode == cd_texture || nDrawMode == cd_light ) ) {
+			if ( !b->forceWireFrame && nDrawMode == cd_texture ) {
 				qglTexCoord2fv( &(*w)[i][3] );
 			}
 
