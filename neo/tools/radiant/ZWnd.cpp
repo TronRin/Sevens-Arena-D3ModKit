@@ -128,7 +128,7 @@ void CZWnd::OnLButtonDown(UINT nFlags, CPoint point)
   GetClientRect(rctZ);
 
   if ( g_pParentWnd->GetTopWindow() != this ) {
-    BringWindowToTop();
+	BringWindowToTop();
   }
 
    Z_MouseDown (point.x, rctZ.Height() - 1 - point.y , nFlags);
@@ -142,7 +142,7 @@ void CZWnd::OnMButtonDown(UINT nFlags, CPoint point)
   GetClientRect(rctZ);
 
   if ( g_pParentWnd->GetTopWindow() != this ) {
-    BringWindowToTop();
+	BringWindowToTop();
   }
 
 	Z_MouseDown (point.x, rctZ.Height() - 1 - point.y , nFlags);
@@ -156,7 +156,7 @@ void CZWnd::OnRButtonDown(UINT nFlags, CPoint point)
   GetClientRect(rctZ);
 
   if ( g_pParentWnd->GetTopWindow() != this ) {
-    BringWindowToTop();
+	BringWindowToTop();
   }
 
 	Z_MouseDown (point.x, rctZ.Height() - 1 - point.y , nFlags);

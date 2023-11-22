@@ -1467,14 +1467,12 @@ void CCamWnd::Cam_Draw() {
 		g_qeglobals.selectObject->drawSelection();
 	}
 
-	// draw pointfile
 	qglEnable(GL_DEPTH_TEST);
 
 	DrawPathLines();
 
-	if (g_qeglobals.d_pointfile_display_list) {
-		Pointfile_Draw();
-	}
+	// draw pointfile
+	Pointfile_Draw();
 
 	//
 	// bind back to the default texture so that we don't have problems elsewhere

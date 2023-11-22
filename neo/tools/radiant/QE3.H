@@ -155,8 +155,6 @@ typedef struct
 
 	texturewin_t d_texturewin;
 
-	int	         d_pointfile_display_list;
-
 	LPMRUMENU    d_lpMruMenu;
 
 	SavedInfo_t  d_savedinfo;

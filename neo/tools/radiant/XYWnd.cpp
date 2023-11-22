@@ -3505,9 +3505,7 @@ void CXYWnd::XY_Draw() {
 	DrawPathLines();
 
 	// draw pointfile
-	if (g_qeglobals.d_pointfile_display_list) {
-		qglCallList(g_qeglobals.d_pointfile_display_list);
-	}
+	Pointfile_Draw();
 
 	if (!(m_nViewType == XY)) {
 		qglPopMatrix();
