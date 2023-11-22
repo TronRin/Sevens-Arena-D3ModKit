@@ -3252,10 +3252,13 @@ void DrawPathLines(void) {
 
 			VectorSubtract(mid1, mid, dir);
 			len = dir.Normalize();
-			s1[0] = -dir[1] * 8 + dir[0] * 8;
-			s2[0] = dir[1] * 8 + dir[0] * 8;
-			s1[1] = dir[0] * 8 + dir[1] * 8;
-			s2[1] = -dir[0] * 8 + dir[1] * 8;
+			s1.x = -dir.y * 8 + dir.x * 8;			
+			s1.y = dir.x * 8 + dir.y * 8;      
+			s1.z = dir.z * 8;
+
+			s2.x = dir.y * 8 + dir.x * 8;
+			s2.y = -dir.x * 8 + dir.y * 8;
+			s2.z = dir.z * 8;
 
 			qglColor3f(se->eclass->color[0], se->eclass->color[1], se->eclass->color[2]);
 
@@ -3414,8 +3417,6 @@ extern void DrawBrushEntityName(brush_t *b);
 // XY_Draw
 //========================
 void CXYWnd::XY_Draw() {
-	idVec3 mins, maxs;
-
 	if (!active_brushes.next) {
 		return; // not valid yet
 	}
@@ -3447,14 +3448,46 @@ void CXYWnd::XY_Draw() {
 
 	const int nDim1 = (m_nViewType == YZ) ? 1 : 0;
 	const int nDim2 = (m_nViewType == XY) ? 1 : 2;
-	mins[0] = m_vOrigin[nDim1] - w;
-	maxs[0] = m_vOrigin[nDim1] + w;
-	mins[1] = m_vOrigin[nDim2] - h;
-	maxs[1] = m_vOrigin[nDim2] + h;
 
-	idBounds viewBounds( mins, maxs );
-	viewBounds[0].z = -99999;
-	viewBounds[1].z = 99999;
+	idVec2		mins, maxs; //2D view port mins/max
+	idBounds viewBounds; //3D world space bounds	
+	if ( m_nViewType == XY ) {
+		viewBounds[0].x = m_vOrigin.x - w;
+		viewBounds[1].x = m_vOrigin.x + w;
+		viewBounds[0].y = m_vOrigin.y - h;
+		viewBounds[1].y = m_vOrigin.y + h;
+		viewBounds[0].z = MIN_WORLD_COORD;
+		viewBounds[1].z = MAX_WORLD_COORD;
+
+		mins.x = m_vOrigin.x - w;
+		mins.y = m_vOrigin.y - h;
+		maxs.x = m_vOrigin.x + w;
+		maxs.y = m_vOrigin.y + h;
+	} else if( m_nViewType == XZ ) {
+		viewBounds[0].x = m_vOrigin.x - w;
+		viewBounds[1].x = m_vOrigin.x + w;
+		viewBounds[0].y = MIN_WORLD_COORD;
+		viewBounds[1].y = MAX_WORLD_COORD;
+		viewBounds[0].z = m_vOrigin.z - h;
+		viewBounds[1].z = m_vOrigin.z + h;
+
+		mins.x = m_vOrigin.x - w;
+		mins.y = m_vOrigin.z - h;
+		maxs.x = m_vOrigin.x + w;
+		maxs.y = m_vOrigin.z + h;
+	} else if( m_nViewType == YZ ) {
+		viewBounds[0].x = MIN_WORLD_COORD;
+		viewBounds[1].x = MAX_WORLD_COORD;
+		viewBounds[0].y = m_vOrigin.y - h;
+		viewBounds[1].y = m_vOrigin.y + h;
+		viewBounds[0].z = m_vOrigin.z - h;
+		viewBounds[1].z = m_vOrigin.z + h;
+
+		mins.x = m_vOrigin.y - w;
+		mins.y = m_vOrigin.z - h;
+		maxs.x = m_vOrigin.y + w;
+		maxs.y = m_vOrigin.z + h;
+	}
 
 	qglOrtho(mins[0], maxs[0], mins[1], maxs[1], MIN_WORLD_COORD, MAX_WORLD_COORD);
 
