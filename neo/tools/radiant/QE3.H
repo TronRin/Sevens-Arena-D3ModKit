@@ -132,8 +132,6 @@ typedef struct
 
 	int      d_num_entities;
 
-	entity_t *d_project_entity;
-
 	idVec3	d_new_brush_bottom, d_new_brush_top;
 
 	HINSTANCE d_hInstance;
@@ -184,15 +182,6 @@ typedef struct
 	idVec3  d_vAreaTL;
 	idVec3  d_vAreaBR;
 
-	// tells if we are using .INI files for prefs instead of registry
-	bool	use_ini;
-	// even in .INI mode we use the registry for all void* prefs
-	char		use_ini_registry[64];
-
-	//Timo
-	// tells we have surface properties plugin
-	bool	bSurfacePropertiesPlugin;
-
 	// the editor has its own soundWorld and renderWorld, completely distinct from the game
 	idRenderWorld	*rw;
 	idSoundWorld	*sw;
@@ -234,18 +223,6 @@ void SelectVertexByRay (idVec3 org, idVec3 dir);
 
 void ConnectEntities (void);
 
-void ProjectDialog (void);
-
-void FillTextureMenu (CStringArray* pArray = NULL);
-void FillBSPMenu (void);
-
-BOOL CALLBACK Win_Dialog (
-	HWND hwndDlg,	// handle to dialog box
-	UINT uMsg,	// message
-	WPARAM wParam,	// first message parameter
-	LPARAM lParam	// second message parameter
-);
-
 //========================
 // win_main.c
 //========================
@@ -283,7 +260,6 @@ void	QE_CheckAutoSave( void );
 void	QE_CountBrushesAndUpdateStatusBar( void );
 void	WINAPI QE_CheckOpenGLForErrors(void);
 void	QE_Init (void);
-bool	QE_LoadProject (char *projectfile);
 bool	QE_SingleBrush (bool bQuiet = false, bool entityOK = false);
 
 
@@ -302,10 +278,6 @@ int  WINAPI QEW_SetupPixelFormat(HDC hDC, bool zbuffer );
 //========================
 extern QEGlobals_t   g_qeglobals;
 extern int mapModified;		// for quit confirmation (0 = clean, 1 = unsaved,
-
-//++timo clean (moved into qertypes.h)
-//enum VIEWTYPE {YZ, XZ, XY};
-
 
 extern bool g_bAxialMode;
 extern int g_axialAnchor;
@@ -365,7 +337,6 @@ extern CFindTextureDlg& g_dlgFind;
 extern idCVar radiant_entityMode;
 
 // externs
-extern void AddSlash(CString&);
 extern void CleanUpEntities();
 extern void QE_CountBrushesAndUpdateStatusBar();
 extern void	QE_CheckAutoSave();
@@ -376,10 +347,8 @@ extern bool g_bClipMode;
 extern bool g_bScaleMode;
 extern int g_nScaleHow;
 extern bool g_bPathMode;
-extern void RunScript(char* pBuffer);
 
 extern void FindReplaceTextures(const char* pFind, const char* pReplace, bool bSelected, bool bForce);
-extern void DoProjectSettings();
 extern bool region_active;
 extern void Map_ImportFile (char *filename);
 extern void Map_SaveSelected(char* pFilename);
@@ -398,12 +367,9 @@ extern SCommandInfo g_Commands[];
 extern int g_nCommandCount;
 extern SKeyInfo g_Keys[];
 extern int g_nKeyCount;
-extern const char	*bsp_commands[256];
 extern void HandlePopup(CWnd* pWindow, unsigned int uId);
 extern z_t z;
-extern CString g_strProject;
 extern void TextureAxisFromPlane( const idPlane &pln, idVec3 &xv, idVec3 &yv);
-extern bool QE_SaveProject (const char* pProjectFile);
 extern void Clamp(float& f, int nClamp);
 extern bool WriteFileString( FILE *fp, char *string, ... );
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);

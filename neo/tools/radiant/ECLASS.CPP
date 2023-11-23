@@ -335,7 +335,7 @@ void Eclass_InsertAlphabetized (eclass_t *e)
 }
 
 
-void Eclass_InitForSourceDirectory (const char *path)
+void Eclass_InitForSourceDirectory ()
 {
 	int c = declManager->GetNumDecls(DECL_ENTITYDEF);
 	for (int i = 0; i < c; i++) {

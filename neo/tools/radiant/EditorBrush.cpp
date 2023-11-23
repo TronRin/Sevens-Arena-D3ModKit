@@ -3767,15 +3767,8 @@ static void DrawLight(const brush_t *b, bool bSelected) {
 	vTriColor[1] = 1.0f;
 	bTriPaint = true;
 
-	CString strColor = b->owner->ValueForKey("_color");
-	if (strColor.GetLength() > 0) {
-		float	fR, fG, fB;
-		int		n = sscanf(strColor, "%f %f %f", &fR, &fG, &fB);
-		if (n == 3) {
-			vTriColor[0] = fR;
-			vTriColor[1] = fG;
-			vTriColor[2] = fB;
-		}
+	if ( !b->owner->GetVectorForKey( "_color", vTriColor ) ) {
+		vTriColor = idVec3(1, 1, 1);
 	}
 
 	qglColor3f(vTriColor[0], vTriColor[1], vTriColor[2]);

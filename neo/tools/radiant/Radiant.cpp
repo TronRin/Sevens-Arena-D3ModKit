@@ -107,73 +107,8 @@ BOOL CRadiantApp::InitInstance()
 
 	AfxInitRichEdit2();
 
-	// If there's a .INI file in the directory use it instead of registry
-
-	char RadiantPath[_MAX_PATH];
-	GetModuleFileName( NULL, RadiantPath, _MAX_PATH );
-
-	// search for exe
-	CFileFind Finder;
-	Finder.FindFile( RadiantPath );
-	Finder.FindNextFile();
-	// extract root
-	CString Root = Finder.GetRoot();
-	// build root\*.ini
-	CString IniPath = Root + "\\REGISTRY.INI";
-	// search for ini file
-	Finder.FindNextFile();
-	if (Finder.FindFile( IniPath ))
-	{
-		Finder.FindNextFile();
-		// use the .ini file instead of the registry
-		free((void*)m_pszProfileName);
-		m_pszProfileName=_tcsdup(_T(Finder.GetFilePath()));
-		// look for the registry key for void* buffers storage ( these can't go into .INI files )
-		int i=0;
-		CString key;
-		HKEY hkResult;
-		DWORD dwDisp;
-		DWORD type;
-		char iBuf[3];
-		do
-		{
-			sprintf( iBuf, "%d", i );
-			key = "Software\\Q3Radiant\\IniPrefs" + CString(iBuf);
-			// does this key exists ?
-			if ( RegOpenKeyEx( HKEY_CURRENT_USER, key, 0, KEY_ALL_ACCESS, &hkResult ) != ERROR_SUCCESS )
-			{
-				// this key doesn't exist, so it's the one we'll use
-				strcpy( g_qeglobals.use_ini_registry, key.GetBuffer(0) );
-				RegCreateKeyEx( HKEY_CURRENT_USER, key, 0, NULL,
-					REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hkResult, &dwDisp );
-				RegSetValueEx( hkResult, "RadiantName", 0, REG_SZ, reinterpret_cast<CONST BYTE *>(RadiantPath), strlen( RadiantPath )+1 );
-				RegCloseKey( hkResult );
-				break;
-			}
-			else
-			{
-				char RadiantAux[ _MAX_PATH ];
-				unsigned long size = _MAX_PATH;
-				// the key exists, is it the one we are looking for ?
-				RegQueryValueEx( hkResult, "RadiantName", 0, &type, reinterpret_cast<BYTE *>(RadiantAux), &size );
-				RegCloseKey( hkResult );
-				if ( !strcmp( RadiantAux, RadiantPath ) )
-				{
-					// got it !
-					strcpy( g_qeglobals.use_ini_registry, key.GetBuffer(0) );
-					break;
-				}
-			}
-			i++;
-		} while (1);
-		g_qeglobals.use_ini = true;
-	}
-	else
-	{
-		// Change the registry key under which our settings are stored.
-		SetRegistryKey( EDITOR_REGISTRY_KEY );
-		g_qeglobals.use_ini = false;
-	}
+	// Change the registry key under which our settings are stored.
+	SetRegistryKey( EDITOR_REGISTRY_KEY );
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 

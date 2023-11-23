@@ -26,7 +26,7 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-void		Eclass_InitForSourceDirectory( const char *path );
+void		Eclass_InitForSourceDirectory();
 eclass_t *	Eclass_ForName( const char *name, bool has_brushes );
 
 struct entity_t {

@@ -532,13 +532,6 @@ void Map_LoadFile(const char *filename) {
 	Sys_UpdateWindows(W_ALL);
 }
 
-
-void Map_VerifyCurrentMap(const char *map) {
-	if ( idStr::Icmp( map, currentmap ) != 0 ) {
-		Map_LoadFile( map );
-	}
-}
-
 idMapPrimitive *BrushToMapPrimitive( const brush_t *b, const idVec3 &origin ) {
 	if ( b->pPatch ) {
 		idMapPatch *patch = new idMapPatch( b->pPatch->width * 6, b->pPatch->height * 6 );
@@ -658,13 +651,6 @@ bool Map_SaveFile(const char *filename, bool use_region, bool autosave) {
 		else {
 			return false;
 		}
-	}
-
-	MEMORYSTATUSEX statex;
-	statex.dwLength = sizeof (statex);
-	GlobalMemoryStatusEx (&statex);
-	if ( statex.dwMemoryLoad > 95 ) {
-		g_pParentWnd->MessageBox("Physical memory is over 95% utilized. Consider saving and restarting", "Memory");
 	}
 
 	CWaitDlg dlg;

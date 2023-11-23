@@ -41,9 +41,7 @@ static char THIS_FILE[] = __FILE__;
 #define MOUSE_KEY				"radiant_MouseButtons"
 #define TLOCK_KEY				"radiant_TextureLock"
 #define RLOCK_KEY				"radiant_RotateLock"
-#define LOADLAST_KEY			"radiant_LoadLast"
 #define LOADLASTMAP_KEY			"radiant_LoadLastMap"
-#define LASTPROJ_KEY			"radiant_LastProject"
 #define LASTMAP_KEY				"radiant_LastMap"
 #define RUN_KEY					"radiant_RunBefore"
 #define BSP_KEY					"radiant_InternalBSP"
@@ -98,7 +96,6 @@ static char THIS_FILE[] = __FILE__;
 
 #define WINDOW_DEF				0
 #define TLOCK_DEF				1
-#define LOADLAST_DEF			1
 #define RUN_DEF					0
 
 /////////////////////////////////////////////////////////////////////////////
@@ -109,7 +106,6 @@ CPrefsDlg::CPrefsDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CPrefsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CPrefsDlg)
-	m_bLoadLast = FALSE;
 	m_bVertex = FALSE;
 	m_bAutoSave = TRUE;
 	m_bNewApplyHandling = FALSE;
@@ -154,7 +150,6 @@ void CPrefsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN_POINTSIZE, m_wndFontSpin);
 	DDX_Control(pDX, IDC_SLIDER_CAMSPEED, m_wndCamSpeed);
 	DDX_Control(pDX, IDC_SPIN_AUTOSAVE, m_wndSpin);
-	DDX_Check(pDX, IDC_CHECK_LOADLAST, m_bLoadLast);
 	DDX_Check(pDX, IDC_CHECK_AUTOSAVE, m_bAutoSave);
 	DDX_Text(pDX, IDC_EDIT_AUTOSAVE, m_strAutoSave);
 	DDX_Check(pDX, IDC_CHECK_LOADLASTMAP, m_bLoadLastMap);
@@ -291,17 +286,11 @@ bool GetCvarBinary( const char *name, void *pv, int size ) {
 
 void CPrefsDlg::LoadPrefs() {
 	CString strBuff;
-	CString strPrefab = g_strAppPath;
-	AddSlash(strPrefab);
-	strPrefab += "Prefabs\\";
-
 	m_nMouseButtons = 3;
 
 	m_bTextureLock = GetCvarInt( TLOCK_KEY, TLOCK_DEF );
 	m_bRotateLock = GetCvarInt( RLOCK_KEY, TLOCK_DEF );
-	m_strLastProject = GetCvarString( LASTPROJ_KEY, "" );
 	m_strLastMap = GetCvarString( LASTMAP_KEY, "" );
-	m_bLoadLast = GetCvarInt( LOADLAST_KEY, LOADLAST_DEF );
 	m_bRunBefore = GetCvarInt( RUN_KEY, RUN_DEF );
 	m_bVertex = GetCvarInt( VERTEX_KEY, 1 );
 	m_bAutoSave = GetCvarInt( AUTOSAVE_KEY, 1 );
@@ -355,8 +344,6 @@ void CPrefsDlg::SavePrefs() {
 
 	SetCvarInt( TLOCK_KEY, m_bTextureLock );
 	SetCvarInt( RLOCK_KEY, m_bRotateLock );
-	SetCvarInt( LOADLAST_KEY, m_bLoadLast );
-	SetCvarString( LASTPROJ_KEY, m_strLastProject );
 	SetCvarString( LASTMAP_KEY, m_strLastMap );
 	SetCvarInt( RUN_KEY, m_bRunBefore );
 	SetCvarInt( VERTEX_KEY, m_bVertex );

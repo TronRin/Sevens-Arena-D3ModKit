@@ -3160,76 +3160,62 @@ brush_t * Patch_Parse( bool bOld ) {
 
 	patchMesh_t	*pm	= NULL;
 
-	if ( g_qeglobals.bSurfacePropertiesPlugin ) {
-		assert(true);
-		//GETPLUGINTEXDEF(pm)->ParsePatchTexdef();
-	} else {
-		// texture def
-		GetToken(true);
+	// texture def
+	GetToken(true);
 
-		// band-aid
-		if ( strcmp(token, "(") ) {
-			if ( g_qeglobals.mapVersion < 2.0f ) {
-				tex = Texture_ForName(va("textures/%s", token));
-			} else {
-				tex = Texture_ForName(token);
-			}
-			GetToken(true);
+	// band-aid
+	if ( strcmp(token, "(") ) {
+		if ( g_qeglobals.mapVersion < 2.0f ) {
+			tex = Texture_ForName(va("textures/%s", token));
 		} else {
-			common->Printf("Warning: Patch read with no texture, using notexture... \n");
+			tex = Texture_ForName(token);
 		}
-
-		if ( strcmp(token, "(") ) {
-			return NULL;
-		}
-
-		// width, height, flags (currently only negative)
-		GetToken(false);
-		int	width	= atoi(token);
-
-		GetToken(false);
-		int	height	= atoi(token);
-
-		pm = MakeNewPatch(width, height);
-		pm->d_texture = tex;
-
-		if ( !bOld ) {
-			GetToken(false);
-			pm->horzSubdivisions = atoi(token);
-			GetToken(false);
-			pm->vertSubdivisions = atoi(token);
-			pm->explicitSubdivisions = true;
-		}
-
-		GetToken(false);
-		pm->contents = atoi(token);
-
-		GetToken(false);
-		pm->flags = atoi(token);
-
-		GetToken(false);
-		pm->value = atoi(token);
-
-		//if (!bOld)
-		//{
-		//	GetToken(false);
-		//	pm->type = atoi(token);
-		//}
-
-		GetToken(false);
-		if ( strcmp(token, ")") )
-			return NULL;
+		GetToken(true);
+	} else {
+		common->Printf("Warning: Patch read with no texture, using notexture... \n");
 	}
 
+	if ( strcmp(token, "(") ) {
+		return NULL;
+	}
 
+	// width, height, flags (currently only negative)
+	GetToken(false);
+	int	width	= atoi(token);
+
+	GetToken(false);
+	int	height	= atoi(token);
+
+	pm = MakeNewPatch(width, height);
+	pm->d_texture = tex;
+
+	if ( !bOld ) {
+		GetToken(false);
+		pm->horzSubdivisions = atoi(token);
+		GetToken(false);
+		pm->vertSubdivisions = atoi(token);
+		pm->explicitSubdivisions = true;
+	}
+
+	GetToken(false);
+	pm->contents = atoi(token);
+
+	GetToken(false);
+	pm->flags = atoi(token);
+
+	GetToken(false);
+	pm->value = atoi(token);
+
+	GetToken(false);
+	if (strcmp(token, ")")) {
+		return NULL;
+	}
 
 	float	ctrl[MAX_PATCH_WIDTH][MAX_PATCH_HEIGHT][5];
 	Parse3DMatrix(pm->width, pm->height, 5, reinterpret_cast< float*>(&ctrl));
 
-	int	w, h;
-
-	for ( w = 0; w < pm->width; w++ ) {
-		for ( h = 0; h < pm->height; h++ ) {
+	for ( int w = 0; w < pm->width; w++ ) {
+		for ( int h = 0; h < pm->height; h++ ) {
 			pm->ctrl(w, h).xyz[0] = ctrl[w][h][0];
 			pm->ctrl(w, h).xyz[1] = ctrl[w][h][1];
 			pm->ctrl(w, h).xyz[2] = ctrl[w][h][2];
@@ -3264,10 +3250,6 @@ Patch_Write
 ==================
 */
 void Patch_Write( patchMesh_t *p,CMemFile *file ) {
-	if ( g_qeglobals.bSurfacePropertiesPlugin ) {
-		common->Printf("WARNING: Patch_Write to a CMemFile and Surface Properties plugin not done\n");
-	}
-
 	if ( p->explicitSubdivisions ) {
 		MemFile_fprintf(file, " {\n  patchDef3\n  {\n");
 		MemFile_fprintf(file, "   \"%s\"\n", p->d_texture->GetName());

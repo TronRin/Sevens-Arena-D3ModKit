@@ -124,10 +124,10 @@ public:
 
 //++timo texdef and brushprimit_texdef are static
 // TODO : do dynamic ?
-typedef struct face_s
+struct face_t
 {
-	struct face_s			*next;
-	struct face_s			*original;		//used for vertex movement
+	face_t					*next;
+	face_t					*original;		//used for vertex movement
 	idVec3					planepts[3];
 	idVec3					orgplanepts[3];	// used for arbitrary rotation
 	texdef_t				texdef;
@@ -143,17 +143,17 @@ typedef struct face_s
 
 	// Timo new brush primit texdef
 	brushprimit_texdef_t	brushprimit_texdef;
-} face_t;
+};
 
-typedef struct {
+struct curveVertex_t {
 	idVec3	xyz;
 	float	sideST[2];
 	float	capST[2];
-} curveVertex_t;
+};
 
-typedef struct {
+struct sideVertex_t {
 	curveVertex_t	v[2];
-} sideVertex_t;
+};
 
 
 #define	MIN_PATCH_WIDTH		3
@@ -272,15 +272,14 @@ enum EVAR_TYPES {
 	EVAR_SOUND
 };
 
-typedef struct evar_s {
+struct evar_t {
 	int	type;
 	idStr name;
 	idStr desc;
-} evar_t;
+};
 
-typedef struct eclass_s
-{
-	struct eclass_s *next;
+struct eclass_t {
+	eclass_t* next;
 	idStr	name;
 	bool	fixedsize;
 	idVec3	mins, maxs;
@@ -297,7 +296,7 @@ typedef struct eclass_s
 	idDict	args;
 	idDict	defArgs;
 	idList<evar_t> vars;
-} eclass_t;
+};
 
 extern	eclass_t	*eclass;
 

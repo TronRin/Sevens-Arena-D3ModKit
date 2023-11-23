@@ -179,8 +179,6 @@ public:
 	// these are public so i can easily reflect messages
 	// from child windows..
 	//{{AFX_MSG(CMainFrame)
-	afx_msg void OnBSPStatus(UINT wParam, long lParam);
-	afx_msg void OnBSPDone(UINT wParam, long lParam);
 	afx_msg void OnParentNotify(UINT message, LPARAM lParam);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
@@ -192,13 +190,11 @@ public:
 	afx_msg void ToggleCamera();
 	afx_msg void OnFileClose();
 	afx_msg void OnFileExit();
-	afx_msg void OnFileLoadproject();
 	afx_msg void OnFileNew();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFilePointfile();
 	afx_msg void OnFileSave();
 	afx_msg void OnFileSaveas();
-	afx_msg void OnFileSaveCopy();
 
 	afx_msg void OnInspectorConsole();
 	afx_msg void OnInspectorEntity();
@@ -322,7 +318,6 @@ public:
 	afx_msg void OnEditEntityinfo();
 	afx_msg void OnViewNextview();
 	afx_msg void OnHelpCommandlist();
-	afx_msg void OnFileNewproject();
 	afx_msg void OnFlipClip();
 	afx_msg void OnClipSelected();
 	afx_msg void OnSplitSelected();
@@ -376,7 +371,6 @@ public:
 	afx_msg void OnSelectMousescale();
 	afx_msg void OnViewCubicclipping();
 	afx_msg void OnFileImport();
-	afx_msg void OnFileProjectsettings();
 	afx_msg void OnUpdateFileImport(CCmdUI* pCmdUI);
 	afx_msg void OnViewCubein();
 	afx_msg void OnViewCubeout();

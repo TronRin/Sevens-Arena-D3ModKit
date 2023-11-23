@@ -66,87 +66,33 @@ void WINAPI QE_CheckOpenGLForErrors(void) {
  =======================================================================================================================
  =======================================================================================================================
  */
-bool DoesFileExist(const char *pBuff, long &lSize) {
-	CFile	file;
-	if (file.Open(pBuff, CFile::modeRead | CFile::shareDenyNone)) {
-		lSize += file.GetLength();
-		file.Close();
-		return true;
-	}
-
-	return false;
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-bool ExtractPath_and_Filename(const char *pPath, CString &strPath, CString &strFilename) {
-	CString strPathName = pPath;
-	int		nSlash = strPathName.ReverseFind('\\');
-	if (nSlash >= 0) {
-		strPath = strPathName.Left(nSlash + 1);
-		strFilename = strPathName.Right(strPathName.GetLength() - nSlash - 1);
-	}
-	else {
-		strFilename = pPath;
-	}
-
-	return true;
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void Map_Snapshot() {
-	CString strMsg;
-
 	//
 	// we need to do the following 1. make sure the snapshot directory exists (create
 	// it if it doesn't) 2. find out what the lastest save is based on number 3. inc
 	// that and save the map
 	//
-	CString strOrgPath, strOrgFile;
-	ExtractPath_and_Filename(currentmap, strOrgPath, strOrgFile);
-	AddSlash(strOrgPath);
-	strOrgPath += "snapshots";
+	idStr strOrgPath, strOrgFile;
+	const auto mappath = idStr( currentmap ).BackSlashesToSlashes();
+	mappath.ExtractFilePath( strOrgPath );
+	mappath.ExtractFileBase( strOrgFile );
 
-	bool			bGo = true;
-	struct _stat	Stat;
-	if (_stat(strOrgPath, &Stat) == -1) {
-		bGo = (_mkdir(strOrgPath) != -1);
-	}
+	strOrgPath.AppendPath( "snapshots" );
 
-	AddSlash(strOrgPath);
-	if (bGo) {
-		int		nCount = 0;
-		long	lSize = 0;
-		CString strNewPath = strOrgPath;
-		strNewPath += strOrgFile;
+	idStr strNewPath = strOrgPath;
+	strNewPath.AppendPath( strOrgFile );
 
-		CString strFile;
-		while (bGo) {
-			strFile.Format("%s.%i", strNewPath.GetString(), nCount);
-			bGo = DoesFileExist(strFile, lSize);
-			nCount++;
-		}
-
-		// strFile has the next available slot
-		Map_SaveFile(strFile.GetBuffer(0), false);
-		Sys_SetTitle(currentmap);
-		if (lSize > 12 * 1024 * 1024) { // total size of saves > 4 mb
-			common->Printf
-			(
-				"The snapshot files in the [%s] directory total more than 4 megabytes. You might consider cleaning the directory up.",
-				strOrgPath.GetString()
-			);
+	idStr test;
+	for ( int i = 0;;++i ) {
+		sprintf( test, "%s__%i.map", strNewPath.c_str(), i );
+		if ( !Sys_IsFile( test.c_str() ) ) {
+			break;
 		}
 	}
-	else {
-		strMsg.Format("Snapshot save failed.. unabled to create directory\n%s", strOrgPath.GetString());
-		g_pParentWnd->MessageBox(strMsg);
-	}
+
+	// strFile has the next available slot
+	Map_SaveFile( test, false );
+	Sys_SetTitle( currentmap );
 }
 
 /*
@@ -169,13 +115,12 @@ void QE_CheckAutoSave(void) {
 	inAutoSave = true;
 
 	if ( g_PrefsDlg.m_bAutoSave ) {
-		CString strMsg = g_PrefsDlg.m_bSnapShots ? "Autosaving snapshot..." : "Autosaving...";
-		Sys_Status(strMsg.GetBuffer(0), 0);
+		Sys_Status( g_PrefsDlg.m_bSnapShots ? "Autosaving snapshot..." : "Autosaving...", 0 );
 
 		if (g_PrefsDlg.m_bSnapShots && stricmp(currentmap, "unnamed.map") != 0) {
 			Map_Snapshot();
 		} else {
-			Map_SaveFile(g_qeglobals.d_project_entity->ValueForKey((autoToggle == 0) ? "autosave1" : "autosave2" ), false, true);
+			Map_SaveFile( ( autoToggle == 0 ) ? "autosave1" : "autosave2", false, true );
 			autoToggle ^= 1;
 		}
 		Sys_Status("Autosaving...Saved.", 0);
@@ -187,102 +132,6 @@ void QE_CheckAutoSave(void) {
 
 	inAutoSave = false;
 }
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-
-const char	*g_pPathFixups[] = {
-	"basepath",
-
-	// "remotebasepath",
-	"entitypath",
-
-	// "texturepath",
-	"autosave",
-
-	// "mapspath"
-};
-
-const int	g_nPathFixupCount = sizeof(g_pPathFixups) / sizeof (const char *);
-
-/*
- =======================================================================================================================
-	QE_LoadProject
- =======================================================================================================================
- */
-bool QE_LoadProject(char *projectfile) {
-	char		*data;
-	ID_TIME_T		time;
-
-	common->Printf("QE_LoadProject (%s)\n", projectfile);
-
-	if ( fileSystem->ReadFile( projectfile, reinterpret_cast < void ** > (&data), &time) <= 0 ) {
-		return false;
-	}
-
-	g_strProject = projectfile;
-	g_PrefsDlg.m_strLastProject = projectfile;
-	g_PrefsDlg.SavePrefs();
-
-	CString strData = data;
-
-	fileSystem->FreeFile( data );
-
-	StartTokenParsing(strData.GetBuffer(0));
-	g_qeglobals.d_project_entity = Entity_Parse(true);
-	if (!g_qeglobals.d_project_entity) {
-		Error("Couldn't parse %s", projectfile);
-	}
-
-	// set here some default project settings you need
-	if (strlen(g_qeglobals.d_project_entity->ValueForKey("brush_primit")) == 0) {
-		g_qeglobals.d_project_entity->SetKeyValue("brush_primit", "0");
-	}
-
-	g_qeglobals.m_bBrushPrimitMode = g_qeglobals.d_project_entity->IntForKey("brush_primit");
-
-	Eclass_InitForSourceDirectory(g_qeglobals.d_project_entity->ValueForKey("entitypath"));
-	g_Inspectors->FillClassList();	// list in entity window
-
-	Map_New();
-
-	// FillTextureMenu();
-	FillBSPMenu();
-
-	return true;
-}
-
-/*
- =======================================================================================================================
-	QE_SaveProject £
- =======================================================================================================================
- */
-bool QE_SaveProject(const char *pProjectFile) {
-
-	idFile *file = fileSystem->OpenFileWrite(pProjectFile);
-	if ( !file ) {
-		return false;
-	}
-
-	file->Write("{\n", 2);
-
-	int count = g_qeglobals.d_project_entity->epairs.GetNumKeyVals();
-	for (int i = 0; i < count; i++) {
-		file->WriteFloatString( "\"%s\" \"%s\"\n", g_qeglobals.d_project_entity->epairs.GetKeyVal(i)->GetKey().c_str(), g_qeglobals.d_project_entity->epairs.GetKeyVal(i)->GetValue().c_str());
-	}
-
-	file->Write("}\n", 2);
-
-	fileSystem->CloseFile( file );
-
-	return true;
-}
-
-/* QE_KeyDown */
-#define SPEED_MOVE	32
-#define SPEED_TURN	22.5
 
 /*
  =======================================================================================================================
@@ -383,9 +232,14 @@ bool QE_SingleBrush(bool bQuiet, bool entityOK) {
  =======================================================================================================================
  */
 void QE_Init(void) {
-	/* initialize variables */
+	g_qeglobals.m_bBrushPrimitMode = TRUE;
 	g_qeglobals.d_gridsize = 8;
 	g_qeglobals.d_showgrid = true;
+
+	Eclass_InitForSourceDirectory();
+	g_Inspectors->FillClassList();	// list in entity window
+
+	Map_New();
 
 	/*
 	 * other stuff £

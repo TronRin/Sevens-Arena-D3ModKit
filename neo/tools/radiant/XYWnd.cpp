@@ -3000,45 +3000,6 @@ void CXYWnd::DrawCameraIcon() {
 #endif
 }
 
-//========================
-// DrawZIcon
-//========================
-void CXYWnd::DrawZIcon(void) {
-	if (m_nViewType == ViewType::XY) {
-		float	x = z.origin[0];
-		float	y = z.origin[1];
-		qglEnable(GL_BLEND);
-		globalImages->BindNull();
-		qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		qglDisable(GL_CULL_FACE);
-		qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		qglColor4f(0.0, 0.0, 1.0, 0.25);
-		qglBegin(GL_QUADS);
-		qglVertex3f(x - 8, y - 8, 0);
-		qglVertex3f(x + 8, y - 8, 0);
-		qglVertex3f(x + 8, y + 8, 0);
-		qglVertex3f(x - 8, y + 8, 0);
-		qglEnd();
-		qglDisable(GL_BLEND);
-
-		qglColor4f(0.0, 0.0, 1.0, 1);
-
-		qglBegin(GL_LINE_LOOP);
-		qglVertex3f(x - 8, y - 8, 0);
-		qglVertex3f(x + 8, y - 8, 0);
-		qglVertex3f(x + 8, y + 8, 0);
-		qglVertex3f(x - 8, y + 8, 0);
-		qglEnd();
-
-		qglBegin(GL_LINE_STRIP);
-		qglVertex3f(x - 4, y + 4, 0);
-		qglVertex3f(x + 4, y + 4, 0);
-		qglVertex3f(x - 4, y - 4, 0);
-		qglVertex3f(x + 4, y - 4, 0);
-		qglEnd();
-	}
-}
-
 /*
  =======================================================================================================================
 	FilterBrush
@@ -3056,22 +3017,6 @@ bool FilterBrush(const brush_t *pb) {
 
 	if ( pb->forceVisibile ) {
 		return false;
-	}
-
-	if (g_pParentWnd->GetZWnd()->m_pZClip)	// ZClip class up and running? (and hence Z window built)
-	{
-		if (g_pParentWnd->GetZWnd()->m_pZClip->IsEnabled())
-		{
-			// ZClipping active...
-			//
-			if (pb->mins[2] > g_pParentWnd->GetZWnd()->m_pZClip->GetTop()	// brush bottom edge is above clip top
-				||
-				pb->maxs[2] < g_pParentWnd->GetZWnd()->m_pZClip->GetBottom()// brush top edge is below clip bottom
-				)
-			{
-				return TRUE;
-			}
-		}
 	}
 
 	if (g_qeglobals.d_savedinfo.exclude & (EXCLUDE_CAULK | EXCLUDE_VISPORTALS)) {
@@ -3159,10 +3104,9 @@ bool FilterBrush(const brush_t *pb) {
 
 		return false;
 	}
-	else {
-		if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_ENT ) {
-			return ( idStr::Cmpn( pb->owner->eclass->name, "func_static", 10 ) != 0 );
-		}
+
+	if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_ENT ) {
+		return ( idStr::Cmpn( pb->owner->eclass->name, "func_static", 10 ) != 0 );
 	}
 
 	if ( g_qeglobals.d_savedinfo.exclude & EXCLUDE_LIGHTS && pb->owner->eclass->nShowFlags & ECLASS_LIGHT ) {
@@ -3711,7 +3655,6 @@ void CXYWnd::XY_Draw() {
 
 	// now draw camera point
 	DrawCameraIcon();
-	DrawZIcon();
 
 	if (RotateMode()) {
 		DrawRotateIcon();

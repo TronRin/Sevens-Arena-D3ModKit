@@ -37,7 +37,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "MainFrm.h"
 #include "RotateDlg.h"
 #include "EntityListDlg.h"
-#include "NewProjDlg.h"
 #include "CommandsDlg.h"
 #include "ScaleDialog.h"
 #include "FindTextureDlg.h"
@@ -75,15 +74,6 @@ CPrefsDlg		g_Preferences;						// global prefs instance
 CPrefsDlg		&g_PrefsDlg = g_Preferences;		// reference used throughout
 bool			g_bScreenUpdates = true;			// whether window painting is active, used in a few places
 
-//
-// to disable updates for speed reasons both of the above should be made members
-// of CMainFrame
-// bool g_bSnapToGrid = true; // early use, no longer in use, clamping pref will
-// be used
-//
-CString			g_strProject;						// holds the active project filename
-
-#define D3XP_ID_FILE_SAVE_COPY ( WM_USER + 28476 )
 #define D3XP_ID_SHOW_MODELS ( WM_USER + 28477 )
 
 //
@@ -142,7 +132,6 @@ SCommandInfo	g_Commands[] = {
 	{ "Camera_CenterView",       VK_END, 0, ID_VIEW_CENTER },
 
 	{ "Grid_ZoomOut",            VK_INSERT, 0, ID_VIEW_ZOOMOUT },
-	{ "FileSaveCopy",            'C', RAD_CONTROL|RAD_ALT|RAD_SHIFT, D3XP_ID_FILE_SAVE_COPY },
 	{ "ShowHideModels",          'M', RAD_CONTROL, D3XP_ID_SHOW_MODELS },
 	{ "NextView",                VK_HOME, 0, ID_VIEW_NEXTVIEW },
 	{ "Grid_ZoomIn",             VK_DELETE, 0, ID_VIEW_ZOOMIN },
@@ -374,13 +363,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_CAMERATOGGLE, ToggleCamera)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_COMMAND(ID_FILE_EXIT, OnFileExit)
-	ON_COMMAND(ID_FILE_LOADPROJECT, OnFileLoadproject)
 	ON_COMMAND(ID_FILE_NEW, OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_FILE_POINTFILE, OnFilePointfile)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_COMMAND(ID_FILE_SAVEAS, OnFileSaveas)
-	ON_COMMAND(D3XP_ID_FILE_SAVE_COPY, OnFileSaveCopy)
 	ON_COMMAND(D3XP_ID_SHOW_MODELS, OnViewShowModels )
 	ON_COMMAND(ID_INSPECTOR_CONSOLE, OnInspectorConsole)
 	ON_COMMAND(ID_INSPECTOR_ENTITY, OnInspectorEntity)
@@ -493,7 +480,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SET_VIEW_SIDE, OnSetViewSide)
 	ON_COMMAND(ID_SET_VIEW_FRONT, OnSetViewFront)
 	ON_COMMAND(ID_HELP_COMMANDLIST, OnHelpCommandlist)
-	ON_COMMAND(ID_FILE_NEWPROJECT, OnFileNewproject)
 	ON_COMMAND(ID_FLIP_CLIP, OnFlipClip)
 	ON_COMMAND(ID_CLIP_SELECTED, OnClipSelected)
 	ON_COMMAND(ID_SPLIT_SELECTED, OnSplitSelected)
@@ -542,7 +528,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_SELECT_MOUSESCALE, OnSelectMousescale)
 	ON_COMMAND(ID_VIEW_CUBICCLIPPING, OnViewCubicclipping)
 	ON_COMMAND(ID_FILE_IMPORT, OnFileImport)
-	ON_COMMAND(ID_FILE_PROJECTSETTINGS, OnFileProjectsettings)
 	ON_UPDATE_COMMAND_UI(ID_FILE_IMPORT, OnUpdateFileImport)
 	ON_COMMAND(ID_VIEW_CUBEIN, OnViewCubein)
 	ON_COMMAND(ID_VIEW_CUBEOUT, OnViewCubeout)
@@ -728,30 +713,6 @@ static UINT indicators[] = {
  */
 void CMainFrame::OnDisplayChange( WPARAM wp, LPARAM lp ) {
 //	int n = wp;
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnBSPStatus(UINT wParam, long lParam) {
-	// lparam is an atom contain the text
-	char buff[1024];
-	if (::GlobalGetAtomName(static_cast<ATOM>(lParam), buff, sizeof(buff))) {
-		common->Printf("%s", buff);
-		::GlobalDeleteAtom(static_cast<ATOM>(lParam));
-	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnBSPDone(UINT wParam, long lParam) {
-	idStr str = cvarSystem->GetCVarString( "radiant_bspdone" );
-	if (str.Length()) {
-		sndPlaySound(str.c_str(), SND_FILENAME | SND_ASYNC);
-	}
 }
 
 //
@@ -943,12 +904,8 @@ void CMainFrame::SetButtonMenuStates() {
 		CheckTextureScale(id);
 	}
 
-	if (g_qeglobals.d_project_entity) {
-		// FillTextureMenu(); // redundant but i'll clean it up later.. yeah right..
-		FillBSPMenu();
-		LoadMruInReg(g_qeglobals.d_lpMruMenu, "Software\\" EDITOR_REGISTRY_KEY "\\MRU" );
-		PlaceMenuMRUItem(g_qeglobals.d_lpMruMenu, ::GetSubMenu(::GetMenu(GetSafeHwnd()), 0), ID_FILE_EXIT);
-	}
+	LoadMruInReg(g_qeglobals.d_lpMruMenu, "Software\\" EDITOR_REGISTRY_KEY "\\MRU" );
+	PlaceMenuMRUItem(g_qeglobals.d_lpMruMenu, ::GetSubMenu(::GetMenu(GetSafeHwnd()), 0), ID_FILE_EXIT);
 }
 
 /*
@@ -1305,29 +1262,6 @@ void CMainFrame::Dump(CDumpContext &dc) const {
 // =======================================================================================================================
 //
 void CMainFrame::CreateQEChildren() {
-	//
-	// the project file can be specified on the command line, or implicitly found in
-	// the basedir directory
-	//
-	bool bProjectLoaded = false;
-	if (g_PrefsDlg.m_bLoadLast && g_PrefsDlg.m_strLastProject.GetLength() > 0) {
-		bProjectLoaded = QE_LoadProject(g_PrefsDlg.m_strLastProject.GetBuffer(0));
-	}
-	if (!bProjectLoaded) {
-		bProjectLoaded = QE_LoadProject( EDITOR_DEFAULT_PROJECT );
-	}
-
-	if (!bProjectLoaded) {
-		CFileDialog dlgFile( true, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, EDITOR_WINDOWTEXT " Project files (*.qe4, *.prj)|*.qe4|*.prj||",	this );
-		if (dlgFile.DoModal() == IDOK) {
-			bProjectLoaded = QE_LoadProject(dlgFile.GetPathName().GetBuffer(0));
-		}
-	}
-
-	if (!bProjectLoaded) {
-		Error("Unable to load project file. It was unavailable in the scripts path and the default could not be found");
-	}
-
 	QE_Init();
 
 	common->Printf("Entering message loop\n");
@@ -1552,16 +1486,6 @@ void CMainFrame::OnDestroy() {
 
 	while (entities.next != &entities) {
 		delete entities.next;
-	}
-
-
-	g_qeglobals.d_project_entity->epairs.Clear();
-
-	entity_t	*pEntity = g_qeglobals.d_project_entity->next;
-	while (pEntity != NULL && pEntity != g_qeglobals.d_project_entity) {
-		entity_t	*pNextEntity = pEntity->next;
-		delete pEntity;
-		pEntity = pNextEntity;
 	}
 
 	if (world_entity) {
@@ -1859,16 +1783,6 @@ void CMainFrame::OnFileExit() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnFileLoadproject() {
-	if (ConfirmModified()) {
-		ProjectDialog();
-	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::OnFileNew() {
 	if (ConfirmModified()) {
 		Map_New();
@@ -1920,51 +1834,17 @@ void CMainFrame::OnFileSaveas() {
 }
 
 /*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnFileSaveCopy() {
-	char aFile[260] = "\0";
-	char aFilter[260] = "Map\0*.map\0\0";
-	char aTitle[260] = "Save a Copy\0";
-	OPENFILENAME afn;
-
-	memset( &afn, 0, sizeof(OPENFILENAME) );
-
-	CString strPath = g_qeglobals.d_project_entity->ValueForKey("basepath");
-	AddSlash(strPath);
-	strPath += "maps";
-	if (g_PrefsDlg.m_strMaps.GetLength() > 0) {
-		strPath += va("\\%s", g_PrefsDlg.m_strMaps.GetString());
+=======================================================================================================================
+=======================================================================================================================
+*/
+static void AddSlash( CString &strPath ) {
+	if ( strPath.GetLength() > 0 ) {
+		if ( strPath.GetAt( strPath.GetLength() - 1 ) != '\\' ) {
+			strPath += '\\';
+		}
 	}
-
-	/* Place the terminating null character in the szFile. */
-	aFile[0] = '\0';
-
-	/* Set the members of the OPENFILENAME structure. */
-	afn.lStructSize = sizeof(OPENFILENAME);
-	afn.hwndOwner = g_pParentWnd->GetSafeHwnd();
-	afn.lpstrFilter = aFilter;
-	afn.nFilterIndex = 1;
-	afn.lpstrFile = aFile;
-	afn.nMaxFile = sizeof(aFile);
-	afn.lpstrFileTitle = NULL;
-	afn.nMaxFileTitle = 0;
-	afn.lpstrInitialDir = strPath;
-	afn.lpstrTitle = aTitle;
-	afn.Flags = OFN_SHOWHELP | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;
-
-	/* Display the Open dialog box. */
-	if (!GetSaveFileName(&afn)) {
-		return; // canceled
-	}
-
-	DefaultExtension(afn.lpstrFile, ".map");
-	Map_SaveFile(afn.lpstrFile, false);	// ignore region
-
-	// Set the title back to the current working map
-	Sys_SetTitle(currentmap);
 }
+
 
 /*
 ==================================================================================================
@@ -2136,99 +2016,7 @@ void CMainFrame::OnTextureWad(unsigned int nID) {
  =======================================================================================================================
  =======================================================================================================================
  */
-
-/*
-============
-RunBsp
-
-This is the new all-internal bsp
-============
-*/
-void RunBsp (const char *command) {
-	char	system[2048];
-	char	name[2048];
-	char	*in;
-
-	// bring the console window forward for feedback
-	if( !g_Inspectors->IsWindowVisible() || g_Inspectors->prevMode != W_CONSOLE ) {
-		g_Inspectors->SetMode( W_CONSOLE );
-	}
-
-	// decide if we are doing a .map or a .reg
-	strcpy (name, currentmap);
-	if ( region_active ) {
-		Map_SaveFile (name, false);
-		StripExtension (name);
-		strcat (name, ".reg");
-	}
-
-	if ( !Map_SaveFile ( name, region_active ) ) {
-		return;
-	}
-
-	// name should be a full pathname, but we only
-	// want to pass the maps/ part to dmap
-	in = strstr(name, "maps/");
-	if ( !in ) {
-		in = strstr(name, "maps\\");
-	}
-	if ( !in ) {
-		in = name;
-	}
-
-	if (idStr::Icmpn(command, "bspext", strlen("runbsp")) == 0) {
-		PROCESS_INFORMATION ProcessInformation;
-		STARTUPINFO	startupinfo;
-		char buff[2048];
-
-		idStr base = cvarSystem->GetCVarString( "fs_basepath" );
-		idStr cd = cvarSystem->GetCVarString( "fs_cdpath" );
-		idStr paths;
-		if (base.Length()) {
-			paths += "+set fs_basepath ";
-			paths += base;
-		}
-		if (cd.Length()) {
-			paths += "+set fs_cdpath ";
-			paths += cd;
-		}
-
-		::GetModuleFileName(AfxGetApp()->m_hInstance, buff, sizeof(buff));
-		if (strlen(command) > strlen("bspext")) {
-			idStr::snPrintf( system, sizeof(system), "%s %s +set r_fullscreen 0 +dmap editorOutput %s %s +quit", buff, paths.c_str(), command + strlen("bspext"), in );
-		} else {
-			idStr::snPrintf( system, sizeof(system), "%s %s +set r_fullscreen 0 +dmap editorOutput %s +quit", buff, paths.c_str(), in );
-		}
-
-		::GetStartupInfo (&startupinfo);
-		if (!CreateProcess(NULL, system, NULL, NULL, FALSE, 0, NULL, NULL, &startupinfo, &ProcessInformation)) {
-			common->Printf("Could not start bsp process %s %s/n", buff, sys);
-		}
-		g_pParentWnd->SetFocus();
-
-	} else { // assumes bsp is the command
-		if (strlen(command) > strlen("bsp")) {
-			idStr::snPrintf( system, sizeof(system), "dmap %s %s", command + strlen("bsp"), in );
-		} else {
-			idStr::snPrintf( system, sizeof(system), "dmap %s", in );
-		}
-
-		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "disconnect\n" );
-
-		// issue the bsp command
-		Dmap_f( idCmdArgs( system, false ) );
-	}
-}
-
 void CMainFrame::OnBspCommand(unsigned int nID) {
-	if (g_PrefsDlg.m_bSnapShots && stricmp(currentmap, "unnamed.map") != 0) {
-		Map_Snapshot();
-	}
-
-	RunBsp(bsp_commands[LOWORD(nID - CMD_BSPCOMMAND)]);
-
-	// DHM - _D3XP
-	SetTimer(QE_TIMER1, g_PrefsDlg.m_nAutoSave * 60 * 1000, NULL);
 }
 
 /*
@@ -3929,14 +3717,6 @@ void CMainFrame::OnHelpCommandlist() {
  =======================================================================================================================
  =======================================================================================================================
  */
-void CMainFrame::OnFileNewproject()
-{
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
 void CMainFrame::UpdateStatusText() {
 	for (int n = 0; n < 6; n++) {
 		if (m_strStatus[n].GetLength() >= 0 && m_wndStatusBar.GetSafeHwnd()) {
@@ -4811,14 +4591,6 @@ void CMainFrame::OnSelectMousescale() {
  =======================================================================================================================
  */
 void CMainFrame::OnFileImport() {
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CMainFrame::OnFileProjectsettings() {
-	DoProjectSettings();
 }
 
 /*

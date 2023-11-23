@@ -39,8 +39,6 @@ Radiant "Editor" Implementation
 void RadiantPrint( const char* text );
 void RadiantShutdown( void );
 void RadiantInit( void );
-extern void Map_VerifyCurrentMap( const char* map );
-void RadiantSync( const char* mapName, const idVec3& viewOrg, const idAngles& viewAngles );
 void RadiantRun( void );
 
 bool SaveRegistryInfo( const char* pszName, void* pvBuf, long lSize );
