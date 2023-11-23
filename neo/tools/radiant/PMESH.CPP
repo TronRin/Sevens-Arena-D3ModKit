@@ -33,6 +33,35 @@ If you have questions concerning this license or the applicable additional terms
 #include "DialogInfo.h"
 #include "CapDialog.h"
 
+namespace {
+	const int MIN_PATCH_WIDTH = 3;
+	const int MIN_PATCH_HEIGHT = 3;
+
+	const int MAX_PATCH_WIDTH = 64;
+	const int MAX_PATCH_HEIGHT = 64;
+
+	// patch type info
+	// type in lower 16 bits, flags in upper
+	// endcaps directly follow this patch in the list
+
+	// types
+	const int PATCH_GENERIC = 0x00000000;    // generic flat patch
+	const int PATCH_CYLINDER = 0x00000001;    // cylinder
+	const int PATCH_BEVEL = 0x00000002;    // bevel
+	const int PATCH_ENDCAP = 0x00000004;    // endcap
+	const int PATCH_HEMISPHERE = 0x00000008;    // hemisphere
+	const int PATCH_CONE = 0x00000010;    // cone
+	const int PATCH_TRIANGLE = 0x00000020;    // simple tri, assumes 3x3 patch
+
+	// behaviour styles
+	const int PATCH_CAP = 0x00001000;    // flat patch applied as a cap
+	const int PATCH_SEAM = 0x00002000;    // flat patch applied as a seam
+	const int PATCH_THICK = 0x00004000;    // patch applied as a thick portion
+
+	const int PATCH_TYPEMASK = 0x00000fff;    //
+	const int PATCH_STYLEMASK = 0xffff0000;    //
+}
+
 // externs
 extern void MemFile_fprintf( CMemFile *pMemFile,const char *pText,... );
 extern face_t *Face_Alloc( void );

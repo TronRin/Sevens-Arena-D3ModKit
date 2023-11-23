@@ -100,9 +100,8 @@ If you have questions concerning this license or the applicable additional terms
 #define RENDERDEMO_VERSION				2
 
 // editor info
-#define EDITOR_DEFAULT_PROJECT			"doom.qe4"
-#define EDITOR_REGISTRY_KEY				"DOOMRadiant"
-#define EDITOR_WINDOWTEXT				"DOOMEdit"
+#define EDITOR_REGISTRY_KEY				"Radiant"
+#define EDITOR_WINDOWTEXT				"Radiant Editor"
 
 // win32 info
 #define WIN32_CONSOLE_CLASS				"dhewm 3 WinConsole"

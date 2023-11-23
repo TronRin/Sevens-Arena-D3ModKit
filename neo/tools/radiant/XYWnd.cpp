@@ -1373,7 +1373,7 @@ void CXYWnd::OnPaint() {
 	bool		bPaint = true;
 	if (!qwglMakeCurrent(dc.m_hDC, win32.hGLRC)) {
 		common->Printf("ERROR: wglMakeCurrent failed.. Error:%i\n", qglGetError());
-		common->Printf("Please restart Q3Radiant if the Map view is not working\n");
+		common->Printf("Please restart " EDITOR_WINDOWTEXT " if the Map view is not working\n");
 		bPaint = false;
 	}
 

@@ -155,7 +155,7 @@ void Error(char *error, ...) {
 	sprintf
 	(
 		text2,
-		"%s\nGetLastError() = %i - %i\nAn unrecoverable error has occured. Would you like to edit Preferences before exiting Q3Radiant?",
+		"%s\nGetLastError() = %i - %i\nAn unrecoverable error has occured. Would you like to edit Preferences before exiting " EDITOR_WINDOWTEXT "?",
 		text,
 		err,
 		i

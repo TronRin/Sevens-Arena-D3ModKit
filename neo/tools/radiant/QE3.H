@@ -52,7 +52,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "qedefs.h"
 
 // stuff from old qfiles.h
-#define	MAX_MAP_ENTITIES	2048
+const int MAX_MAP_ENTITIES = 2048;
 const int MAX_MOVE_POINTS = 4096;
 const int MAX_MOVE_PLANES = 2048;
 
@@ -363,7 +363,6 @@ extern SKeyInfo g_Keys[];
 extern int g_nKeyCount;
 extern void HandlePopup(CWnd* pWindow, unsigned int uId);
 extern z_t z;
-extern void TextureAxisFromPlane( const idPlane &pln, idVec3 &xv, idVec3 &yv);
 extern void Clamp(float& f, int nClamp);
 extern bool WriteFileString( FILE *fp, char *string, ... );
 extern void MemFile_fprintf(CMemFile* pMemFile, const char* pText, ...);
