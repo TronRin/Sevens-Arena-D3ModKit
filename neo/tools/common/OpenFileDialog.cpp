@@ -112,7 +112,7 @@ void rvOpenFileDialog::UpdateLookIn ( void )
 	item.mask = CBEIF_TEXT | CBEIF_INDENT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE;
 
 	// Add the top left folder
-	item.pszText = (LPSTR)"base";
+	item.pszText = (LPSTR)BASE_GAMEDIR;
 	SendMessage ( mWndLookin, CBEM_INSERTITEM, 0, (LPARAM)&item );
 
 	// Break the lookin path up into its individual components and add them

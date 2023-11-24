@@ -109,21 +109,21 @@ void CPreviewDlg::BuildTree() {
 
 	if ( currentMode == GUIS ) {
 		files = fileSystem->ListFilesTree( "guis", ".gui" );
-		AddStrList( "base", files->GetList(), GUIS );
+		AddStrList( BASE_GAMEDIR, files->GetList(), GUIS );
 		fileSystem->FreeFileList( files );
 	} else if ( currentMode == MODELS ) {
 		files = fileSystem->ListFilesTree( "models", ".lwo" );
-		AddStrList( "base", files->GetList(), MODELS );
+		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
 		fileSystem->FreeFileList( files );
 		files = fileSystem->ListFilesTree( "models", ".ase" );
-		AddStrList( "base", files->GetList(), MODELS );
+		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
 		fileSystem->FreeFileList( files );
 		files = fileSystem->ListFilesTree( "models", ".ma" );
-		AddStrList( "base", files->GetList(), MODELS );
+		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
 		fileSystem->FreeFileList( files );
 #if USE_COLLADA
-		files = fileSystem->ListFilesTree("models", ".dae");
-		AddStrList("base", files->GetList(), MODELS);
+		files = fileSystem->ListFilesTree( "models", ".dae" );
+		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
 		fileSystem->FreeFileList(files);
 #endif
 	} else if ( currentMode == SOUNDS ) {
