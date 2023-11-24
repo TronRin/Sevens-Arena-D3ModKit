@@ -324,6 +324,9 @@ typedef struct {
 	bool	noLightCarve;		// extra triangle subdivision by light frustums
 	shadowOptLevel_t	shadowOptLevel;
 	bool	noShadow;			// don't create optimized shadow volumes
+	bool	noStats;			// don't print timing stats
+	bool	noCM;				// don't create collision map
+	bool	noAAS;				// don't create AAS files
 
 	idBounds	drawBounds;
 	bool	drawflag;

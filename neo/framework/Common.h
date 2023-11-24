@@ -91,7 +91,6 @@ extern bool			com_debuggerSupported;	// only set to true when the updateDebugger
 
 #ifdef _WIN32
 const char			DMAP_MSGID[] = "DMAPOutput";
-const char			DMAP_DONE[] = "DMAPDone";
 extern HWND			com_hwndMsg;
 extern bool			com_outputMsg;
 #endif
