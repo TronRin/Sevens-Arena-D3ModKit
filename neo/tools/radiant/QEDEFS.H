@@ -47,9 +47,6 @@ If you have questions concerning this license or the applicable additional terms
 #define	MAX_EDGES	512
 #define	MAX_POINTS	1024
 
-#define	CMD_TEXTUREWAD	60000
-#define	CMD_BSPCOMMAND	61000
-
 #define	PITCH	0
 #define	YAW		1
 #define	ROLL	2

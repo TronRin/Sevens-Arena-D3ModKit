@@ -2329,6 +2329,7 @@ BEGIN
     BUTTON      ID_SOUND_SHOWSOUNDVOLUMES
     BUTTON      ID_SOUND_SHOWSELECTEDSOUNDVOLUMES
     SEPARATOR
+    BUTTON      ID_DMAP
     BUTTON      ID_SHOW_DOOM
 END
 
@@ -2427,13 +2428,6 @@ BEGIN
     BEGIN
         POPUP "Toggle"
         BEGIN
-            POPUP "Inspector"
-            BEGIN
-                MENUITEM "Entity Tab",                  ID_INSPECTOR_ENTITY
-                MENUITEM "Media Tab",                   ID_INSPECTOR_MEDIABROWSER
-                MENUITEM "Textures Tab",                ID_INSPECTOR_TEXTURE
-                MENUITEM "Console Tab",                 ID_INSPECTOR_CONSOLE
-            END
             POPUP "Windows"
             BEGIN
                 MENUITEM "Camera Windows",              ID_TOGGLECAMERA
@@ -2448,6 +2442,13 @@ BEGIN
                 MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
                 MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
             END
+        END
+        POPUP "Inspector"
+        BEGIN
+            MENUITEM "Focus Entity Tab",            ID_INSPECTOR_ENTITY
+            MENUITEM "Focus Media Tab",             ID_INSPECTOR_MEDIABROWSER
+            MENUITEM "Focus Textures Tab",          ID_INSPECTOR_TEXTURE
+            MENUITEM "Focus Console Tab",           ID_INSPECTOR_CONSOLE
         END
         MENUITEM SEPARATOR
         MENUITEM "&Center\tEnd",                ID_VIEW_CENTER
@@ -2515,7 +2516,6 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Cubic Clipping",              ID_VIEW_CUBICCLIPPING, CHECKED
-        MENUITEM "Set View Position",           ID_MISC_SETVIEWPOS
         MENUITEM SEPARATOR
         POPUP "Rendermode"
         BEGIN
@@ -2594,10 +2594,6 @@ BEGIN
             MENUITEM "To OBJ",                      ID_SELECTION_EXPORT_TOOBJ
             MENUITEM "To CM",                       ID_SELECTION_EXPORT_TOCM
         END
-    END
-    POPUP "&Bsp"
-    BEGIN
-        MENUITEM SEPARATOR
     END
     POPUP "&Grid"
     BEGIN
@@ -3661,7 +3657,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_BRUSH_SCRIPTS        "Define and run BrushScripts\nBrushScripts"
     ID_HELP_COMMANDLIST     "Provides a list of the currently bound commands"
 END
 
@@ -4080,6 +4075,11 @@ BEGIN
     AFX_IDS_PRINTFILTER     "Printer Files (*.prn)|*.prn|All Files (*.*)|*.*||"
     AFX_IDS_PRINTCAPTION    "Print to File"
     AFX_IDS_PRINTTOFILE     "to %1"
+END
+
+STRINGTABLE
+BEGIN
+    ID_DMAP                 "Compile the current map\n"
 END
 
 #endif    // English (United States) resources

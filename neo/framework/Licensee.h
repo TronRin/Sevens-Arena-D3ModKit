@@ -35,10 +35,10 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #if defined(__AROS__)
-#define GAME_NAME						"ADoom3"		// appears in errors
-#define CONFIG_FILE						"adoom3.cfg"
+	#define GAME_NAME						"ADoom3"		// appears in errors
+	#define CONFIG_FILE						"adoom3.cfg"
 #else
-#define GAME_NAME						"dhewm 3"		// appears in errors
+	#define GAME_NAME						"dhewm 3"		// appears in errors
 #endif
 
 #define ENGINE_VERSION					"dhewm3 1.5.3pre"	// printed in console, used for window title
@@ -59,7 +59,7 @@ If you have questions concerning this license or the applicable additional terms
 
 // filenames
 #ifndef CONFIG_FILE
-#define CONFIG_FILE						"dhewm.cfg"
+	#define CONFIG_FILE						"dhewm.cfg"
 #endif
 
 // base folder where the source code lives
@@ -99,16 +99,20 @@ If you have questions concerning this license or the applicable additional terms
 // Doom v1.2: 2
 #define RENDERDEMO_VERSION				2
 
-// editor info
-#define EDITOR_REGISTRY_KEY				"Radiant"
-#define EDITOR_WINDOWTEXT				"Radiant Editor"
+#ifdef _WIN32
+	// editor registry info
+	#define EDITOR_REGISTRY_KEY				"Radiant"
 
-// win32 info
-#define WIN32_CONSOLE_CLASS				"dhewm 3 WinConsole"
+	// editor info
+	#define EDITOR_WINDOWTEXT				"Radiant Editor"
+
+	// win32 info classes
+	#define WIN32_CONSOLE_CLASS				"dhewm 3 WinConsole"
+#endif // _WIN32
 
 // Linux info
 #ifndef LINUX_DEFAULT_PATH // allow overriding it from the build system with -DLINUX_DEFAULT_PATH="/bla/foo/whatever"
-#define LINUX_DEFAULT_PATH				"/usr/local/games/doom3"
+	#define LINUX_DEFAULT_PATH				"/usr/local/games/doom3"
 #endif
 
 // CD Key file info

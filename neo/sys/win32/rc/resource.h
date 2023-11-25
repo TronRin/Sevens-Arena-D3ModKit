@@ -1234,6 +1234,7 @@
 #define ID_ME_FILE_SAVE_ACEL            26060
 #define ID_ME_EDIT_FIND_NEXT            26061
 #define ID_TOGGLE_MISECELEANOS          29000
+#define ID_DMAP                         29003
 #define ID_COLOR_SUPERMAL               30000
 #define ID_DROP_VIEWOPTIONS             30002
 #define ID_VIEWOPTIONS_WIREFRAME        30003
@@ -1462,11 +1463,6 @@
 #define ID_BRUSH_ROTATEX                30232
 #define ID_BRUSH_ROTATEY                30233
 #define ID_BRUSH_ROTATEZ                30234
-#define ID_BSP_FULLVIS                  30235
-#define ID_BSP_FASTVIS                  30236
-#define ID_BSP_NOVIS                    30237
-#define ID_BSP_RELIGHT                  30238
-#define ID_BSP_ENTITIES                 30239
 #define ID_FILE_POINTFILE               30240
 #define ID_VIEW_100                     30241
 #define ID_VIEW_75                      30242
@@ -1621,7 +1617,6 @@
 #define ID_VIEW_SHOWTRIGGERS            30397
 #define ID_AUTOCAULK                    30398
 #define ID_MISC_FINDORREPLACEENTITY     30399
-#define ID_MISC_SETVIEWPOS              30400
 #define ID_MISC_FINDNEXTENT             30401
 #define ID_SELECTION_VIEW_WIREFRAMEON   30402
 #define ID_SELECTION_VIEW_WIREFRAMEOFF  30403
@@ -1657,7 +1652,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        9019
-#define _APS_NEXT_COMMAND_VALUE         29002
+#define _APS_NEXT_COMMAND_VALUE         29005
 #define _APS_NEXT_CONTROL_VALUE         9207
 #define _APS_NEXT_SYMED_VALUE           9005
 #endif
