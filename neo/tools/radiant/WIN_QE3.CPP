@@ -224,7 +224,7 @@ void OpenDialog(void) {
 	ofn.lpstrFileTitle = szFileTitle;
 	ofn.nMaxFileTitle = sizeof(szFileTitle);
 	ofn.lpstrInitialDir = ""; //FIXME
-	ofn.Flags = OFN_SHOWHELP | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
 	/* Display the Open dialog box. */
 	if (!GetOpenFileName(&ofn)) {
@@ -262,7 +262,7 @@ void SaveAsDialog(bool bRegion) {
 	ofn.lpstrFileTitle = szFileTitle;
 	ofn.nMaxFileTitle = sizeof(szFileTitle);
 	ofn.lpstrInitialDir = "";
-	ofn.Flags = OFN_SHOWHELP | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;
 
 	/* Display the Open dialog box. */
 	if (!GetSaveFileName(&ofn)) {
