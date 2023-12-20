@@ -1,1 +1,1 @@
-start dhewm3.exe +materialEditor
+start engine.exe +materialEditor

@@ -1147,47 +1147,45 @@ void idGameEdit::MapEntityTranslate( const char *name, const idVec3 &v ) const {
 	}
 }
 
+
 /***********************************************************************
 
   Debugger
 
 ***********************************************************************/
 
-bool idGameEditExt::IsLineCode(const char* filename, int linenumber) const
-{
+bool idGameEditExt::IsLineCode( const char *filename, int linenumber ) const {
 	idStr fileStr;
-	idProgram* program = &gameLocal.program;
-	for (int i = 0; i < program->NumStatements(); i++)
-	{
-		fileStr = program->GetFilename(program->GetStatement(i).file);
-		fileStr.BackSlashesToSlashes();
+	idProgram *program = &gameLocal.program;
+	for ( int i = 0; i < program->NumStatements( ); i++ ) 	{
+		fileStr = program->GetFilename( program->GetStatement( i ).file );
+		fileStr.BackSlashesToSlashes( );
 
-		if (strcmp(filename, fileStr.c_str()) == 0
-			&& program->GetStatement(i).linenumber == linenumber
-			)
-		{
+		if ( strcmp( filename, fileStr.c_str( ) ) == 0
+			&& program->GetStatement( i ).linenumber == linenumber
+			) {
 			return true;
 		}
 	}
 	return false;
 }
 
-void idGameEditExt::GetLoadedScripts( idStrList** result )
+void idGameEditExt::GetLoadedScripts(idStrList** result)
 {
 	(*result)->Clear();
 	idProgram* program = &gameLocal.program;
 
 	for (int i = 0; i < program->NumFilenames(); i++)
 	{
-		(*result)->AddUnique( idStr(program->GetFilename( i )) );
+		(*result)->AddUnique(idStr(program->GetFilename(i)));
 	}
 }
 
-void idGameEditExt::MSG_WriteScriptList( idBitMsg* msg)
+void idGameEditExt::MSG_WriteScriptList(idBitMsg* msg)
 {
 	idProgram* program = &gameLocal.program;
 
-	msg->WriteInt( program->NumFilenames() );
+	msg->WriteInt(program->NumFilenames());
 	for (int i = 0; i < program->NumFilenames(); i++)
 	{
 		idStr file = program->GetFilename(i);
@@ -1198,7 +1196,7 @@ void idGameEditExt::MSG_WriteScriptList( idBitMsg* msg)
 	}
 }
 
-const char*idGameEditExt::GetFilenameForStatement(idProgram* program, int index) const
+const char* idGameEditExt::GetFilenameForStatement(idProgram* program, int index) const
 {
 	return program->GetFilenameForStatement(index);
 }
@@ -1207,3 +1205,4 @@ int idGameEditExt::GetLineNumberForStatement(idProgram* program, int index) cons
 {
 	return program->GetLineNumberForStatement(index);
 }
+

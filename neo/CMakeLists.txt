@@ -1,19 +1,3 @@
-# TODO
-
-# osx: place game .dylib's in the bundle (next to the binary)
-# osx: -weak_framework ?
-
-# maybe add these as options:
-# TARGET_MONO
-# SETUP
-# SDK				-D_D3SDK
-
-# don't add these as options, but document them?
-# IDNET_HOST		-DIDNET_HOST=\\"%s\\"' % IDNET_HOST
-# DEBUG_MEMORY		-DID_DEBUG_MEMORY', '-DID_REDIRECT_NEWDELETE
-# LIBC_MALLOC		-DUSE_LIBC_MALLOC=0
-# ID_NOLANADDRESS	-DID_NOLANADDRESS
-
 cmake_minimum_required( VERSION 3.27.8 )
 
 # Check if vcpkg exist in our source folder
@@ -34,41 +18,41 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" )
 
-project( dhewm3 )
+project( MyGame )
 
 # build type
 if( NOT CMAKE_BUILD_TYPE )
 	set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
 endif()
 
-set( DHEWM3BINARY "dhewm3" )
-
 include( CheckCXXCompilerFlag )
 include( GNUInstallDirs OPTIONAL RESULT_VARIABLE GNUINSTALLDIRS )
 include( GitBranch )
 include( GlobbedHeaders )
 
-option( CORE						"Build the core" ON )
-option( BASE						"Build the base game code" ON )
-option( D3XP						"Build the d3xp game code" ON )
+option( ENGINE						"Build the main executable." ON )
+option( GAME_CODE					"Build the game code." ON )
 option( TOOLS						"Build the tools game code." ON )
 option( TYPEINFOGEN					"Build the TypeInfoGen tool (useful for C++ only mods/games)" ON )
-option( DEDICATED					"Build the dedicated server" ON ) # OFF
-option( ONATIVE						"Optimize for the host CPU" OFF )
+option( DEDICATED					"Build the dedicated server." ON ) # OFF
+option( ONATIVE						"Optimize for the host CPU." OFF )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
-option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases" OFF )
+option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases." OFF )
 option( HARDLINK_GAME				"Compile gamecode into executable (no game DLLs)" OFF )
 option( FREETYPE					"Enable Freetype support." ON )
 if( NOT MSVC ) # GCC/clang or compatible, hopefully
 	option( FORCE_COLORED_OUTPUT	"Always produce ANSI-colored compiler warnings/errors (GCC/Clang only; esp. useful with ninja)." OFF )
 	option( ASAN					"Enable GCC/Clang Adress Sanitizer (ASan)" OFF) # TODO: MSVC might also support this, somehow?
-	option( UBSAN					"Enable GCC/Clang Undefined Behavior Sanitizer (UBSan), implies HARDLINK_GAME" OFF )
+	option( UBSAN					"Enable GCC/Clang Undefined Behavior Sanitizer (UBSan), implies HARDLINK_GAME." OFF )
 
 	if( UBSAN AND NOT HARDLINK_GAME )
 		message( STATUS "UBSAN requires linking the gamecode into the executable, will enable HARDLINK_GAME" )
 		set( HARDLINK_GAME ON )
 	endif()
 endif()
+
+set( ENGINE_EXECUTABLE "engine" CACHE STRING "The name of the main executable that's build." )
+set( DEDICATED_EXECUTABLE "dedicated" CACHE STRING "The name of the dedicate server executable that's build." )
 
 if ( LINUX_RELEASE_BINS )
 	message( STATUS "Setting RPATH to \$ORIGIN/libs/ so you can put dependencies in there" )
@@ -690,86 +674,11 @@ set(src_game
 	game/physics/Physics_Static.cpp
 	game/physics/Physics_StaticMulti.cpp
 	game/physics/Push.cpp
+	game/Grabber.cpp
+	game/physics/Force_Grab.cpp
 )
 
 add_globbed_headers(src_game "game")
-
-set(src_d3xp
-	d3xp/AF.cpp
-	d3xp/AFEntity.cpp
-	d3xp/Actor.cpp
-	d3xp/Camera.cpp
-	d3xp/Entity.cpp
-	d3xp/BrittleFracture.cpp
-	d3xp/Fx.cpp
-	d3xp/GameEdit.cpp
-	d3xp/Game_local.cpp
-	d3xp/Game_network.cpp
-	d3xp/Item.cpp
-	d3xp/IK.cpp
-	d3xp/Light.cpp
-	d3xp/Misc.cpp
-	d3xp/Mover.cpp
-	d3xp/Moveable.cpp
-	d3xp/MultiplayerGame.cpp
-	d3xp/Player.cpp
-	d3xp/PlayerIcon.cpp
-	d3xp/PlayerView.cpp
-	d3xp/Projectile.cpp
-	d3xp/Pvs.cpp
-	d3xp/SecurityCamera.cpp
-	d3xp/SmokeParticles.cpp
-	d3xp/Sound.cpp
-	d3xp/Target.cpp
-	d3xp/Trigger.cpp
-	d3xp/Weapon.cpp
-	d3xp/WorldSpawn.cpp
-	d3xp/ai/AAS.cpp
-	d3xp/ai/AAS_debug.cpp
-	d3xp/ai/AAS_pathing.cpp
-	d3xp/ai/AAS_routing.cpp
-	d3xp/ai/AI.cpp
-	d3xp/ai/AI_events.cpp
-	d3xp/ai/AI_pathing.cpp
-	d3xp/ai/AI_Vagary.cpp
-	d3xp/gamesys/DebugGraph.cpp
-	d3xp/gamesys/Class.cpp
-	d3xp/gamesys/Event.cpp
-	d3xp/gamesys/SaveGame.cpp
-	d3xp/gamesys/SysCmds.cpp
-	d3xp/gamesys/SysCvar.cpp
-	d3xp/gamesys/TypeInfo.cpp
-	d3xp/anim/Anim.cpp
-	d3xp/anim/Anim_Blend.cpp
-	d3xp/anim/Anim_Import.cpp
-	d3xp/anim/Anim_Testmodel.cpp
-	d3xp/script/Script_Compiler.cpp
-	d3xp/script/Script_Interpreter.cpp
-	d3xp/script/Script_Program.cpp
-	d3xp/script/Script_Thread.cpp
-	d3xp/physics/Clip.cpp
-	d3xp/physics/Force.cpp
-	d3xp/physics/Force_Constant.cpp
-	d3xp/physics/Force_Drag.cpp
-	d3xp/physics/Force_Field.cpp
-	d3xp/physics/Force_Spring.cpp
-	d3xp/physics/Physics.cpp
-	d3xp/physics/Physics_AF.cpp
-	d3xp/physics/Physics_Actor.cpp
-	d3xp/physics/Physics_Base.cpp
-	d3xp/physics/Physics_Monster.cpp
-	d3xp/physics/Physics_Liquid.cpp
-	d3xp/physics/Physics_Parametric.cpp
-	d3xp/physics/Physics_Player.cpp
-	d3xp/physics/Physics_RigidBody.cpp
-	d3xp/physics/Physics_Static.cpp
-	d3xp/physics/Physics_StaticMulti.cpp
-	d3xp/physics/Push.cpp
-	d3xp/Grabber.cpp
-	d3xp/physics/Force_Grab.cpp
-)
-
-add_globbed_headers(src_d3xp "d3xp")
 
 set(src_debuggerServer
 	tools/debugger/DebuggerBreakpoint.h
@@ -919,7 +828,6 @@ if (TYPEINFOGEN)
 endif()
 
 if(AROS)
-	set(DHEWM3BINARY "ADoom3")
 	set(sys_libs ${sys_libs} dll)
 
 	set(src_arosdll
@@ -1054,21 +962,14 @@ set_target_properties(mikktspace PROPERTIES FOLDER "libs")
 # ...RBMIKKT_TANGENT
 
 if(HARDLINK_GAME)
-	if(BASE)
+	if(GAME_CODE)
 		set(src_core ${src_core} ${src_game})
 		set(game_includes "${CMAKE_SOURCE_DIR}/game")
-		if(D3XP)
-			message(WARNING "hardlinking the base game, d3xp will not be supported (disable BASE for D3XP support with HARDLINK_GAME)")
-		endif()
-		
-	elseif(D3XP)
-		set(src_core ${src_core} ${src_d3xp})
-		set(game_includes "${CMAKE_SOURCE_DIR}/d3xp")
 	endif()
 endif()# HARDLINK_GAME
 
-if(CORE)
-	add_executable(${DHEWM3BINARY} WIN32 MACOSX_BUNDLE
+if(ENGINE)
+	add_executable(${ENGINE_EXECUTABLE} WIN32 MACOSX_BUNDLE
 		${src_core}
 		${src_sys_base}
 		${src_sys_core}
@@ -1076,32 +977,32 @@ if(CORE)
 	)
 	
 	if( MSVC )
-		set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DHEWM3BINARY})
+		set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${ENGINE_EXECUTABLE})
 	endif()
 
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools})
 
 if(HARDLINK_GAME)
-	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}")
-	target_include_directories(${DHEWM3BINARY} PRIVATE ${game_includes})
+	set_target_properties(${ENGINE_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}")
+	target_include_directories(${ENGINE_EXECUTABLE} PRIVATE ${game_includes})
 	
 	# Hack to get .natvis added
 	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
+		target_sources(${ENGINE_EXECUTABLE} PRIVATE "sys/win32/natvis/game.natvis")
 	endif()
 else()
-	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "__DOOM_DLL__;${TOOLS_DEFINES}")
+	set_target_properties(${ENGINE_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "__DOOM_DLL__;${TOOLS_DEFINES}")
 endif()
 
 	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+		target_sources(${ENGINE_EXECUTABLE} PRIVATE "sys/win32/natvis/engine.natvis")
 	endif()
 
-	set_target_properties(${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
-	set_target_properties(${DHEWM3BINARY} PROPERTIES FOLDER "exes")
+	set_target_properties(${ENGINE_EXECUTABLE} PROPERTIES LINK_FLAGS "${ldflags}")
+	set_target_properties(${ENGINE_EXECUTABLE} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
+	set_target_properties(${ENGINE_EXECUTABLE} PROPERTIES FOLDER "exes")
 
-	target_link_libraries(${DHEWM3BINARY}
+	target_link_libraries(${ENGINE_EXECUTABLE}
 		idlib
 		mikktspace # RBMIKKT_TANGENT
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
@@ -1113,7 +1014,7 @@ endif()
 	)
 
 	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS ${DHEWM3BINARY}
+		install(TARGETS ${ENGINE_EXECUTABLE}
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
@@ -1122,7 +1023,7 @@ endif()
 endif()
 
 if(DEDICATED)
-	add_executable(${DHEWM3BINARY}ded WIN32 MACOSX_BUNDLE
+	add_executable(${DEDICATED_EXECUTABLE} WIN32 MACOSX_BUNDLE
 		${src_core}
 		${src_stub_openal}
 		${src_stub_gl}
@@ -1133,25 +1034,25 @@ if(DEDICATED)
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer})
 
 if(HARDLINK_GAME)
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED")
-	target_include_directories(${DHEWM3BINARY}ded PRIVATE ${game_includes})
+	set_target_properties(${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED")
+	target_include_directories(${DEDICATED_EXECUTABLE} PRIVATE ${game_includes})
 	
 	# Hack to get .natvis added
 	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
+		target_sources(${DEDICATED_EXECUTABLE} PRIVATE "sys/win32/natvis/game.natvis")
 	endif()
 else()
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__")
+	set_target_properties(${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__")
 endif()
 
 	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+		target_sources(${DEDICATED_EXECUTABLE} PRIVATE "sys/win32/natvis/engine.natvis")
 	endif()
 
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES FOLDER "exes")
+	set_target_properties(${DEDICATED_EXECUTABLE} PROPERTIES LINK_FLAGS "${ldflags}")
+	set_target_properties(${DEDICATED_EXECUTABLE} PROPERTIES FOLDER "exes")
 
-	target_link_libraries(${DHEWM3BINARY}ded
+	target_link_libraries(${DEDICATED_EXECUTABLE}
 		idlib
 		mikktspace # RBMIKKT_TANGENT
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
@@ -1162,7 +1063,7 @@ endif()
 	)
 
 	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS ${DHEWM3BINARY}ded
+		install(TARGETS ${DEDICATED_EXECUTABLE}
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
@@ -1199,7 +1100,7 @@ endif()
 	endif()
 endif()
 
-if(BASE AND NOT HARDLINK_GAME)
+if(GAME_CODE AND NOT HARDLINK_GAME)
 	if (AROS)
 		add_executable(base sys/aros/dll/dllglue.c ${src_game})
 		set_target_properties(base PROPERTIES OUTPUT_NAME "base.aros-${AROS_ARCH}")
@@ -1214,7 +1115,7 @@ if(BASE AND NOT HARDLINK_GAME)
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game})
 	
 	set_target_properties(base PROPERTIES PREFIX "")
-	set_target_properties(base PROPERTIES COMPILE_DEFINITIONS "GAME_DLL")
+	set_target_properties(base PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF")
 	target_include_directories(base PRIVATE "${CMAKE_SOURCE_DIR}/game")
 	set_target_properties(base PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(base PROPERTIES INSTALL_NAME_DIR "@executable_path")
@@ -1227,41 +1128,6 @@ if(BASE AND NOT HARDLINK_GAME)
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS base
-				RUNTIME DESTINATION "${bindir}"
-				LIBRARY DESTINATION "${libdir}"
-				ARCHIVE DESTINATION "${libdir}"
-		)
-	endif()
-endif()
-
-if(D3XP AND NOT HARDLINK_GAME)
-	if (AROS)
-		add_executable(d3xp sys/aros/dll/dllglue.c ${src_d3xp})
-		set_target_properties(d3xp PROPERTIES OUTPUT_NAME "d3xp.aros-${AROS_ARCH}")
-	else()
-		add_library(d3xp SHARED ${src_d3xp})
-	endif()
-
-	if (MSVC)
-		target_sources(d3xp PRIVATE "sys/win32/natvis/game.natvis")
-	endif()
-
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_d3xp})
-
-	set_target_properties(d3xp PROPERTIES PREFIX "")
-	set_target_properties(d3xp PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF")
-	target_include_directories(d3xp PRIVATE "${CMAKE_SOURCE_DIR}/d3xp")
-	set_target_properties(d3xp PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(d3xp PROPERTIES INSTALL_NAME_DIR "@executable_path")
-	if (AROS)
-		target_link_libraries(d3xp idlib dll)
-	else()
-		target_link_libraries(d3xp idlib)
-	endif()
-	set_target_properties(d3xp PROPERTIES FOLDER "dlls")
-
-	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS d3xp
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"

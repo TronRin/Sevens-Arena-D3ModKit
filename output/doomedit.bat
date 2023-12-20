@@ -1,1 +1,1 @@
-start dhewm3.exe +editor
+start engine.exe +editor

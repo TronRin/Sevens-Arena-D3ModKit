@@ -421,7 +421,7 @@ extern "C" { // DG: I need this in SDL_win32_main.c
 		if (len == 0)
 			return 0;
 
-		idStr::Append(dst, size, "/My Games/dhewm3");
+		idStr::Append(dst, size, "/My Games/" GAME_NAME);
 
 		return len;
 	}
@@ -462,43 +462,19 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 	switch(type) {
 	case PATH_BASE:
 		// try <path to exe>/base first
-		if (Sys_GetPath(PATH_EXE, path)) {
+		if ( Sys_GetPath( PATH_EXE, path ) ) {
 			path.StripFilename();
 
 			s = path;
-			s.AppendPath(BASE_GAMEDIR);
-			if (_stat(s.c_str(), &st) != -1 && (st.st_mode & _S_IFDIR)) {
-				common->Warning("using path of executable: %s", path.c_str());
+			s.AppendPath( BASE_GAMEDIR );
+
+			if ( _stat( s.c_str(), &st ) != -1 && ( st.st_mode & _S_IFDIR ) ) {
+				common->Warning( "using path of executable: %s", path.c_str() );
 				return true;
-			} else {
-				s = path + "/demo/demo00.pk4";
-				if (_stat(s.c_str(), &st) != -1 && (st.st_mode & _S_IFREG)) {
-					common->Warning("using path of executable (seems to contain demo game data): %s ", path.c_str());
-					return true;
-				}
 			}
 
-			common->Warning("base path '%s' does not exist", s.c_str());
+			common->Warning( "base path '%s' does not exist", s.c_str() );
 		}
-
-		// Note: apparently there is no registry entry for the Doom 3 Demo
-
-		// fallback to vanilla doom3 cd install
-		if (GetRegistryPath(buf, sizeof(buf), L"SOFTWARE\\id\\Doom 3", L"InstallPath") > 0) {
-			path = buf;
-			return true;
-		}
-
-		// fallback to steam doom3 install
-		if (GetRegistryPath(buf, sizeof(buf), L"SOFTWARE\\Valve\\Steam", L"InstallPath") > 0) {
-			path = buf;
-			path.AppendPath("steamapps\\common\\doom 3");
-
-			if (_stat(path.c_str(), &st) != -1 && st.st_mode & _S_IFDIR)
-				return true;
-		}
-
-		common->Warning("vanilla doom3 path not found either");
 
 		return false;
 
@@ -771,7 +747,7 @@ void Sys_Init( void ) {
 	{
 		idStr savepath;
 		Sys_GetPath( PATH_SAVE, savepath );
-		common->Printf( "Logging console output to %s/dhewm3log.txt\n", savepath.c_str() );
+		common->Printf( "Logging console output to %s/enginelog.txt\n", savepath.c_str() );
 	}
 
 	//

@@ -1,1 +1,1 @@
-start dhewm3.exe +debugger
+start engine.exe +debugger

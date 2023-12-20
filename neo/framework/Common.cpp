@@ -1292,6 +1292,7 @@ static void Com_EditPDAs_f( const idCmdArgs &args ) {
 }
 #endif // ID_ALLOW_TOOLS
 
+#ifdef _DEBUG
 /*
 ==================
 Com_Error_f
@@ -1364,6 +1365,7 @@ static void Com_Crash_f( const idCmdArgs &args ) {
 	* ( int * ) 0 = 0x12345678;
 #endif
 }
+#endif
 
 /*
 =================
@@ -2297,9 +2299,11 @@ idCommonLocal::InitCommands
 =================
 */
 void idCommonLocal::InitCommands( void ) {
+#ifdef _DEBUG
 	cmdSystem->AddCommand( "error", Com_Error_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes an error" );
 	cmdSystem->AddCommand( "crash", Com_Crash_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes a crash" );
 	cmdSystem->AddCommand( "freeze", Com_Freeze_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "freezes the game for a number of seconds" );
+#endif
 	cmdSystem->AddCommand( "quit", Com_Quit_f, CMD_FL_SYSTEM, "quits the game" );
 	cmdSystem->AddCommand( "exit", Com_Quit_f, CMD_FL_SYSTEM, "exits the game" );
 	cmdSystem->AddCommand( "writeConfig", Com_WriteConfig_f, CMD_FL_SYSTEM, "writes a config file" );

@@ -1,1 +1,1 @@
-start dhewm3.exe +editDecls
+start engine.exe +editDecls
