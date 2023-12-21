@@ -53,18 +53,6 @@ typedef enum {
 } clientState_t;
 
 typedef enum {
-	AUTHKEY_BADKEY,
-	AUTHKEY_GUID
-} authKeyMsg_t;
-
-typedef enum {
-	AUTHKEY_BAD_INVALID,
-	AUTHKEY_BAD_BANNED,
-	AUTHKEY_BAD_INUSE,
-	AUTHKEY_BAD_MSG
-} authBadKeyStatus_t;
-
-typedef enum {
 	UPDATE_NONE,
 	UPDATE_SENT,
 	UPDATE_READY,
@@ -114,9 +102,6 @@ public:
 	void				SendReliableGameMessage( const idBitMsg &msg );
 
 	void				SendVersionCheck( bool fromMenu = false );
-	// pass NULL for the keys you don't care to auth for
-	// returns false if internet link doesn't appear to be available
-	bool				SendAuthCheck( const char *cdkey, const char *xpkey );
 
 	void				PacifierUpdate( void );
 
@@ -201,7 +186,6 @@ private:
 	void				ProcessInfoResponseMessage( const netadr_t from, const idBitMsg &msg );
 	void				ProcessPrintMessage( const netadr_t from, const idBitMsg &msg );
 	void				ProcessServersListMessage( const netadr_t from, const idBitMsg &msg );
-	void				ProcessAuthKeyMessage( const netadr_t from, const idBitMsg &msg );
 	void				ProcessVersionMessage( const netadr_t from, const idBitMsg &msg );
 	void				ConnectionlessMessage( const netadr_t from, const idBitMsg &msg );
 	void				ProcessMessage( const netadr_t from, idBitMsg &msg );
