@@ -554,18 +554,9 @@ bool idServerScan::IsFiltered( const networkServer_t server ) {
 		}
 	}
 
-	// autofilter D3XP games if the user does not has the XP installed
-	if(!fileSystem->HasD3XP() && !idStr::Icmp(server.serverInfo.GetString( "fs_game" ), "d3xp")) {
-		return true;
-	}
-
-	// filter based on the game doom or XP
-	if(gui_filter_game.GetInteger() == 1) { //Only Doom
+	// filter based on the game that's currently played
+	if(gui_filter_game.GetInteger() == 1) {
 		if(idStr::Icmp(server.serverInfo.GetString("fs_game"), "")) {
-			return true;
-		}
-	} else if(gui_filter_game.GetInteger() == 2) { //Only D3XP
-		if(idStr::Icmp(server.serverInfo.GetString("fs_game"), "d3xp")) {
 			return true;
 		}
 	}

@@ -1716,8 +1716,6 @@ void idAsyncServer::ProcessConnectMessage( const netadr_t from, const idBitMsg &
 				outMsg.WriteNetadr( from );
 				outMsg.WriteInt( clientId );
 				outMsg.WriteString( guid );
-				// protocol 1.37 addition
-				outMsg.WriteByte( fileSystem->RunningD3XP() );
 				serverPort.SendPacket( idAsyncNetwork::GetMasterAddress(), outMsg.GetData(), outMsg.GetSize() );
 			}
 			return;
