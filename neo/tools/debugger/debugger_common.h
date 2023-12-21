@@ -142,8 +142,6 @@
 
 //-----------------------------------------------------
 
-#include "framework/DemoChecksum.h"
-
 // framework
 #include "framework/Compressor.h"
 #include "framework/EventLoop.h"

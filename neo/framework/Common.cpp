@@ -53,7 +53,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Common.h"
 
 #include "GameCallbacks_local.h"
-#include "Session_local.h" // DG: For FT_IsDemo/isDemo() hack
 
 #define	MAX_PRINT_MSG_SIZE	4096
 #define MAX_WARNING_LIST	256
@@ -3323,11 +3322,6 @@ bool idCommonLocal::SetCallback(idCommon::CallbackType cbt, idCommon::FunctionPo
 	}
 }
 
-static bool isDemo( void )
-{
-	return sessLocal.IsDemoVersion();
-}
-
 static bool updateDebugger( idInterpreter *interpreter, idProgram *program, int instructionPointer )
 {
 	if (com_editors & EDITOR_DEBUGGER) 
@@ -3354,11 +3348,6 @@ bool idCommonLocal::GetAdditionalFunction(idCommon::FunctionType ft, idCommon::F
 
 	switch(ft)
 	{
-		case idCommon::FT_IsDemo:
-			*out_fnptr = (idCommon::FunctionPointer)isDemo;
-			// don't set *out_userArg, this function takes no arguments
-			return true;
-
 		case idCommon::FT_UpdateDebugger:
 			*out_fnptr = (idCommon::FunctionPointer)updateDebugger;
 			com_debuggerSupported = true;

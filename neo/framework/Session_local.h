@@ -332,16 +332,8 @@ public:
 	void				SetModsMenuGuiVars( void );
 	void				SetMainMenuSkin( void );
 
-	// DG: true if running the Demo version of Doom3 (for FT_IsDemo, see Common.h)
-	bool				IsDemoVersion()
-	{
-		return demoversion;
-	}
-
 private:
 	bool				BoxDialogSanityCheck( void );
-
-	bool				demoversion; // DG: true if running the Demo version of Doom3, for FT_IsDemo (see Common.h)
 };
 
 extern idSessionLocal	sessLocal;
