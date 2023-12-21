@@ -205,7 +205,6 @@ DialogAFConstraintUniversal::LoadConstraint
 void DialogAFConstraintUniversal::LoadConstraint( idDeclAF_Constraint *c ) {
 	int i, s1, s2;
 	idAngles angles;
-	idMat3 mat;
 
 	constraint = c;
 
@@ -295,7 +294,6 @@ void DialogAFConstraintUniversal::SaveConstraint( void ) {
 	int s1, s2;
 	CString str;
 	idAngles angles;
-	idMat3 mat;
 
 	if ( !file || !constraint ) {
 		return;
