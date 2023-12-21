@@ -290,8 +290,14 @@ void idClass::FindUninitializedMemory( void ) {
 	size >>= 2;
 	for ( int i = 0; i < size; i++ ) {
 		if ( ptr[i] == 0xcdcdcdcd ) {
+#ifdef ID_USE_TYPEINFO
 			const char *varName = GetTypeVariableName( GetClassname(), i << 2 );
-			gameLocal.Warning( "type '%s' has uninitialized variable %s (offset %d)", GetClassname(), varName, i << 2 );
+			if ( varName == nullptr )
+				continue;
+#else
+			const char *varName = "[unknown]";
+#endif
+			gameLocal.Warning( "type '%s' has uninitialized variable at offset %d: %s", GetClassname(), i << 2, varName );
 		}
 	}
 #endif
