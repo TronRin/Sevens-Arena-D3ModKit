@@ -259,6 +259,7 @@ void idImage::MakeDefault() {
 	int		x, y;
 	byte	data[DEFAULT_SIZE][DEFAULT_SIZE][4];
 
+#ifdef _DEBUG
 	if ( com_developer.GetBool() ) {
 		// grey center
 		for ( y = 0 ; y < DEFAULT_SIZE ; y++ ) {
@@ -292,7 +293,9 @@ void idImage::MakeDefault() {
 				data[x][DEFAULT_SIZE-1][2] =
 				data[x][DEFAULT_SIZE-1][3] = 255;
 		}
-	} else {
+	} else
+#endif
+	{
 		for ( y = 0 ; y < DEFAULT_SIZE ; y++ ) {
 			for ( x = 0 ; x < DEFAULT_SIZE ; x++ ) {
 				data[y][x][0] = 0;
