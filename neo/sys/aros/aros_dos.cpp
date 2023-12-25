@@ -60,7 +60,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sys/platform.h"
 #include "idlib/containers/StrList.h"
-#include "framework/Licensee.h"
 #include "sys/sys_local.h"
 
 #define ID_FTXT	MAKE_ID('F','T','X','T')

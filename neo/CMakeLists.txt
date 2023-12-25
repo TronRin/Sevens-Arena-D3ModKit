@@ -54,6 +54,11 @@ endif()
 set( ENGINE_EXECUTABLE "engine" CACHE STRING "The name of the main executable that's build." )
 set( DEDICATED_EXECUTABLE "dedicated" CACHE STRING "The name of the dedicate server executable that's build." )
 
+set( GAME_CONFG_NAME "My Game" CACHE STRING "The name of the game (path) whe're building." )
+set( GAME_CONFG_FOLDER "base" CACHE STRING "The name of the game (path) whe're building." )
+set( GAME_CONFG_FILE "config.cfg" CACHE STRING "The name of the file that gets written into." )
+set( GAME_CONFG_URL "https://github.com/FriskTheFallenHuman/D3ModdingKit" CACHE STRING "The url on where the game can be downloaded." )
+
 if ( LINUX_RELEASE_BINS )
 	message( STATUS "Setting RPATH to \$ORIGIN/libs/ so you can put dependencies in there" )
 	set( CMAKE_SKIP_RPATH OFF CACHE BOOL "Skip RPATH" FORCE )
@@ -325,8 +330,8 @@ get_git_branch( branch )
 message( STATUS "Setting project on git branch: ${branch}" )
 
 set( bindir		"${CMAKE_INSTALL_FULL_BINDIR}" )
-set( libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/dhewm3" )
-set( datadir	"${CMAKE_INSTALL_FULL_DATADIR}/dhewm3" )
+set( libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/${GAME_CONFG_NAME}" )
+set( datadir	"${CMAKE_INSTALL_FULL_DATADIR}/${GAME_CONFG_NAME}" )
 
 configure_file(
 	"${CMAKE_SOURCE_DIR}/config.h.in"

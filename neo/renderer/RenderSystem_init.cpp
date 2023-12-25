@@ -28,7 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sys/platform.h"
 #include "idlib/LangDict.h"
-#include "framework/Licensee.h"
 #include "framework/Console.h"
 #include "framework/Session.h"
 #include "renderer/VertexCache.h"
@@ -813,7 +812,7 @@ void R_InitOpenGL( void ) {
 				cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart partial windowed\n" );
 				Sys_GrabMouseCursor( false );
 			}
-			int ret = MessageBox( NULL, "Please install OpenGL drivers from your graphics hardware vendor to run " GAME_NAME ".\nYour OpenGL functionality is limited.",
+			int ret = MessageBox( NULL, "Please install OpenGL drivers from your graphics hardware vendor to run " BUILD_NAME ".\nYour OpenGL functionality is limited.",
 				"Insufficient OpenGL capabilities", MB_OKCANCEL | MB_ICONWARNING | MB_TASKMODAL );
 			if ( ret == IDCANCEL ) {
 				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "quit\n" );

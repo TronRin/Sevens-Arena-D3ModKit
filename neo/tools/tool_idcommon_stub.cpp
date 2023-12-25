@@ -32,7 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/FileSystem.h"
 #include "framework/Session.h"
 #include "framework/EventLoop.h"
-#include "framework/Licensee.h"
 
 #ifdef _WIN32
 	#include <io.h>

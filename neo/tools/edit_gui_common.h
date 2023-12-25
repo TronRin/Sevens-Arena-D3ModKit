@@ -105,8 +105,6 @@
 #include "idlib/Timer.h"
 
 // framework
-#include "framework/BuildVersion.h"
-#include "framework/Licensee.h"
 #include "framework/CmdSystem.h"
 #include "framework/CVarSystem.h"
 #include "framework/Common.h"

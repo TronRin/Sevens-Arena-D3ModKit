@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "sys/sys_local.h"
 #include "framework/FileSystem.h"
-#include "framework/Licensee.h"
 #include "idlib/containers/StrList.h"
 #include "TypeInfo/TypeInfoGen.h"
 

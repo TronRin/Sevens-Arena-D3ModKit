@@ -27,8 +27,6 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include "sys/platform.h"
-#include "framework/Licensee.h"
-#include "framework/BuildVersion.h"
 
 #include "GameBase.h"
 #include "MultiplayerGame.h"
@@ -67,9 +65,9 @@ const char *ui_teamArgs[]			= { "Red", "Blue", NULL };
 struct gameVersion_s {
 	gameVersion_s( void ) {
 #ifdef _MSC_VER
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUILD_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
 #else
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUIL_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
 #endif // _MSC_VER
 	}
 	char	string[256];

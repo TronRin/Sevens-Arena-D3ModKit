@@ -30,7 +30,6 @@ If you have questions concerning this license or the applicable additional terms
 #define __PLATFORM__
 
 #include "config.h"
-#include "framework/BuildDefines.h"
 
 #ifdef _WIN32
 #include <malloc.h> // _alloca()

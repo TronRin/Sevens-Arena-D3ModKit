@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "idlib/LangDict.h"
 #include "framework/async/AsyncNetwork.h"
-#include "framework/Licensee.h"
 #include "framework/Common.h"
 #include "framework/CVarSystem.h"
 #include "framework/DeclManager.h"
@@ -440,29 +439,17 @@ idServerScan::GUIAdd
 ================
 */
 void idServerScan::GUIAdd( int id, const networkServer_t server ) {
-	idStr name = server.serverInfo.GetString( "si_name", GAME_NAME " Server" );
-	bool d3xp = false;
+	idStr name = server.serverInfo.GetString( "si_name", BUILD_NAME " Server" );
 	bool mod = false;
 
-	if ( !idStr::Icmp( server.serverInfo.GetString( "fs_game" ), "d3xp" ) ||
-		 !idStr::Icmp( server.serverInfo.GetString( "fs_game_base" ), "d3xp" ) ) {
-		d3xp = true;
-	}
 	if ( server.serverInfo.GetString( "fs_game" )[ 0 ] != '\0' ) {
 		mod = true;
 	}
 
 	name += "\t";
-	if ( server.serverInfo.GetString( "sv_punkbuster" )[ 0 ] == '1' ) {
-		name += "mtr_PB";
-	}
 
 	name += "\t";
-	if ( d3xp ) {
-		// FIXME: even for a 'D3XP mod'
-		// could have a specific icon for this case
-		name += "mtr_doom3XPIcon";
-	} else if ( mod ) {
+	if ( mod ) {
 		name += "mtr_doom3Mod";
 	} else {
 		name += "mtr_doom3Icon";

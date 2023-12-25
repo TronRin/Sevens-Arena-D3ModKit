@@ -41,7 +41,6 @@ If you have questions concerning this license or the applicable additional terms
 #endif
 
 #include "idlib/hashing/MD4.h"
-#include "framework/Licensee.h"
 #include "framework/Unzip.h"
 #include "framework/EventLoop.h"
 #include "framework/DeclEntityDef.h"
@@ -163,16 +162,9 @@ is stored all lowercase.
 "additional mod path search":
 fs_game_base can be used to set an additional search path
 in search order, fs_game, fs_game_base, BASEGAME
-for instance to base a mod of D3 + D3XP assets, fs_game mymod, fs_game_base d3xp
 
 =============================================================================
 */
-
-
-
-// define to fix special-cases for GetPackStatus so that files that shipped in
-// the wrong place for Doom 3 don't break pure servers.
-#define DOOM3_PURE_SPECIAL_CASES
 
 typedef bool (*pureExclusionFunc_t)( const struct pureExclusion_s &excl, int l, const idStr &name );
 
@@ -214,25 +206,15 @@ static pureExclusion_t pureExclusions[] = {
 	{ 0,	0,	NULL,											".lang",	excludeExtension },
 	{ 0,	0,	"sound/VO",										".ogg",		excludePathPrefixAndExtension },
 	{ 0,	0,	"sound/VO",										".wav",		excludePathPrefixAndExtension },
-#if	defined DOOM3_PURE_SPECIAL_CASES
-	// add any special-case files or paths for pure servers here
-	{ 0,	0,	"sound/ed/marscity/vo_intro_cutscene.ogg",		NULL,		excludeFullName },
-	{ 0,	0,	"sound/weapons/soulcube/energize_01.ogg",		NULL,		excludeFullName },
-	{ 0,	0,	"sound/xian/creepy/vocal_fx",					".ogg",		excludePathPrefixAndExtension },
-	{ 0,	0,	"sound/xian/creepy/vocal_fx",					".wav",		excludePathPrefixAndExtension },
 	{ 0,	0,	"sound/feedback",								".ogg",		excludePathPrefixAndExtension },
 	{ 0,	0,	"sound/feedback",								".wav",		excludePathPrefixAndExtension },
-	{ 0,	0,	"guis/assets/mainmenu/chnote.tga",				NULL,		excludeFullName },
-	{ 0,	0,	"sound/levels/alphalabs2/uac_better_place.ogg",	NULL,		excludeFullName },
 	{ 0,	0,	"textures/bigchars.tga",						NULL,		excludeFullName },
 	{ 0,	0,	"dds/textures/bigchars.dds",					NULL,		excludeFullName },
 	{ 0,	0,	"fonts",										".tga",		excludePathPrefixAndExtension },
 	{ 0,	0,	"dds/fonts",									".dds",		excludePathPrefixAndExtension },
 	{ 0,	0,	"default.cfg",									NULL,		excludeFullName },
-	// russian zpak001.pk4
 	{ 0,	0,  "fonts",										".dat",		excludePathPrefixAndExtension },
 	{ 0,	0,	"guis/temp.guied",								NULL,		excludeFullName },
-#endif
 	{ 0,	0,	NULL,											NULL,		NULL }
 };
 
@@ -372,8 +354,6 @@ public:
 	virtual int				GetReadCount( void ) { return readCount; }
 	virtual void			FindDLL( const char *basename, char dllPath[ MAX_OSPATH ] );
 	virtual void			ClearDirCache( void );
-	virtual bool			HasD3XP( void );
-	virtual bool			RunningD3XP( void );
 	virtual void			CopyFile( const char *fromOSPath, const char *toOSPath );
 	virtual int				ValidateDownloadPakForChecksum( int checksum, char path[ MAX_STRING_CHARS ] );
 	virtual idFile *		MakeTemporaryFile( void );
@@ -429,8 +409,6 @@ private:
 	idDEntry				dir_cache[ MAX_CACHED_DIRS ]; // fifo
 	int						dir_cache_index;
 	int						dir_cache_count;
-
-	int						d3xp;	// 0: didn't check, -1: not installed, 1: installed
 
 private:
 	void					ReplaceSeparators( idStr &path, char sep = PATHSEPERATOR_CHAR );
@@ -498,7 +476,6 @@ idFileSystemLocal::idFileSystemLocal( void ) {
 	loadStack = 0;
 	dir_cache_index = 0;
 	dir_cache_count = 0;
-	d3xp = 0;
 	loadedFileFromDir = false;
 	memset( &backgroundThread, 0, sizeof( backgroundThread ) );
 	backgroundThread_exit = false;
@@ -1733,21 +1710,17 @@ idModList *idFileSystemLocal::ListMods( void ) {
 		dirs.Remove( "." );
 		dirs.Remove( ".." );
 		dirs.Remove( BASE_GAMEDIR );
-		dirs.Remove( "pb" );
 
 		// see if there are any pk4 files in each directory
 		for( i = 0; i < dirs.Num(); i++ ) {
 			idStr gamepath = BuildOSPath( search[ isearch ], dirs[ i ], "" );
-			ListOSFiles( gamepath, ".pk4", pk4s );
-			if ( pk4s.Num() ) {
-				if ( !list->mods.Find( dirs[ i ] ) ) {
-					// D3 1.3 #31, only list d3xp if the pak is present
-					if ( dirs[ i ].Icmp( "d3xp" ) || HasD3XP() ) {
-						list->mods.Append( dirs[ i ] );
-					}
-				}
-			}
-		}
+ 			ListOSFiles( gamepath, ".pk4", pk4s );
+ 			if ( pk4s.Num() ) {
+ 				if ( !list->mods.Find( dirs[ i ] ) ) {
+					list->mods.Append( dirs[ i ] );
+ 				}
+ 			}
+ 		}
 	}
 
 	list->mods.Sort();
@@ -1778,7 +1751,7 @@ idModList *idFileSystemLocal::ListMods( void ) {
 	}
 
 	list->mods.Insert( "" );
-	list->descriptions.Insert( "dhewm 3" );
+	list->descriptions.Insert( BUILD_NAME );
 
 	assert( list->mods.Num() == list->descriptions.Num() );
 
@@ -3684,91 +3657,6 @@ void idFileSystemLocal::ClearDirCache( void ) {
 	for( i = 0; i < MAX_CACHED_DIRS; i++ ) {
 		dir_cache[ i ].Clear();
 	}
-}
-
-/*
-===============
-idFileSystemLocal::HasD3XP
-===============
-*/
-bool idFileSystemLocal::HasD3XP( void ) {
-	int			i;
-	idStrList	dirs, pk4s;
-	idStr		gamepath;
-
-	if ( d3xp == -1 ) {
-		return false;
-	} else if ( d3xp == 1 ) {
-		return true;
-	}
-
-#if 0
-	// check for a d3xp directory with a pk4 file
-	// copied over from ListMods - only looks in basepath
-	ListOSFiles( fs_basepath.GetString(), "/", dirs );
-	for ( i = 0; i < dirs.Num(); i++ ) {
-		if ( dirs[i].Icmp( "d3xp" ) == 0 ) {
-			gamepath = BuildOSPath( fs_basepath.GetString(), dirs[ i ], "" );
-			ListOSFiles( gamepath, ".pk4", pk4s );
-			if ( pk4s.Num() ) {
-				d3xp = 1;
-				return true;
-			}
-		}
-	}
-#else
-	// check for d3xp's d3xp/pak000.pk4 in any search path
-	// checking wether the pak is loaded by checksum wouldn't be enough:
-	// we may have a different fs_game right now but still need to reply that it's installed
-	const char	*search[4];
-	idFile		*pakfile;
-	search[0] = fs_savepath.GetString();
-	search[1] = fs_devpath.GetString();
-	search[2] = fs_basepath.GetString();
-	search[3] = fs_cdpath.GetString();
-	for ( i = 0; i < 4; i++ ) {
-		pakfile = OpenExplicitFileRead( BuildOSPath( search[ i ], "d3xp", "pak000.pk4" ) );
-		if ( pakfile ) {
-			CloseFile( pakfile );
-			d3xp = 1;
-			return true;
-		}
-	}
-#endif
-
-	// if we didn't find a pk4 file then the user might have unpacked so look for default.cfg file
-	// that's the old way mostly used during developement. don't think it hurts to leave it there
-	ListOSFiles( fs_basepath.GetString(), "/", dirs );
-	for ( i = 0; i < dirs.Num(); i++ ) {
-		if ( dirs[i].Icmp( "d3xp" ) == 0 ) {
-
-			gamepath = BuildOSPath( fs_configpath.GetString(), dirs[ i ], "default.cfg" );
-			idFile* cfg = OpenExplicitFileRead(gamepath);
-			if(cfg) {
-				CloseFile(cfg);
-				d3xp = 1;
-				return true;
-			}
-		}
-	}
-
-	d3xp = -1;
-	return false;
-}
-
-/*
-===============
-idFileSystemLocal::RunningD3XP
-===============
-*/
-bool idFileSystemLocal::RunningD3XP( void ) {
-	// TODO: mark the checksum of the gold XP and check for it being referenced ( for double mod support )
-	// a simple fs_game check should be enough for now..
-	if ( !idStr::Icmp( fs_game.GetString(), "d3xp" ) ||
-		 !idStr::Icmp( fs_game_base.GetString(), "d3xp" ) ) {
-		return true;
-	}
-	return false;
 }
 
 /*

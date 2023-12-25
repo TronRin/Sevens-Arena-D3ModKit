@@ -35,8 +35,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "cm/CollisionModel.h"
 #include "framework/async/AsyncNetwork.h"
 #include "framework/async/NetworkSystem.h"
-#include "framework/BuildVersion.h"
-#include "framework/Licensee.h"
 #include "framework/Console.h"
 #include "framework/Session.h"
 #include "framework/Game.h"
@@ -73,9 +71,9 @@ typedef enum {
 struct version_s {
 	version_s( void ) {
 #ifdef _MSC_VER
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUILD_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
 #else
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUILD_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
 #endif // _MSC_VER
 	}
 	char	string[256];
@@ -183,7 +181,7 @@ public:
 	// and userArg = NULL to remove a callback manually (e.g. if userArg refers to an object you deleted)
 	virtual bool				SetCallback(idCommon::CallbackType cbt, idCommon::FunctionPointer cb, void* userArg);
 
-	// returns true if that function is available in this version of dhewm3
+	// returns true if that function is available in this version of the engine
 	// *out_fnptr will be the function (you'll have to cast it probably)
 	// *out_userArg will be an argument you have to pass to the function, if appropriate (else NULL)
 	// NOTE: this doesn't do anything yet, but allows to add ugly mod-specific hacks without breaking the Game interface
@@ -2829,7 +2827,7 @@ static bool checkForHelp(int argc, char **argv)
 				// write it to stdout
 				#define WriteString(s) fputs(s, stdout);
 #endif // _WIN32
-				WriteString(ENGINE_VERSION " - http://dhewm3.org\n");
+				WriteString(BUILD_ENGINE_VERSION " - " BUILD_URL "\n");
 				WriteString("Commandline arguments:\n");
 				WriteString("-h or --help: Show this help\n");
 				WriteString("+<command> [command arguments]\n");
@@ -2837,15 +2835,15 @@ static bool checkForHelp(int argc, char **argv)
 
 				WriteString("\nSome interesting commands:\n");
 				WriteString("+map <map>\n");
-				WriteString("  directly loads the given level, e.g. +map game/hell1\n");
+				WriteString("  directly loads the given level, e.g. +map game/mymap\n");
 				WriteString("+exec <config>\n");
 				WriteString("  execute the given config (mainly relevant for dedicated servers)\n");
 				WriteString("+disconnect\n");
 				WriteString("  starts the game, goes directly into main menu without showing\n  logo video\n");
 				WriteString("+connect <host>[:port]\n");
 				WriteString("  directly connect to multiplayer server at given host/port\n");
-				WriteString("  e.g. +connect d3.example.com\n");
-				WriteString("  e.g. +connect d3.example.com:27667\n");
+				WriteString("  e.g. +connect example.com\n");
+				WriteString("  e.g. +connect example.com:27667\n");
 				WriteString("  e.g. +connect 192.168.0.42:27666\n");
 				WriteString("+set <cvarname> <value>\n");
 				WriteString("  Set the given cvar to the given value, e.g. +set r_fullscreen 0\n");
@@ -2854,9 +2852,9 @@ static bool checkForHelp(int argc, char **argv)
 
 				WriteString("\nSome interesting cvars:\n");
 				WriteString("+set fs_basepath <gamedata path>\n");
-				WriteString("  set path to your Doom3 game data (the directory base/ is in)\n");
+				WriteString("  set path to your Base game data (the directory " BASE_GAMEDIR "/ is in)\n");
 				WriteString("+set fs_game <modname>\n");
-				WriteString("  start the given addon/mod, e.g. +set fs_game d3xp\n");
+				WriteString("  start the given addon/mod, e.g. +set fs_game myaddon\n");
 #ifndef ID_DEDICATED
 				WriteString("+set r_fullscreen <0 or 1>\n");
 				WriteString("  start game in windowed (0) or fullscreen (1) mode\n");
@@ -2868,8 +2866,6 @@ static bool checkForHelp(int argc, char **argv)
 				WriteString("  if r_mode is set to -1, these cvars allow you to specify the\n");
 				WriteString("  width/height of your custom resolution\n");
 #endif // !ID_DEDICATED
-				WriteString("\nSee https://modwiki.dhewm3.org/CVars_%28Doom_3%29 for more cvars\n");
-				WriteString("See https://modwiki.dhewm3.org/Commands_%28Doom_3%29 for more commands\n");
 
 				#undef WriteString
 
@@ -2884,11 +2880,11 @@ static bool checkForHelp(int argc, char **argv)
 
 #if D3_SIZEOFPTR == 4
   #if UINTPTR_MAX != 0xFFFFFFFFUL
-    #error "CMake assumes that we're building for a 32bit architecture, but UINTPTR_MAX doesn't match!"
+	#error "CMake assumes that we're building for a 32bit architecture, but UINTPTR_MAX doesn't match!"
   #endif
 #elif D3_SIZEOFPTR == 8
   #if UINTPTR_MAX != 18446744073709551615ULL
-    #error "CMake assumes that we're building for a 64bit architecture, but UINTPTR_MAX doesn't match!"
+	#error "CMake assumes that we're building for a 64bit architecture, but UINTPTR_MAX doesn't match!"
   #endif
 #else
   // Hello future person with a 128bit(?) CPU, I hope the future doesn't suck too much and that you don't still use CMake.
@@ -2908,7 +2904,7 @@ void idCommonLocal::Init( int argc, char **argv ) {
 	// in case UINTPTR_MAX isn't defined (or wrong), do a runtime check at startup
 	if ( D3_SIZEOFPTR != sizeof(void*) ) {
 		Sys_Error( "Something went wrong in your build: CMake assumed that sizeof(void*) == %d but in reality it's %d!\n",
-		           (int)D3_SIZEOFPTR, (int)sizeof(void*) );
+				   (int)D3_SIZEOFPTR, (int)sizeof(void*) );
 	}
 
 	if(checkForHelp(argc, argv))
@@ -2962,7 +2958,7 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		idLib::Init();
 
 		// clear warning buffer
-		ClearWarnings( GAME_NAME " initialization" );
+		ClearWarnings( BUILD_NAME " initialization" );
 
 		// parse command line options
 		ParseCommandLine( argc, argv );
@@ -3100,15 +3096,17 @@ void idCommonLocal::Shutdown( void ) {
 #endif
 
 	// free any buffered warning messages
-	ClearWarnings( GAME_NAME " shutdown" );
+	ClearWarnings( BUILD_NAME " shutdown" );
 	warningCaption.Clear();
 	errorList.Clear();
 
 	// free language dictionary
 	languageDict.Clear();
 
+#ifdef ID_DEBUG_MEMORY
 	// enable leak test
-	Mem_EnableLeakTest( "doom" );
+	Mem_EnableLeakTest( "engine" );
+#endif
 
 	// shutdown idLib
 	idLib::ShutDown();

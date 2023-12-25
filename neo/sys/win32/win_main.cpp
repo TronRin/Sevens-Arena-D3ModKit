@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "idlib/CmdArgs.h"
 #include "framework/async/AsyncNetwork.h"
-#include "framework/Licensee.h"
 #include "framework/UsercmdGen.h"
 #include "renderer/tr_local.h"
 #include "sys/sys_local.h"
@@ -399,7 +398,7 @@ static int WPath2A(char *dst, size_t size, const WCHAR *src) {
 
 /*
 ==============
-Returns "My Documents"/My Games/dhewm3 directory (or equivalent - "CSIDL_PERSONAL").
+Returns "My Documents"/My Games/MyGame directory (or equivalent - "CSIDL_PERSONAL").
 To be used with Sys_GetPath(PATH_SAVE), so savegames, screenshots etc will be
 saved to the users files instead of systemwide.
 
@@ -421,7 +420,7 @@ extern "C" { // DG: I need this in SDL_win32_main.c
 		if (len == 0)
 			return 0;
 
-		idStr::Append(dst, size, "/My Games/" GAME_NAME);
+		idStr::Append(dst, size, "/My Games/" BUILD_NAME);
 
 		return len;
 	}
@@ -759,10 +758,10 @@ void Sys_Init( void ) {
 		Sys_Error( "Couldn't get OS info" );
 
 	if ( win32.osversion.dwMajorVersion < 4 ) {
-		Sys_Error( GAME_NAME " requires Windows version 4 (NT) or greater" );
+		Sys_Error( BUILD_NAME " requires Windows version 4 (NT) or greater" );
 	}
 	if ( win32.osversion.dwPlatformId == VER_PLATFORM_WIN32s ) {
-		Sys_Error( GAME_NAME " doesn't run on Win32s" );
+		Sys_Error( BUILD_NAME " doesn't run on Win32s" );
 	}
 
 	common->Printf( "%d MB System Memory\n", Sys_GetSystemRam() );
@@ -941,7 +940,7 @@ static void loadWGLpointers() {
 		// Load OpenGL DLL.
 		hOpenGL_DLL = LoadLibrary("opengl32.dll");
 		if (hOpenGL_DLL == NULL) {
-			Sys_Error(GAME_NAME " Cannot Load opengl32.dll - Disabling TOOLS");
+			Sys_Error(BUILD_NAME " Cannot Load opengl32.dll - Disabling TOOLS");
 			return;
 		}
 	}
@@ -1003,7 +1002,7 @@ WinMain
 ==================
 */
 int main(int argc, char *argv[]) {
-	// SDL_win32_main.c creates the dhewm3log.txt and redirects stdout into it
+	// SDL_win32_main.c creates the enginelog.txt and redirects stdout into it
 	// so here we can log its (approx.) creation time before anything else is logged:
 	{
 		time_t tt = time(NULL);

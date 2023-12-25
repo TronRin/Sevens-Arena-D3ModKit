@@ -42,18 +42,6 @@
       }
     },
     {
-      "name": "windows-x64-2019",
-      "displayName": "VS2019: 64-bit Windows",
-      "inherits": "windows-x64-base",
-      "generator": "Visual Studio 16"
-    },
-    {
-      "name": "windows-x86-2019",
-      "displayName": "VS2019: 32-bit Windows",
-      "inherits": "windows-x86-base",
-      "generator": "Visual Studio 16"
-    },
-    {
       "name": "windows-x64-2022",
       "displayName": "VS2022: 64-bit Windows",
       "inherits": "windows-x64-base",
@@ -91,16 +79,6 @@
       "inherits": "linux-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
-      }
-    },
-    {
-      "name": "linux-retail",
-      "displayName": "Linux Retail",
-      "binaryDir": "${sourceParentDir}/buildRetail",
-      "generator": "Unix Makefiles",
-      "inherits": "linux-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Retail"
       }
     }
   ]

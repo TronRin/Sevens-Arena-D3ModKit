@@ -60,9 +60,9 @@ idCVar				idAsyncNetwork::clientMaxPrediction( "net_clientMaxPrediction", "1000"
 idCVar				idAsyncNetwork::clientUsercmdBackup( "net_clientUsercmdBackup", "5", CVAR_SYSTEM | CVAR_INTEGER | CVAR_NOCHEAT, "number of usercmds to resend" );
 idCVar				idAsyncNetwork::clientRemoteConsoleAddress( "net_clientRemoteConsoleAddress", "localhost", CVAR_SYSTEM | CVAR_NOCHEAT, "remote console address" );
 idCVar				idAsyncNetwork::clientRemoteConsolePassword( "net_clientRemoteConsolePassword", "", CVAR_SYSTEM | CVAR_NOCHEAT, "remote console password" );
-idCVar				idAsyncNetwork::master0( "net_master0", IDNET_HOST ":" IDNET_MASTER_PORT, CVAR_SYSTEM | CVAR_ROM, "idnet master server address" );
-idCVar				idAsyncNetwork::master1( "net_master1", "", CVAR_SYSTEM | CVAR_ARCHIVE, "1st master server address" );
-idCVar				idAsyncNetwork::master2( "net_master2", "", CVAR_SYSTEM | CVAR_ARCHIVE, "2nd master server address" );
+idCVar				idAsyncNetwork::master0( "net_master0", MASTERSERVER_HOST_1 ":" MASTERSERVER_PORT, CVAR_SYSTEM | CVAR_ROM, "idnet master server address" );
+idCVar				idAsyncNetwork::master1( "net_master1", MASTERSERVER_HOST_2 ":" MASTERSERVER_PORT, CVAR_SYSTEM | CVAR_ARCHIVE, "1st master server address" );
+idCVar				idAsyncNetwork::master2( "net_master2", MASTERSERVER_HOST_3 ":" MASTERSERVER_PORT, CVAR_SYSTEM | CVAR_ARCHIVE, "2nd master server address" );
 idCVar				idAsyncNetwork::master3( "net_master3", "", CVAR_SYSTEM | CVAR_ARCHIVE, "3rd master server address" );
 idCVar				idAsyncNetwork::master4( "net_master4", "", CVAR_SYSTEM | CVAR_ARCHIVE, "4th master server address" );
 idCVar				idAsyncNetwork::LANServer( "net_LANServer", "0", CVAR_SYSTEM | CVAR_BOOL | CVAR_NOCHEAT, "config LAN games only - affects clients and servers" );
@@ -143,7 +143,7 @@ bool idAsyncNetwork::GetMasterAddress( int index, netadr_t &adr ) {
 			return false;
 		}
 		if ( masters[ index ].address.port == 0 ) {
-			masters[ index ].address.port = atoi( IDNET_MASTER_PORT );
+			masters[ index ].address.port = atoi( MASTERSERVER_PORT );
 		}
 		masters[ index ].resolved = true;
 	}
