@@ -1175,20 +1175,8 @@ bool idRenderWorldLocal::ModelTrace( modelTrace_t &trace, qhandle_t entityHandle
 idRenderWorldLocal::Trace
 ===================
 */
-// FIXME: _D3XP added those.
-const char* playerModelExcludeList[] = {
-	"models/md5/characters/player/d3xp_spplayer.md5mesh",
-	"models/md5/characters/player/head/d3xp_head.md5mesh",
-	"models/md5/weapons/pistol_world/worldpistol.md5mesh",
-	NULL
-};
 
-const char* playerMaterialExcludeList[] = {
-	"muzzlesmokepuff",
-	NULL
-};
-
-bool idRenderWorldLocal::Trace( modelTrace_t &trace, const idVec3 &start, const idVec3 &end, const float radius, bool skipDynamic, bool skipPlayer /*_D3XP*/ ) const {
+bool idRenderWorldLocal::Trace( modelTrace_t &trace, const idVec3 &start, const idVec3 &end, const float radius, bool skipDynamic ) const {
 	areaReference_t * ref;
 	idRenderEntityLocal *def;
 	portalArea_t * area;
@@ -1233,25 +1221,6 @@ bool idRenderWorldLocal::Trace( modelTrace_t &trace, const idVec3 &start, const 
 					continue;
 				}
 
-#if 1	/* _D3XP addition. could use a cleaner approach */
-				if ( skipPlayer ) {
-					idStr name = model->Name();
-					const char *exclude;
-					int k;
-
-					for ( k = 0; playerModelExcludeList[k]; k++ ) {
-						exclude = playerModelExcludeList[k];
-						if ( name == exclude ) {
-							break;
-						}
-					}
-
-					if ( playerModelExcludeList[k] ) {
-						continue;
-					}
-				}
-#endif
-
 				model = R_EntityDefDynamicModel( def );
 				if ( !model ) {
 					continue;	// can happen with particle systems, which don't instantiate without a valid view
@@ -1279,25 +1248,6 @@ bool idRenderWorldLocal::Trace( modelTrace_t &trace, const idVec3 &start, const 
 				if ( !surf->geometry || !shader ) {
 					continue;
 				}
-
-#if 1 /* _D3XP addition. could use a cleaner approach */
-				if ( skipPlayer ) {
-					idStr name = shader->GetName();
-					const char *exclude;
-					int k;
-
-					for ( k = 0; playerMaterialExcludeList[k]; k++ ) {
-						exclude = playerMaterialExcludeList[k];
-						if ( name == exclude ) {
-							break;
-						}
-					}
-
-					if ( playerMaterialExcludeList[k] ) {
-						continue;
-					}
-				}
-#endif
 
 				tri = surf->geometry;
 
