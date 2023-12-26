@@ -527,9 +527,6 @@ set(src_ui
 	ui/DeviceContext.cpp
 	ui/EditWindow.cpp
 	ui/FieldWindow.cpp
-	ui/GameBearShootWindow.cpp
-	ui/GameBustOutWindow.cpp
-	ui/GameSSDWindow.cpp
 	ui/GuiScript.cpp
 	ui/ListGUI.cpp
 	ui/ListWindow.cpp
