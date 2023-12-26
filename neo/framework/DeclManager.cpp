@@ -36,7 +36,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/DeclAF.h"
 #include "framework/DeclEntityDef.h"
 #include "framework/DeclFX.h"
-#include "framework/DeclPDA.h"
 #include "framework/DeclParticle.h"
 #include "framework/DeclSkin.h"
 #include "framework/DeclTable.h"
@@ -81,10 +80,10 @@ missing reload over a previously explicit definition
 //#define GET_HUFFMAN_FREQUENCIES
 
 struct idGuideTemplate {
-    idStr name;
-    idList<idStr> parms;
-    idStr body;
-    bool inlineGuide;
+	idStr name;
+	idList<idStr> parms;
+	idStr body;
+	bool inlineGuide;
 };
 
 class idDeclType {
@@ -196,8 +195,8 @@ public:
 	idDeclLocal *				decls;
 
 private:
-    idStr						PreprocessGuides( const char* buffer, int length );
-    idStr						PreprocessInlineGuides( const char* buffer, int length );
+	idStr						PreprocessGuides( const char* buffer, int length );
+	idStr						PreprocessInlineGuides( const char* buffer, int length );
 };
 
 class idDeclManagerLocal : public idDeclManager {
@@ -242,10 +241,10 @@ public:
 	virtual const idSoundShader *	SoundByIndex( int index, bool forceParse = true );
 
 public:
-    virtual void ParseGuides( void );
-    virtual	void ShutdownGuides( void ) { }
-    virtual bool EvaluateGuide( idStr& name, idLexer* src, idStr& definition ) { return false; }
-    virtual bool EvaluateInlineGuide( idStr& name, idStr& definition ) { return false; }
+	virtual void ParseGuides( void );
+	virtual	void ShutdownGuides( void ) { }
+	virtual bool EvaluateGuide( idStr& name, idLexer* src, idStr& definition ) { return false; }
+	virtual bool EvaluateInlineGuide( idStr& name, idStr& definition ) { return false; }
 
 public:
 	idList<idGuideTemplate>		guides;
@@ -647,7 +646,7 @@ int idDeclFile::LoadAndParse() {
 	idDeclLocal *newDecl;
 	bool		reparse;
 	bool		canUseGuides = strstr( fileName, ".mtr" );
-    idStr finalPreprocessedBuffer;
+	idStr finalPreprocessedBuffer;
 
 	// load the text
 	common->DPrintf( "...loading '%s'\n", fileName.c_str() );
@@ -658,11 +657,11 @@ int idDeclFile::LoadAndParse() {
 	}
 
 	// Is this file a .guide?
-    if ( !canUseGuides ) {
-        finalPreprocessedBuffer = buffer;
-    } else {
+	if ( !canUseGuides ) {
+		finalPreprocessedBuffer = buffer;
+	} else {
 		finalPreprocessedBuffer = PreprocessGuides( buffer, length );
-    }
+	}
 
 	if ( !src.LoadMemory( finalPreprocessedBuffer.c_str(), finalPreprocessedBuffer.Length(), fileName ) ) {
 		common->Error( "Couldn't parse %s", fileName.c_str() );
@@ -861,10 +860,6 @@ void idDeclManagerLocal::Init( void ) {
 	RegisterDeclType( "fx",					DECL_FX,			idDeclAllocator<idDeclFX> );
 	RegisterDeclType( "particle",			DECL_PARTICLE,		idDeclAllocator<idDeclParticle> );
 	RegisterDeclType( "articulatedFigure",	DECL_AF,			idDeclAllocator<idDeclAF> );
-	RegisterDeclType( "pda",				DECL_PDA,			idDeclAllocator<idDeclPDA> );
-	RegisterDeclType( "email",				DECL_EMAIL,			idDeclAllocator<idDeclEmail> );
-	RegisterDeclType( "video",				DECL_VIDEO,			idDeclAllocator<idDeclVideo> );
-	RegisterDeclType( "audio",				DECL_AUDIO,			idDeclAllocator<idDeclAudio> );
 
 	RegisterDeclFolder( "materials",		".mtr",				DECL_MATERIAL );
 	RegisterDeclFolder( "skins",			".skin",			DECL_SKIN );
@@ -886,11 +881,6 @@ void idDeclManagerLocal::Init( void ) {
 	cmdSystem->AddCommand( "listParticles", idListDecls_f<DECL_PARTICLE>, CMD_FL_SYSTEM, "lists particle systems", idCmdSystem::ArgCompletion_String<listDeclStrings> );
 	cmdSystem->AddCommand( "listAF", idListDecls_f<DECL_AF>, CMD_FL_SYSTEM, "lists articulated figures", idCmdSystem::ArgCompletion_String<listDeclStrings>);
 
-	cmdSystem->AddCommand( "listPDAs", idListDecls_f<DECL_PDA>, CMD_FL_SYSTEM, "lists PDAs", idCmdSystem::ArgCompletion_String<listDeclStrings> );
-	cmdSystem->AddCommand( "listEmails", idListDecls_f<DECL_EMAIL>, CMD_FL_SYSTEM, "lists Emails", idCmdSystem::ArgCompletion_String<listDeclStrings> );
-	cmdSystem->AddCommand( "listVideos", idListDecls_f<DECL_VIDEO>, CMD_FL_SYSTEM, "lists Videos", idCmdSystem::ArgCompletion_String<listDeclStrings> );
-	cmdSystem->AddCommand( "listAudios", idListDecls_f<DECL_AUDIO>, CMD_FL_SYSTEM, "lists Audios", idCmdSystem::ArgCompletion_String<listDeclStrings> );
-
 	cmdSystem->AddCommand( "printTable", idPrintDecls_f<DECL_TABLE>, CMD_FL_SYSTEM, "prints a table", idCmdSystem::ArgCompletion_Decl<DECL_TABLE> );
 	cmdSystem->AddCommand( "printMaterial", idPrintDecls_f<DECL_MATERIAL>, CMD_FL_SYSTEM, "prints a material", idCmdSystem::ArgCompletion_Decl<DECL_MATERIAL> );
 	cmdSystem->AddCommand( "printSkin", idPrintDecls_f<DECL_SKIN>, CMD_FL_SYSTEM, "prints a skin", idCmdSystem::ArgCompletion_Decl<DECL_SKIN> );
@@ -900,11 +890,6 @@ void idDeclManagerLocal::Init( void ) {
 	cmdSystem->AddCommand( "printFX", idPrintDecls_f<DECL_FX>, CMD_FL_SYSTEM, "prints an FX system", idCmdSystem::ArgCompletion_Decl<DECL_FX> );
 	cmdSystem->AddCommand( "printParticle", idPrintDecls_f<DECL_PARTICLE>, CMD_FL_SYSTEM, "prints a particle system", idCmdSystem::ArgCompletion_Decl<DECL_PARTICLE> );
 	cmdSystem->AddCommand( "printAF", idPrintDecls_f<DECL_AF>, CMD_FL_SYSTEM, "prints an articulated figure", idCmdSystem::ArgCompletion_Decl<DECL_AF> );
-
-	cmdSystem->AddCommand( "printPDA", idPrintDecls_f<DECL_PDA>, CMD_FL_SYSTEM, "prints an PDA", idCmdSystem::ArgCompletion_Decl<DECL_PDA> );
-	cmdSystem->AddCommand( "printEmail", idPrintDecls_f<DECL_EMAIL>, CMD_FL_SYSTEM, "prints an Email", idCmdSystem::ArgCompletion_Decl<DECL_EMAIL> );
-	cmdSystem->AddCommand( "printVideo", idPrintDecls_f<DECL_VIDEO>, CMD_FL_SYSTEM, "prints a Audio", idCmdSystem::ArgCompletion_Decl<DECL_VIDEO> );
-	cmdSystem->AddCommand( "printAudio", idPrintDecls_f<DECL_AUDIO>, CMD_FL_SYSTEM, "prints an Video", idCmdSystem::ArgCompletion_Decl<DECL_AUDIO> );
 
 	cmdSystem->AddCommand( "listHuffmanFrequencies", ListHuffmanFrequencies_f, CMD_FL_SYSTEM, "lists decl text character frequencies" );
 }
@@ -1087,11 +1072,6 @@ int idDeclManagerLocal::GetChecksum( void ) const {
 	total = 0;
 	for ( i = 0; i < DECL_MAX_TYPES; i++ ) {
 		declType_t type = (declType_t) i;
-
-		// FIXME: not particularly pretty but PDAs and associated decls are localized and should not be checksummed
-		if ( type == DECL_PDA || type == DECL_VIDEO || type == DECL_AUDIO || type == DECL_EMAIL ) {
-			continue;
-		}
 
 		num = linearLists[i].Num();
 		for ( j = 0; j < num; j++ ) {
@@ -2331,69 +2311,69 @@ idDeclFile::PreprocessGuides
 =========================
 */
 idStr idDeclFile::PreprocessGuides( const char* text, int textLength ) {
-    idLexer src;
-    idToken	token, token2;
-    idStr finalBuffer = "";
+	idLexer src;
+	idToken	token, token2;
+	idStr finalBuffer = "";
 
-    src.LoadMemory( text, textLength, "", 0 );
-    src.SetFlags( DECL_LEXER_FLAGS );
+	src.LoadMemory( text, textLength, "", 0 );
+	src.SetFlags( DECL_LEXER_FLAGS );
 
 	idGuidePlaceholderList guideRanges; //karin: record a pair of read guide characters offset: start, end, characters in range will be replaced ' '
 
-    while( 1 ) {
-        if ( !src.ReadToken( &token ) ) {
-            break;
-        }
+	while( 1 ) {
+		if ( !src.ReadToken( &token ) ) {
+			break;
+		}
 
-        if ( token == "guide" ) {
+		if ( token == "guide" ) {
 			int range_start = src.GetFileOffset() - 5; //karin: record range start before next `ReadToken`
-            idToken name;
-            idStr newDecl;
-            idGuideTemplate	*guide = NULL;
+			idToken name;
+			idStr newDecl;
+			idGuideTemplate	*guide = NULL;
 
-            src.ReadToken( &name );
-            src.ReadToken( &token );
+			src.ReadToken( &name );
+			src.ReadToken( &token );
 
-            for ( int i = 0; i < declManagerLocal.guides.Num(); i++ ) {
-                if ( declManagerLocal.guides[i].name == token ) {
-                    guide = &declManagerLocal.guides[i];
-                    break;
-                }
-            }
+			for ( int i = 0; i < declManagerLocal.guides.Num(); i++ ) {
+				if ( declManagerLocal.guides[i].name == token ) {
+					guide = &declManagerLocal.guides[i];
+					break;
+				}
+			}
 
-            if ( guide == NULL ) {
-                common->FatalError( "Failed to find guide '%s'\n", token.c_str() );
-            }
+			if ( guide == NULL ) {
+				common->FatalError( "Failed to find guide '%s'\n", token.c_str() );
+			}
 
-            newDecl = name;
-            newDecl += "\n";
-            newDecl += guide->body;
+			newDecl = name;
+			newDecl += "\n";
+			newDecl += guide->body;
 
-            src.ExpectTokenString( "(" );
+			src.ExpectTokenString( "(" );
 
-            for ( int i = 0; i < guide->parms.Num(); i++ ) {
-                src.ReadToken( &token );
-                newDecl.Replace( guide->parms[i].c_str(), token );
-            }
+			for ( int i = 0; i < guide->parms.Num(); i++ ) {
+				src.ReadToken( &token );
+				newDecl.Replace( guide->parms[i].c_str(), token );
+			}
 
-            src.ExpectTokenString( ")" );
+			src.ExpectTokenString( ")" );
 
-            newDecl += "\n";
+			newDecl += "\n";
 
-            finalBuffer += newDecl;
+			finalBuffer += newDecl;
 			int range_end = src.GetFileOffset(); //karin: record range end after last `ReadToken`
 			guideRanges.Append( idGuidePlaceholder( range_start, range_end ) );
-        }
-    }
+		}
+	}
 
 	//karin: replace all old guide source to space
 	idStr oldText( text );
 	guideRanges.ReplaceSpace( oldText );
-    finalBuffer += oldText;
+	finalBuffer += oldText;
 
-    //finalBuffer.Replace( "inlineGuide", "// inlineGuide" ); // todo support me, corpse burn
-    //finalBuffer.Replace( "guide", "// guide" );
-    return PreprocessInlineGuides( finalBuffer.c_str(), finalBuffer.Length() );
+	//finalBuffer.Replace( "inlineGuide", "// inlineGuide" ); // todo support me, corpse burn
+	//finalBuffer.Replace( "guide", "// guide" );
+	return PreprocessInlineGuides( finalBuffer.c_str(), finalBuffer.Length() );
 }
 
 /*
@@ -2402,58 +2382,58 @@ idDeclFile::PreprocessInlineGuides
 =========================
 */
 idStr idDeclFile::PreprocessInlineGuides( const char* text, int textLength ) {
-    idLexer src;
-    idToken	token, token2;
+	idLexer src;
+	idToken	token, token2;
 
-    idStr finalBuffer( text );
+	idStr finalBuffer( text );
 
-    src.LoadMemory( text, textLength, "", 0 );
-    src.SetFlags( DECL_LEXER_FLAGS );
+	src.LoadMemory( text, textLength, "", 0 );
+	src.SetFlags( DECL_LEXER_FLAGS );
 	idGuidePlaceholderList guideRanges; //karin: record a pair of read guide characters offset: start, end, characters in range will be replaced to new source
 
-    while( 1 ) {
-        if ( !src.ReadToken( &token ) ) {
-            break;
-        }
+	while( 1 ) {
+		if ( !src.ReadToken( &token ) ) {
+			break;
+		}
 
-        if ( !idStr::Icmp( token, "inlineGuide" ) ) {
+		if ( !idStr::Icmp( token, "inlineGuide" ) ) {
 			int range_start = src.GetFileOffset() - 11; //karin: record range start before next `ReadToken`
-            idStr newDecl;
-            idGuideTemplate	*guide = NULL;
+			idStr newDecl;
+			idGuideTemplate	*guide = NULL;
 
-            src.ReadToken( &token );
+			src.ReadToken( &token );
 
-            for ( int i = 0; i < declManagerLocal.guides.Num(); i++ ) {
-                if ( declManagerLocal.guides[i].name == token ) {
-                    guide = &declManagerLocal.guides[i];
-                    break;
-                }
-            }
+			for ( int i = 0; i < declManagerLocal.guides.Num(); i++ ) {
+				if ( declManagerLocal.guides[i].name == token ) {
+					guide = &declManagerLocal.guides[i];
+					break;
+				}
+			}
 
-            if ( guide == NULL ) {
-                common->FatalError( "Failed to find inlineGuide '%s'\n", token.c_str() );
-            }
+			if ( guide == NULL ) {
+				common->FatalError( "Failed to find inlineGuide '%s'\n", token.c_str() );
+			}
 
-            newDecl = guide->body;
+			newDecl = guide->body;
 
-            src.ExpectTokenString( "(" );
+			src.ExpectTokenString( "(" );
 
-            for ( int i = 0; i < guide->parms.Num(); i++ ) {
-                src.ReadToken( &token );
-                newDecl.Replace( guide->parms[i].c_str(), token );
-            }
+			for ( int i = 0; i < guide->parms.Num(); i++ ) {
+				src.ReadToken( &token );
+				newDecl.Replace( guide->parms[i].c_str(), token );
+			}
 
-            src.ExpectTokenString( ")" );
+			src.ExpectTokenString( ")" );
 
 			int range_end = src.GetFileOffset(); //karin: record range end after last `ReadToken`
 			guideRanges.Append( idGuidePlaceholder( range_start, range_end, newDecl ) );
-        }
-    }
+		}
+	}
 
 	//karin: replace all old inline guide source to new source
 	guideRanges.Replace(finalBuffer);
 
-    return finalBuffer;
+	return finalBuffer;
 }
 
 /*

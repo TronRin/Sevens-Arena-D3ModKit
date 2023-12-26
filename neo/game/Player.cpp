@@ -82,10 +82,7 @@ const idEventDef EV_Player_GetCurrentWeapon( "getCurrentWeapon", NULL, 's' );
 const idEventDef EV_Player_GetPreviousWeapon( "getPreviousWeapon", NULL, 's' );
 const idEventDef EV_Player_SelectWeapon( "selectWeapon", "s" );
 const idEventDef EV_Player_GetWeaponEntity( "getWeaponEntity", NULL, 'e' );
-const idEventDef EV_Player_OpenPDA( "openPDA" );
-const idEventDef EV_Player_InPDA( "inPDA", NULL, 'd' );
 const idEventDef EV_Player_ExitTeleporter( "exitTeleporter" );
-const idEventDef EV_Player_StopAudioLog( "stopAudioLog" );
 const idEventDef EV_Player_HideTip( "hideTip" );
 const idEventDef EV_Player_LevelTrigger( "levelTrigger" );
 const idEventDef EV_SpectatorTouch( "spectatorTouch", "et" );
@@ -113,10 +110,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_GetPreviousWeapon,		idPlayer::Event_GetPreviousWeapon )
 	EVENT( EV_Player_SelectWeapon,			idPlayer::Event_SelectWeapon )
 	EVENT( EV_Player_GetWeaponEntity,		idPlayer::Event_GetWeaponEntity )
-	EVENT( EV_Player_OpenPDA,				idPlayer::Event_OpenPDA )
-	EVENT( EV_Player_InPDA,					idPlayer::Event_InPDA )
 	EVENT( EV_Player_ExitTeleporter,		idPlayer::Event_ExitTeleporter )
-	EVENT( EV_Player_StopAudioLog,			idPlayer::Event_StopAudioLog )
 	EVENT( EV_Player_HideTip,				idPlayer::Event_HideTip )
 	EVENT( EV_Player_LevelTrigger,			idPlayer::Event_LevelTrigger )
 	EVENT( EV_Gibbed,						idPlayer::Event_Gibbed )
@@ -136,8 +130,6 @@ END_CLASS
 
 const int MAX_RESPAWN_TIME = 10000;
 const int RAGDOLL_DEATH_TIME = 3000;
-const int MAX_PDAS = 64;
-const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
 const int MAX_INVENTORY_ITEMS = 20;
 
@@ -183,16 +175,6 @@ void idInventory::Clear( void ) {
 	memset( clip, -1, sizeof( clip ) );
 
 	items.DeleteContents( true );
-	memset(pdasViewed, 0, 4 * sizeof( pdasViewed[0] ) );
-	pdas.Clear();
-	videos.Clear();
-	emails.Clear();
-	selVideo = 0;
-	selEMail = 0;
-	selPDA = 0;
-	selAudio = 0;
-	pdaOpened = false;
-	turkeyScore = false;
 
 	levelTriggers.Clear();
 
@@ -200,7 +182,6 @@ void idInventory::Clear( void ) {
 	nextItemNum = 1;
 	onePickupTime = 0;
 	pickupItemNames.Clear();
-	objectiveNames.Clear();
 
 	ammoPredictTime = 0;
 
@@ -313,39 +294,6 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	}
 	dict.SetInt( "items", num );
 
-	// pdas viewed
-	for ( i = 0; i < 4; i++ ) {
-		dict.SetInt( va("pdasViewed_%i", i), pdasViewed[i] );
-	}
-
-	dict.SetInt( "selPDA", selPDA );
-	dict.SetInt( "selVideo", selVideo );
-	dict.SetInt( "selEmail", selEMail );
-	dict.SetInt( "selAudio", selAudio );
-	dict.SetInt( "pdaOpened", pdaOpened );
-	dict.SetInt( "turkeyScore", turkeyScore );
-
-	// pdas
-	for ( i = 0; i < pdas.Num(); i++ ) {
-		sprintf( key, "pda_%i", i );
-		dict.Set( key, pdas[ i ] );
-	}
-	dict.SetInt( "pdas", pdas.Num() );
-
-	// video cds
-	for ( i = 0; i < videos.Num(); i++ ) {
-		sprintf( key, "video_%i", i );
-		dict.Set( key, videos[ i ].c_str() );
-	}
-	dict.SetInt( "videos", videos.Num() );
-
-	// emails
-	for ( i = 0; i < emails.Num(); i++ ) {
-		sprintf( key, "email_%i", i );
-		dict.Set( key, emails[ i ].c_str() );
-	}
-	dict.SetInt( "emails", emails.Num() );
-
 	// weapons
 	dict.SetInt( "weapon_bits", weapons );
 
@@ -415,42 +363,6 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 		}
 	}
 
-	// pdas viewed
-	for ( i = 0; i < 4; i++ ) {
-		pdasViewed[i] = dict.GetInt(va("pdasViewed_%i", i));
-	}
-
-	selPDA = dict.GetInt( "selPDA" );
-	selEMail = dict.GetInt( "selEmail" );
-	selVideo = dict.GetInt( "selVideo" );
-	selAudio = dict.GetInt( "selAudio" );
-	pdaOpened = dict.GetBool( "pdaOpened" );
-	turkeyScore = dict.GetBool( "turkeyScore" );
-
-	// pdas
-	num = dict.GetInt( "pdas" );
-	pdas.SetNum( num );
-	for ( i = 0; i < num; i++ ) {
-		sprintf( itemname, "pda_%i", i );
-		pdas[i] = dict.GetString( itemname, "default" );
-	}
-
-	// videos
-	num = dict.GetInt( "videos" );
-	videos.SetNum( num );
-	for ( i = 0; i < num; i++ ) {
-		sprintf( itemname, "video_%i", i );
-		videos[i] = dict.GetString( itemname, "default" );
-	}
-
-	// emails
-	num = dict.GetInt( "emails" );
-	emails.SetNum( num );
-	for ( i = 0; i < num; i++ ) {
-		sprintf( itemname, "email_%i", i );
-		emails[i] = dict.GetString( itemname, "default" );
-	}
-
 	// weapons are stored as a number for persistant data, but as strings in the entityDef
 	weapons	= dict.GetInt( "weapon_bits", "0" );
 
@@ -506,38 +418,6 @@ void idInventory::Save( idSaveGame *savefile ) const {
 		savefile->WriteDict( items[ i ] );
 	}
 
-	savefile->WriteInt( pdasViewed[0] );
-	savefile->WriteInt( pdasViewed[1] );
-	savefile->WriteInt( pdasViewed[2] );
-	savefile->WriteInt( pdasViewed[3] );
-
-	savefile->WriteInt( selPDA );
-	savefile->WriteInt( selVideo );
-	savefile->WriteInt( selEMail );
-	savefile->WriteInt( selAudio );
-	savefile->WriteBool( pdaOpened );
-	savefile->WriteBool( turkeyScore );
-
-	savefile->WriteInt( pdas.Num() );
-	for( i = 0; i < pdas.Num(); i++ ) {
-		savefile->WriteString( pdas[ i ] );
-	}
-
-	savefile->WriteInt( pdaSecurity.Num() );
-	for( i=0; i < pdaSecurity.Num(); i++ ) {
-		savefile->WriteString( pdaSecurity[ i ] );
-	}
-
-	savefile->WriteInt( videos.Num() );
-	for( i = 0; i < videos.Num(); i++ ) {
-		savefile->WriteString( videos[ i ] );
-	}
-
-	savefile->WriteInt( emails.Num() );
-	for ( i = 0; i < emails.Num(); i++ ) {
-		savefile->WriteString( emails[ i ] );
-	}
-
 	savefile->WriteInt( nextItemPickup );
 	savefile->WriteInt( nextItemNum );
 	savefile->WriteInt( onePickupTime );
@@ -546,13 +426,6 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	for( i = 0; i < pickupItemNames.Num(); i++ ) {
 		savefile->WriteString( pickupItemNames[i].icon );
 		savefile->WriteString( pickupItemNames[i].name );
-	}
-
-	savefile->WriteInt( objectiveNames.Num() );
-	for( i = 0; i < objectiveNames.Num(); i++ ) {
-		savefile->WriteString( objectiveNames[i].screenshot );
-		savefile->WriteString( objectiveNames[i].text );
-		savefile->WriteString( objectiveNames[i].title );
 	}
 
 	savefile->WriteInt( levelTriggers.Num() );
@@ -613,50 +486,6 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 		items.Append( itemdict );
 	}
 
-	// pdas
-	savefile->ReadInt( pdasViewed[0] );
-	savefile->ReadInt( pdasViewed[1] );
-	savefile->ReadInt( pdasViewed[2] );
-	savefile->ReadInt( pdasViewed[3] );
-
-	savefile->ReadInt( selPDA );
-	savefile->ReadInt( selVideo );
-	savefile->ReadInt( selEMail );
-	savefile->ReadInt( selAudio );
-	savefile->ReadBool( pdaOpened );
-	savefile->ReadBool( turkeyScore );
-
-	savefile->ReadInt( num );
-	for( i = 0; i < num; i++ ) {
-		idStr strPda;
-		savefile->ReadString( strPda );
-		pdas.Append( strPda );
-	}
-
-	// pda security clearances
-	savefile->ReadInt( num );
-	for ( i = 0; i < num; i++ ) {
-		idStr invName;
-		savefile->ReadString( invName );
-		pdaSecurity.Append( invName );
-	}
-
-	// videos
-	savefile->ReadInt( num );
-	for( i = 0; i < num; i++ ) {
-		idStr strVideo;
-		savefile->ReadString( strVideo );
-		videos.Append( strVideo );
-	}
-
-	// email
-	savefile->ReadInt( num );
-	for( i = 0; i < num; i++ ) {
-		idStr strEmail;
-		savefile->ReadString( strEmail );
-		emails.Append( strEmail );
-	}
-
 	savefile->ReadInt( nextItemPickup );
 	savefile->ReadInt( nextItemNum );
 	savefile->ReadInt( onePickupTime );
@@ -668,17 +497,6 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 		savefile->ReadString( info.name );
 
 		pickupItemNames.Append( info );
-	}
-
-	savefile->ReadInt( num );
-	for( i = 0; i < num; i++ ) {
-		idObjectiveInfo obj;
-
-		savefile->ReadString( obj.screenshot );
-		savefile->ReadString( obj.text );
-		savefile->ReadString( obj.title );
-
-		objectiveNames.Append( obj );
 	}
 
 	savefile->ReadInt( num );
@@ -1233,8 +1051,6 @@ idPlayer::idPlayer() {
 	weapon					= NULL;
 
 	hud						= NULL;
-	objectiveSystem			= NULL;
-	objectiveSystemOpen		= false;
 
 #ifdef _D3XP
 	mountedObject			= NULL;
@@ -1303,7 +1119,6 @@ idPlayer::idPlayer() {
 	weaponSwitchTime		=  0;
 	weaponEnabled			= true;
 	weapon_soulcube			= -1;
-	weapon_pda				= -1;
 	weapon_fists			= -1;
 #ifdef _D3XP
 	weapon_bloodstone		= -1;
@@ -1361,10 +1176,6 @@ idPlayer::idPlayer() {
 	oldMouseX				= 0;
 	oldMouseY				= 0;
 
-	pdaAudio				= "";
-	pdaVideo				= "";
-	pdaVideoWave			= "";
-
 	lastDamageDef			= 0;
 	lastDamageDir			= vec3_zero;
 	lastDamageLocation		= 0;
@@ -1384,7 +1195,6 @@ idPlayer::idPlayer() {
 	tourneyLine				= 0;
 	hiddenWeapon			= false;
 	tipUp					= false;
-	objectiveUp				= false;
 	teleportEntity			= NULL;
 	teleportKiller			= -1;
 	respawning				= false;
@@ -1491,7 +1301,6 @@ void idPlayer::Init( void ) {
 	weaponSwitchTime		= 0;
 	weaponEnabled			= true;
 	weapon_soulcube			= SlotForWeapon( "weapon_soulcube" );
-	weapon_pda				= SlotForWeapon( "weapon_pda" );
 	weapon_fists			= SlotForWeapon( "weapon_fists" );
 #ifdef _D3XP
 	weapon_bloodstone		= SlotForWeapon( "weapon_bloodstone_passive" );
@@ -1697,7 +1506,6 @@ void idPlayer::Init( void ) {
 
 	hiddenWeapon		= false;
 	tipUp				= false;
-	objectiveUp			= false;
 	teleportEntity		= NULL;
 	teleportKiller		= -1;
 	leader				= false;
@@ -1788,9 +1596,6 @@ void idPlayer::Spawn( void ) {
 
 			cursor->Activate( true, gameLocal.time );
 		}
-
-		objectiveSystem = uiManager->FindGui( "guis/pda.gui", true, false, true );
-		objectiveSystemOpen = false;
 	}
 
 	SetLastHitTime( 0 );
@@ -1874,14 +1679,6 @@ void idPlayer::Spawn( void ) {
 		hud->HandleNamedEvent( "itemPickup" );
 	}
 
-	if ( GetPDA() ) {
-		// Add any emails from the inventory
-		for ( int i = 0; i < inventory.emails.Num(); i++ ) {
-			GetPDA()->AddEmail( inventory.emails[i] );
-		}
-		GetPDA()->SetSecurity( common->GetLanguageDict()->GetString( "#str_00066" ) );
-	}
-
 	if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
 		hiddenWeapon = true;
 		if ( weapon.GetEntity() ) {
@@ -1898,14 +1695,10 @@ void idPlayer::Spawn( void ) {
 	}
 
 	tipUp = false;
-	objectiveUp = false;
 
 	if ( inventory.levelTriggers.Num() ) {
 		PostEventMS( &EV_Player_LevelTrigger, 0 );
 	}
-
-	inventory.pdaOpened = false;
-	inventory.selPDA = 0;
 
 	if ( !gameLocal.isMultiplayer ) {
 		if ( g_skill.GetInteger() < 2 ) {
@@ -2039,11 +1832,8 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	weapon.Save( savefile );
 
 	savefile->WriteUserInterface( hud, false );
-	savefile->WriteUserInterface( objectiveSystem, false );
-	savefile->WriteBool( objectiveSystemOpen );
 
 	savefile->WriteInt( weapon_soulcube );
-	savefile->WriteInt( weapon_pda );
 	savefile->WriteInt( weapon_fists );
 #ifdef _D3XP
 	savefile->WriteInt( weapon_bloodstone );
@@ -2054,8 +1844,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( hudPowerup );
 	savefile->WriteInt( lastHudPowerup );
 	savefile->WriteInt( hudPowerupDuration );
-
-
 #endif
 
 	savefile->WriteInt( heartRate );
@@ -2200,12 +1988,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( oldMouseX );
 	savefile->WriteInt( oldMouseY );
 
-	savefile->WriteString( pdaAudio );
-	savefile->WriteString( pdaVideo );
-	savefile->WriteString( pdaVideoWave );
-
 	savefile->WriteBool( tipUp );
-	savefile->WriteBool( objectiveUp );
 
 	savefile->WriteInt( lastDamageDef );
 	savefile->WriteVec3( lastDamageDir );
@@ -2248,7 +2031,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( bloomEnabled );
 	savefile->WriteFloat( bloomSpeed );
 	savefile->WriteFloat( bloomIntensity );
-
 #endif
 }
 
@@ -2293,16 +2075,9 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	inventory.Restore( savefile );
 	weapon.Restore( savefile );
 
-	for ( i = 0; i < inventory.emails.Num(); i++ ) {
-		GetPDA()->AddEmail( inventory.emails[i] );
-	}
-
 	savefile->ReadUserInterface( hud );
-	savefile->ReadUserInterface( objectiveSystem );
-	savefile->ReadBool( objectiveSystemOpen );
 
 	savefile->ReadInt( weapon_soulcube );
-	savefile->ReadInt( weapon_pda );
 	savefile->ReadInt( weapon_fists );
 #ifdef _D3XP
 	savefile->ReadInt( weapon_bloodstone );
@@ -2483,12 +2258,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( oldMouseX );
 	savefile->ReadInt( oldMouseY );
 
-	savefile->ReadString( pdaAudio );
-	savefile->ReadString( pdaVideo );
-	savefile->ReadString( pdaVideoWave );
-
 	savefile->ReadBool( tipUp );
-	savefile->ReadBool( objectiveUp );
 
 	savefile->ReadInt( lastDamageDef );
 	savefile->ReadVec3( lastDamageDir );
@@ -3255,7 +3025,6 @@ void idPlayer::EnterCinematic( void ) {
 #endif
 
 	Hide();
-	StopAudioLog();
 	StopSound( SND_CHANNEL_PDA, false );
 	if ( hud ) {
 		hud->HandleNamedEvent( "radioChatterDown" );
@@ -3433,11 +3202,6 @@ void idPlayer::FireWeapon( void ) {
 	if ( hud ) {
 		if ( tipUp ) {
 			HideTip();
-		}
-		// may want to track with with a bool as well
-		// keep from looking up named events so often
-		if ( objectiveUp ) {
-			HideObjective();
 		}
 	}
 }
@@ -4100,179 +3864,6 @@ bool idPlayer::GiveInventoryItem( const char *name ) {
 #endif
 
 /*
-==============
-idPlayer::UpdateObjectiveInfo
-==============
- */
-void idPlayer::UpdateObjectiveInfo( void ) {
-	if ( objectiveSystem == NULL ) {
-		return;
-	}
-	objectiveSystem->SetStateString( "objective1", "" );
-	objectiveSystem->SetStateString( "objective2", "" );
-	objectiveSystem->SetStateString( "objective3", "" );
-	for ( int i = 0; i < inventory.objectiveNames.Num(); i++ ) {
-		objectiveSystem->SetStateString( va( "objective%i", i+1 ), "1" );
-		objectiveSystem->SetStateString( va( "objectivetitle%i", i+1 ), inventory.objectiveNames[i].title.c_str() );
-		objectiveSystem->SetStateString( va( "objectivetext%i", i+1 ), inventory.objectiveNames[i].text.c_str() );
-		objectiveSystem->SetStateString( va( "objectiveshot%i", i+1 ), inventory.objectiveNames[i].screenshot.c_str() );
-	}
-	objectiveSystem->StateChanged( gameLocal.time );
-}
-
-/*
-===============
-idPlayer::GiveObjective
-===============
-*/
-void idPlayer::GiveObjective( const char *title, const char *text, const char *screenshot ) {
-	idObjectiveInfo info;
-	info.title = title;
-	info.text = text;
-	info.screenshot = screenshot;
-	inventory.objectiveNames.Append( info );
-	ShowObjective( "newObjective" );
-	if ( hud ) {
-		hud->HandleNamedEvent( "newObjective" );
-	}
-}
-
-/*
-===============
-idPlayer::CompleteObjective
-===============
-*/
-void idPlayer::CompleteObjective( const char *title ) {
-	int c = inventory.objectiveNames.Num();
-	for ( int i = 0;  i < c; i++ ) {
-		if ( idStr::Icmp(inventory.objectiveNames[i].title, title) == 0 ) {
-			inventory.objectiveNames.RemoveIndex( i );
-			break;
-		}
-	}
-	ShowObjective( "newObjectiveComplete" );
-
-	if ( hud ) {
-		hud->HandleNamedEvent( "newObjectiveComplete" );
-	}
-}
-
-/*
-===============
-idPlayer::GiveVideo
-===============
-*/
-void idPlayer::GiveVideo( const char *videoName, idDict *item ) {
-
-	if ( videoName == NULL || *videoName == 0 ) {
-		return;
-	}
-
-	inventory.videos.AddUnique( videoName );
-
-	if ( item ) {
-		idItemInfo info;
-		info.name = item->GetString( "inv_name" );
-		info.icon = item->GetString( "inv_icon" );
-		inventory.pickupItemNames.Append( info );
-	}
-	if ( hud ) {
-		hud->HandleNamedEvent( "videoPickup" );
-	}
-}
-
-/*
-===============
-idPlayer::GiveSecurity
-===============
-*/
-void idPlayer::GiveSecurity( const char *security ) {
-	GetPDA()->SetSecurity( security );
-	if ( hud ) {
-		hud->SetStateString( "pda_security", "1" );
-		hud->HandleNamedEvent( "securityPickup" );
-	}
-}
-
-/*
-===============
-idPlayer::GiveEmail
-===============
-*/
-void idPlayer::GiveEmail( const char *emailName ) {
-
-	if ( emailName == NULL || *emailName == 0 ) {
-		return;
-	}
-
-	inventory.emails.AddUnique( emailName );
-	GetPDA()->AddEmail( emailName );
-
-	if ( hud ) {
-		hud->HandleNamedEvent( "emailPickup" );
-	}
-}
-
-/*
-===============
-idPlayer::GivePDA
-===============
-*/
-void idPlayer::GivePDA( const char *pdaName, idDict *item )
-{
-	if ( gameLocal.isMultiplayer && spectating ) {
-		return;
-	}
-
-	if ( item ) {
-		inventory.pdaSecurity.AddUnique( item->GetString( "inv_name" ) );
-	}
-
-	if ( pdaName == NULL || *pdaName == 0 ) {
-		pdaName = "personal";
-	}
-
-	const idDeclPDA *pda = static_cast< const idDeclPDA* >( declManager->FindType( DECL_PDA, pdaName ) );
-
-	inventory.pdas.AddUnique( pdaName );
-
-	// Copy any videos over
-	for ( int i = 0; i < pda->GetNumVideos(); i++ ) {
-		const idDeclVideo *video = pda->GetVideoByIndex( i );
-		if ( video ) {
-			inventory.videos.AddUnique( video->GetName() );
-		}
-	}
-
-	// This is kind of a hack, but it works nicely
-	// We don't want to display the 'you got a new pda' message during a map load
-	if ( gameLocal.GetFrameNum() > 10 ) {
-		if ( pda && hud ) {
-			idStr pdaName = pda->GetPdaName();
-			pdaName.RemoveColors();
-			hud->SetStateString( "pda", "1" );
-			hud->SetStateString( "pda_text", pdaName );
-			const char *sec = pda->GetSecurity();
-			hud->SetStateString( "pda_security", ( sec && *sec ) ? "1" : "0" );
-			hud->HandleNamedEvent( "pdaPickup" );
-		}
-
-		if ( inventory.pdas.Num() == 1 ) {
-			GetPDA()->RemoveAddedEmailsAndVideos();
-			if ( !objectiveSystemOpen ) {
-				TogglePDA();
-			}
-			objectiveSystem->HandleNamedEvent( "showPDATip" );
-			//ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_firstPDA" ), true );
-		}
-
-		if ( inventory.pdas.Num() > 1 && pda->GetNumVideos() > 0 && hud ) {
-			hud->HandleNamedEvent( "videoPickup" );
-		}
-	}
-}
-
-/*
 ===============
 idPlayer::FindInventoryItem
 ===============
@@ -4558,7 +4149,7 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 		return;
 	}
 
-	if ( ( num != weapon_pda ) && gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
+	if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
 		num = weapon_fists;
 		hiddenWeapon ^= 1;
 		if ( hiddenWeapon && weapon.GetEntity() ) {
@@ -4570,7 +4161,7 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 
 	weap = spawnArgs.GetString( va( "def_weapon%d", num ) );
 	if ( !weap[ 0 ] ) {
-		gameLocal.Printf( "Invalid weapon\n" );
+		gameLocal.Printf( "Trying to select a invalid weapon %s\n", weap );
 		return;
 	}
 
@@ -4636,9 +4227,6 @@ void idPlayer::SelectWeapon( int num, bool force ) {
 				return;
 			}
 			idealWeapon = previousWeapon;
-		} else if ( ( weapon_pda >= 0 ) && ( num == weapon_pda ) && ( inventory.pdas.Num() == 0 ) ) {
-			ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
-			return;
 		} else {
 			idealWeapon = num;
 		}
@@ -4783,19 +4371,6 @@ void idPlayer::StealWeapon( idPlayer *player ) {
 
 /*
 ===============
-idPlayer::ActiveGui
-===============
-*/
-idUserInterface *idPlayer::ActiveGui( void ) {
-	if ( objectiveSystemOpen ) {
-		return objectiveSystem;
-	}
-
-	return focusUI;
-}
-
-/*
-===============
 idPlayer::Weapon_Combat
 ===============
 */
@@ -4845,7 +4420,7 @@ void idPlayer::Weapon_Combat( void ) {
 				assert( idealWeapon >= 0 );
 				assert( idealWeapon < MAX_WEAPONS );
 
-				if ( currentWeapon != weapon_pda && !spawnArgs.GetBool( va( "weapon%d_toggle", currentWeapon ) ) ) {
+				if ( !spawnArgs.GetBool( va( "weapon%d_toggle", currentWeapon ) ) ) {
 					previousWeapon = currentWeapon;
 				}
 				currentWeapon = idealWeapon;
@@ -4960,13 +4535,11 @@ idPlayer::Weapon_GUI
 */
 void idPlayer::Weapon_GUI( void ) {
 
-	if ( !objectiveSystemOpen ) {
-		if ( idealWeapon != currentWeapon ) {
-			Weapon_Combat();
-		}
-		StopFiring();
-		weapon.GetEntity()->LowerWeapon();
+	if ( idealWeapon != currentWeapon ) {
+		Weapon_Combat();
 	}
+	StopFiring();
+	weapon.GetEntity()->LowerWeapon();
 
 	// disable click prediction for the GUIs. handy to check the state sync does the right thing
 	if ( gameLocal.isClient && !net_clientPredictGUI.GetBool() ) {
@@ -5178,69 +4751,6 @@ bool idPlayer::HandleSingleGuiCommand( idEntity *entityGui, idLexer *src ) {
 
 	if ( token.Icmp( "ready" ) == 0 ) {
 		PerformImpulse( IMPULSE_17 );
-		return true;
-	}
-
-	if ( token.Icmp( "updatepda" ) == 0 ) {
-		UpdatePDAInfo( true );
-		return true;
-	}
-
-	if ( token.Icmp( "updatepda2" ) == 0 ) {
-		UpdatePDAInfo( false );
-		return true;
-	}
-
-	if ( token.Icmp( "stoppdavideo" ) == 0 ) {
-		if ( objectiveSystem && objectiveSystemOpen && pdaVideoWave.Length() > 0 ) {
-			StopSound( SND_CHANNEL_PDA, false );
-		}
-		return true;
-	}
-
-	if ( token.Icmp( "close" ) == 0 ) {
-		if ( objectiveSystem && objectiveSystemOpen ) {
-			TogglePDA();
-		}
-	}
-
-	if ( token.Icmp( "playpdavideo" ) == 0 ) {
-		if ( objectiveSystem && objectiveSystemOpen && pdaVideo.Length() > 0 ) {
-			const idMaterial *mat = declManager->FindMaterial( pdaVideo );
-			if ( mat ) {
-				int c = mat->GetNumStages();
-				for ( int i = 0; i < c; i++ ) {
-					const shaderStage_t *stage = mat->GetStage(i);
-					if ( stage && stage->texture.cinematic ) {
-						stage->texture.cinematic->ResetTime( gameLocal.time );
-					}
-				}
-				if ( pdaVideoWave.Length() ) {
-					const idSoundShader *shader = declManager->FindSound( pdaVideoWave );
-					StartSoundShader( shader, SND_CHANNEL_PDA, 0, false, NULL );
-				}
-			}
-		}
-	}
-
-	if ( token.Icmp( "playpdaaudio" ) == 0 ) {
-		if ( objectiveSystem && objectiveSystemOpen && pdaAudio.Length() > 0 ) {
-			const idSoundShader *shader = declManager->FindSound( pdaAudio );
-			int ms;
-			StartSoundShader( shader, SND_CHANNEL_PDA, 0, false, &ms );
-			StartAudioLog();
-			CancelEvents( &EV_Player_StopAudioLog );
-			PostEventMS( &EV_Player_StopAudioLog, ms + 150 );
-		}
-		return true;
-	}
-
-	if ( token.Icmp( "stoppdaaudio" ) == 0 ) {
-		if ( objectiveSystem && objectiveSystemOpen && pdaAudio.Length() > 0 ) {
-			// idSoundShader *shader = declManager->FindSound( pdaAudio );
-			StopAudioLog();
-			StopSound( SND_CHANNEL_PDA, false );
-		}
 		return true;
 	}
 
@@ -5492,14 +5002,6 @@ void idPlayer::UpdateFocus( void ) {
 					focusUI->SetStateInt( iname, 1 );
 				}
 
-
-				for( j = 0; j < inventory.pdaSecurity.Num(); j++ ) {
-					const char *p = inventory.pdaSecurity[ j ];
-					if ( p && *p ) {
-						focusUI->SetStateInt( p, 1 );
-					}
-				}
-
 #ifdef _D3XP		//BSM: Added for powercells
 				int powerCellCount = 0;
 				for ( j = 0; j < inventory.items.Num(); j++ ) {
@@ -5542,8 +5044,6 @@ void idPlayer::UpdateFocus( void ) {
 			command = focusUI->Activate( true, gameLocal.time );
 			HandleGuiCommands( focusGUIent, command );
 			StartSound( "snd_guienter", SND_CHANNEL_ANY, 0, false, NULL );
-			// HideTip();
-			// HideObjective();
 		}
 	} else if ( oldFocus && oldUI ) {
 		command = oldUI->Activate( false, gameLocal.time );
@@ -5563,8 +5063,6 @@ void idPlayer::UpdateFocus( void ) {
 			hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ));
 #endif
 			hud->HandleNamedEvent( "showNPC" );
-			// HideTip();
-			// HideObjective();
 		} else {
 			hud->SetStateString( "npc", "" );
 #ifdef _D3XP
@@ -5869,7 +5367,7 @@ void idPlayer::UpdateViewAngles( void ) {
 	int i;
 	idAngles delta;
 
-	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 || objectiveSystemOpen ) ) {
+	if ( !noclip && ( gameLocal.inCinematic || privateCameraView || gameLocal.GetCamera() || influenceActive == INFLUENCE_LEVEL2 ) ) {
 		// no view changes at all, but we still want to update the deltas or else when
 		// we get out of this mode, our view will snap to a kind of random angle
 		UpdateDeltaViewAngles( viewAngles );
@@ -6242,322 +5740,6 @@ void idPlayer::UpdatePowerupHud() {
 
 /*
 ==============
-idPlayer::AddGuiPDAData
-==============
- */
-int idPlayer::AddGuiPDAData( const declType_t dataType, const char *listName, const idDeclPDA *src, idUserInterface *gui ) {
-	int c, i;
-	idStr work;
-	if ( dataType == DECL_EMAIL ) {
-		c = src->GetNumEmails();
-		for ( i = 0; i < c; i++ ) {
-			const idDeclEmail *email = src->GetEmailByIndex( i );
-			if ( email == NULL ) {
-				work = va( "-\tEmail %d not found\t-", i );
-			} else {
-				work = email->GetFrom();
-				work += "\t";
-				work += email->GetSubject();
-				work += "\t";
-				work += email->GetDate();
-			}
-			gui->SetStateString( va( "%s_item_%i", listName, i ), work );
-		}
-		return c;
-	} else if ( dataType == DECL_AUDIO ) {
-		c = src->GetNumAudios();
-		for ( i = 0; i < c; i++ ) {
-			const idDeclAudio *audio = src->GetAudioByIndex( i );
-			if ( audio == NULL ) {
-				work = va( "Audio Log %d not found", i );
-			} else {
-				work = audio->GetAudioName();
-			}
-			gui->SetStateString( va( "%s_item_%i", listName, i ), work );
-		}
-		return c;
-	} else if ( dataType == DECL_VIDEO ) {
-		c = inventory.videos.Num();
-		for ( i = 0; i < c; i++ ) {
-			const idDeclVideo *video = GetVideo( i );
-			if ( video == NULL ) {
-				work = va( "Video CD %s not found", inventory.videos[i].c_str() );
-			} else {
-				work = video->GetVideoName();
-			}
-			gui->SetStateString( va( "%s_item_%i", listName, i ), work );
-		}
-		return c;
-	}
-	return 0;
-}
-
-/*
-==============
-idPlayer::GetPDA
-==============
- */
-const idDeclPDA *idPlayer::GetPDA( void ) const {
-	if ( inventory.pdas.Num() ) {
-		return static_cast< const idDeclPDA* >( declManager->FindType( DECL_PDA, inventory.pdas[ 0 ] ) );
-	} else {
-		return NULL;
-	}
-}
-
-
-/*
-==============
-idPlayer::GetVideo
-==============
-*/
-const idDeclVideo *idPlayer::GetVideo( int index ) {
-	if ( index >= 0 && index < inventory.videos.Num() ) {
-		return static_cast< const idDeclVideo* >( declManager->FindType( DECL_VIDEO, inventory.videos[index], false ) );
-	}
-	return NULL;
-}
-
-
-/*
-==============
-idPlayer::UpdatePDAInfo
-==============
-*/
-void idPlayer::UpdatePDAInfo( bool updatePDASel ) {
-	int j, sel;
-
-	if ( objectiveSystem == NULL ) {
-		return;
-	}
-
-	assert( hud );
-
-	int currentPDA = objectiveSystem->State().GetInt( "listPDA_sel_0", "0" );
-	if ( currentPDA == -1 ) {
-		currentPDA = 0;
-	}
-
-	if ( updatePDASel ) {
-		objectiveSystem->SetStateInt( "listPDAVideo_sel_0", 0 );
-		objectiveSystem->SetStateInt( "listPDAEmail_sel_0", 0 );
-		objectiveSystem->SetStateInt( "listPDAAudio_sel_0", 0 );
-	}
-
-	if ( currentPDA > 0 ) {
-		currentPDA = inventory.pdas.Num() - currentPDA;
-	}
-
-	// Mark in the bit array that this pda has been read
-	if ( currentPDA < 128 ) {
-		inventory.pdasViewed[currentPDA >> 5] |= 1 << (currentPDA & 31);
-	}
-
-	pdaAudio = "";
-	pdaVideo = "";
-	pdaVideoWave = "";
-	idStr name, data, preview, info, wave;
-	for ( j = 0; j < MAX_PDAS; j++ ) {
-		objectiveSystem->SetStateString( va( "listPDA_item_%i", j ), "" );
-	}
-	for ( j = 0; j < MAX_PDA_ITEMS; j++ ) {
-		objectiveSystem->SetStateString( va( "listPDAVideo_item_%i", j ), "" );
-		objectiveSystem->SetStateString( va( "listPDAAudio_item_%i", j ), "" );
-		objectiveSystem->SetStateString( va( "listPDAEmail_item_%i", j ), "" );
-		objectiveSystem->SetStateString( va( "listPDASecurity_item_%i", j ), "" );
-	}
-	for ( j = 0; j < inventory.pdas.Num(); j++ ) {
-
-		const idDeclPDA *pda = static_cast< const idDeclPDA* >( declManager->FindType( DECL_PDA, inventory.pdas[j], false ) );
-
-		if ( pda == NULL ) {
-			continue;
-		}
-
-		int index = inventory.pdas.Num() - j;
-		if ( j == 0 ) {
-			// Special case for the first PDA
-			index = 0;
-		}
-
-		if ( j != currentPDA && j < 128 && inventory.pdasViewed[j >> 5] & (1 << (j & 31)) ) {
-			// This pda has been read already, mark in gray
-			objectiveSystem->SetStateString( va( "listPDA_item_%i", index), va(S_COLOR_GRAY "%s", pda->GetPdaName()) );
-		} else {
-			// This pda has not been read yet
-		objectiveSystem->SetStateString( va( "listPDA_item_%i", index), pda->GetPdaName() );
-		}
-
-		const char *security = pda->GetSecurity();
-		if ( j == currentPDA || (currentPDA == 0 && security && *security ) ) {
-			if ( *security == 0 ) {
-				security = common->GetLanguageDict()->GetString( "#str_00066" );
-			}
-			objectiveSystem->SetStateString( "PDASecurityClearance", security );
-		}
-
-		if ( j == currentPDA ) {
-
-			objectiveSystem->SetStateString( "pda_icon", pda->GetIcon() );
-			objectiveSystem->SetStateString( "pda_id", pda->GetID() );
-			objectiveSystem->SetStateString( "pda_title", pda->GetTitle() );
-
-			if ( j == 0 ) {
-				// Selected, personal pda
-				// Add videos
-				if ( updatePDASel || !inventory.pdaOpened ) {
-				objectiveSystem->HandleNamedEvent( "playerPDAActive" );
-				objectiveSystem->SetStateString( "pda_personal", "1" );
-					inventory.pdaOpened = true;
-				}
-				objectiveSystem->SetStateString( "pda_location", hud->State().GetString("location") );
-				objectiveSystem->SetStateString( "pda_name", cvarSystem->GetCVarString( "ui_name") );
-				AddGuiPDAData( DECL_VIDEO, "listPDAVideo", pda, objectiveSystem );
-				sel = objectiveSystem->State().GetInt( "listPDAVideo_sel_0", "0" );
-				const idDeclVideo *vid = NULL;
-				if ( sel >= 0 && sel < inventory.videos.Num() ) {
-					vid = static_cast< const idDeclVideo * >( declManager->FindType( DECL_VIDEO, inventory.videos[ sel ], false ) );
-				}
-				if ( vid ) {
-					pdaVideo = vid->GetRoq();
-					pdaVideoWave = vid->GetWave();
-					objectiveSystem->SetStateString( "PDAVideoTitle", vid->GetVideoName() );
-					objectiveSystem->SetStateString( "PDAVideoVid", vid->GetRoq() );
-					objectiveSystem->SetStateString( "PDAVideoIcon", vid->GetPreview() );
-					objectiveSystem->SetStateString( "PDAVideoInfo", vid->GetInfo() );
-				} else {
-					//FIXME: need to precache these in the player def
-					objectiveSystem->SetStateString( "PDAVideoVid", "sound/vo/video/welcome.tga" );
-					objectiveSystem->SetStateString( "PDAVideoIcon", "sound/vo/video/welcome.tga" );
-					objectiveSystem->SetStateString( "PDAVideoTitle", "" );
-					objectiveSystem->SetStateString( "PDAVideoInfo", "" );
-				}
-			} else {
-				// Selected, non-personal pda
-				// Add audio logs
-				if ( updatePDASel ) {
-				objectiveSystem->HandleNamedEvent( "playerPDANotActive" );
-				objectiveSystem->SetStateString( "pda_personal", "0" );
-					inventory.pdaOpened = true;
-				}
-				objectiveSystem->SetStateString( "pda_location", pda->GetPost() );
-				objectiveSystem->SetStateString( "pda_name", pda->GetFullName() );
-				int audioCount = AddGuiPDAData( DECL_AUDIO, "listPDAAudio", pda, objectiveSystem );
-				objectiveSystem->SetStateInt( "audioLogCount", audioCount );
-				sel = objectiveSystem->State().GetInt( "listPDAAudio_sel_0", "0" );
-				const idDeclAudio *aud = NULL;
-				if ( sel >= 0 ) {
-					aud = pda->GetAudioByIndex( sel );
-				}
-				if ( aud ) {
-					pdaAudio = aud->GetWave();
-					objectiveSystem->SetStateString( "PDAAudioTitle", aud->GetAudioName() );
-					objectiveSystem->SetStateString( "PDAAudioIcon", aud->GetPreview() );
-					objectiveSystem->SetStateString( "PDAAudioInfo", aud->GetInfo() );
-				} else {
-					objectiveSystem->SetStateString( "PDAAudioIcon", "sound/vo/video/welcome.tga" );
-					objectiveSystem->SetStateString( "PDAAutioTitle", "" );
-					objectiveSystem->SetStateString( "PDAAudioInfo", "" );
-				}
-			}
-			// add emails
-			name = "";
-			data = "";
-			int numEmails = pda->GetNumEmails();
-			if ( numEmails > 0 ) {
-				AddGuiPDAData( DECL_EMAIL, "listPDAEmail", pda, objectiveSystem );
-				sel = objectiveSystem->State().GetInt( "listPDAEmail_sel_0", "-1" );
-				if ( sel >= 0 && sel < numEmails ) {
-					const idDeclEmail *email = pda->GetEmailByIndex( sel );
-					name = email->GetSubject();
-					data = email->GetBody();
-				}
-			}
-			objectiveSystem->SetStateString( "PDAEmailTitle", name );
-			objectiveSystem->SetStateString( "PDAEmailText", data );
-		}
-	}
-	if ( objectiveSystem->State().GetInt( "listPDA_sel_0", "-1" ) == -1 ) {
-		objectiveSystem->SetStateInt( "listPDA_sel_0", 0 );
-	}
-	objectiveSystem->StateChanged( gameLocal.time );
-}
-
-/*
-==============
-idPlayer::TogglePDA
-==============
-*/
-void idPlayer::TogglePDA( void ) {
-	if ( objectiveSystem == NULL ) {
-		return;
-	}
-
-	if ( inventory.pdas.Num() == 0 ) {
-		ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
-		return;
-	}
-
-	assert( hud );
-
-	if ( !objectiveSystemOpen ) {
-		int j, c = inventory.items.Num();
-		objectiveSystem->SetStateInt( "inv_count", c );
-		for ( j = 0; j < MAX_INVENTORY_ITEMS; j++ ) {
-			objectiveSystem->SetStateString( va( "inv_name_%i", j ), "" );
-			objectiveSystem->SetStateString( va( "inv_icon_%i", j ), "" );
-			objectiveSystem->SetStateString( va( "inv_text_%i", j ), "" );
-		}
-		for ( j = 0; j < c; j++ ) {
-			idDict *item = inventory.items[j];
-			if ( !item->GetBool( "inv_pda" ) ) {
-				const char *iname = item->GetString( "inv_name" );
-				const char *iicon = item->GetString( "inv_icon" );
-				const char *itext = item->GetString( "inv_text" );
-				objectiveSystem->SetStateString( va( "inv_name_%i", j ), iname );
-				objectiveSystem->SetStateString( va( "inv_icon_%i", j ), iicon );
-				objectiveSystem->SetStateString( va( "inv_text_%i", j ), itext );
-				const idKeyValue *kv = item->MatchPrefix( "inv_id", NULL );
-				if ( kv ) {
-					objectiveSystem->SetStateString( va( "inv_id_%i", j ), kv->GetValue() );
-				}
-			}
-		}
-
-		for ( j = 0; j < MAX_WEAPONS; j++ ) {
-			const char *weapnum = va( "def_weapon%d", j );
-			const char *hudWeap = va( "weapon%d", j );
-			int weapstate = 0;
-			if ( inventory.weapons & ( 1 << j ) ) {
-				const char *weap = spawnArgs.GetString( weapnum );
-				if ( weap && *weap ) {
-					weapstate++;
-				}
-			}
-			objectiveSystem->SetStateInt( hudWeap, weapstate );
-		}
-
-		objectiveSystem->SetStateInt( "listPDA_sel_0", inventory.selPDA );
-		objectiveSystem->SetStateInt( "listPDAVideo_sel_0", inventory.selVideo );
-		objectiveSystem->SetStateInt( "listPDAAudio_sel_0", inventory.selAudio );
-		objectiveSystem->SetStateInt( "listPDAEmail_sel_0", inventory.selEMail );
-		UpdatePDAInfo( false );
-		UpdateObjectiveInfo();
-		objectiveSystem->Activate( true, gameLocal.time );
-		hud->HandleNamedEvent( "pdaPickupHide" );
-		hud->HandleNamedEvent( "videoPickupHide" );
-	} else {
-		inventory.selPDA = objectiveSystem->State().GetInt( "listPDA_sel_0" );
-		inventory.selVideo = objectiveSystem->State().GetInt( "listPDAVideo_sel_0" );
-		inventory.selAudio = objectiveSystem->State().GetInt( "listPDAAudio_sel_0" );
-		inventory.selEMail = objectiveSystem->State().GetInt( "listPDAEmail_sel_0" );
-		objectiveSystem->Activate( false, gameLocal.time );
-	}
-	objectiveSystemOpen ^= 1;
-}
-
-/*
-==============
 idPlayer::ToggleScoreboard
 ==============
 */
@@ -6715,18 +5897,6 @@ void idPlayer::PerformImpulse( int impulse ) {
 			centerView.Init(gameLocal.time, 200, viewAngles.pitch, 0);
 			break;
 		}
-		case IMPULSE_19: {
-			// when we're not in single player, IMPULSE_19 is used for showScores
-			// otherwise it opens the pda
-			if ( !gameLocal.isMultiplayer ) {
-				if ( objectiveSystemOpen ) {
-					TogglePDA();
-				} else if ( weapon_pda >= 0 ) {
-					SelectWeapon( weapon_pda, true );
-				}
-			}
-			break;
-		}
 		case IMPULSE_20: {
 			if ( gameLocal.isClient || entityNumber == gameLocal.localClientNum ) {
 				gameLocal.mpGame.ToggleTeam();
@@ -6807,11 +5977,6 @@ void idPlayer::PerformImpulse( int impulse ) {
 bool idPlayer::HandleESC( void ) {
 	if ( gameLocal.inCinematic ) {
 		return SkipCinematic();
-	}
-
-	if ( objectiveSystemOpen ) {
-		TogglePDA();
-		return true;
 	}
 
 	return false;
@@ -7414,10 +6579,7 @@ void idPlayer::Think( void ) {
 	}
 #endif
 
-	if ( objectiveSystemOpen || gameLocal.inCinematic || influenceActive ) {
-		if ( objectiveSystemOpen && AI_PAIN ) {
-			TogglePDA();
-		}
+	if ( gameLocal.inCinematic || influenceActive ) {
 		usercmd.forwardmove = 0;
 		usercmd.rightmove = 0;
 		usercmd.upmove = 0;
@@ -9275,26 +8437,6 @@ void idPlayer::Event_GetWeaponEntity( void ) {
 
 /*
 ==================
-idPlayer::Event_OpenPDA
-==================
-*/
-void idPlayer::Event_OpenPDA( void ) {
-	if ( !gameLocal.isMultiplayer ) {
-		TogglePDA();
-	}
-}
-
-/*
-==================
-idPlayer::Event_InPDA
-==================
-*/
-void idPlayer::Event_InPDA( void ) {
-	idThread::ReturnInt( objectiveSystemOpen );
-}
-
-/*
-==================
 idPlayer::TeleportDeath
 ==================
 */
@@ -9379,12 +8521,6 @@ void idPlayer::ClientPredictionThink( void ) {
 		usercmd.upmove = 0;
 	}
 #endif
-
-	if ( objectiveSystemOpen ) {
-		usercmd.forwardmove = 0;
-		usercmd.rightmove = 0;
-		usercmd.upmove = 0;
-	}
 
 	// clear the ik before we do anything else so the skeleton doesn't get updated twice
 	walkIK.ClearJointMods();
@@ -9941,28 +9077,6 @@ void idPlayer::Show( void ) {
 
 /*
 ===============
-idPlayer::StartAudioLog
-===============
-*/
-void idPlayer::StartAudioLog( void ) {
-	if ( hud ) {
-		hud->HandleNamedEvent( "audioLogUp" );
-	}
-}
-
-/*
-===============
-idPlayer::StopAudioLog
-===============
-*/
-void idPlayer::StopAudioLog( void ) {
-	if ( hud ) {
-		hud->HandleNamedEvent( "audioLogDown" );
-	}
-}
-
-/*
-===============
 idPlayer::ShowTip
 ===============
 */
@@ -9996,35 +9110,6 @@ idPlayer::Event_HideTip
 */
 void idPlayer::Event_HideTip( void ) {
 	HideTip();
-}
-
-/*
-===============
-idPlayer::ShowObjective
-===============
-*/
-void idPlayer::ShowObjective( const char *obj ) {
-	hud->HandleNamedEvent( obj );
-	objectiveUp = true;
-}
-
-/*
-===============
-idPlayer::HideObjective
-===============
-*/
-void idPlayer::HideObjective( void ) {
-	hud->HandleNamedEvent( "closeObjective" );
-	objectiveUp = false;
-}
-
-/*
-===============
-idPlayer::Event_StopAudioLog
-===============
-*/
-void idPlayer::Event_StopAudioLog( void ) {
-	StopAudioLog();
 }
 
 /*
@@ -10115,7 +9200,7 @@ void idPlayer::UpdatePlayerIcons( void ) {
 	} else {
 		isLagged = false;
 	}
-	// TODO: chatting, PDA, etc?
+	// TODO: chatting?
 }
 
 /*

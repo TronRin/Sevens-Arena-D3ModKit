@@ -1127,10 +1127,6 @@ int main(int argc, char *argv[]) {
 					// in-game Script Editor
 					ScriptEditorRun();
 				}
-				if ( com_editors & EDITOR_PDA ) {
-					// in-game PDA Editor
-					PDAEditorRun();
-				}
 			}
 		}
 #endif

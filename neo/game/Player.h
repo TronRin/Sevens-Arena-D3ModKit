@@ -91,12 +91,6 @@ struct idItemInfo {
 	idStr icon;
 };
 
-struct idObjectiveInfo {
-	idStr title;
-	idStr text;
-	idStr screenshot;
-};
-
 struct idLevelTriggerInfo {
 	idStr levelName;
 	idStr triggerName;
@@ -170,19 +164,7 @@ public:
 	int						deplete_ammount;
 	int						nextArmorDepleteTime;
 
-	int						pdasViewed[4]; // 128 bit flags for indicating if a pda has been viewed
-
-	int						selPDA;
-	int						selEMail;
-	int						selVideo;
-	int						selAudio;
-	bool					pdaOpened;
-	bool					turkeyScore;
 	idList<idDict *>		items;
-	idStrList				pdas;
-	idStrList				pdaSecurity;
-	idStrList				videos;
-	idStrList				emails;
 
 	bool					ammoPulse;
 	bool					weaponPulse;
@@ -226,7 +208,6 @@ public:
 	int						nextItemNum;
 	int						onePickupTime;
 	idList<idItemInfo>		pickupItemNames;
-	idList<idObjectiveInfo>	objectiveNames;
 
 #ifdef _D3XP
 	void					InitRechargeAmmo(idPlayer *owner);
@@ -304,11 +285,8 @@ public:
 
 	idEntityPtr<idWeapon>	weapon;
 	idUserInterface *		hud;				// MP: is NULL if not local player
-	idUserInterface *		objectiveSystem;
-	bool					objectiveSystemOpen;
 
 	int						weapon_soulcube;
-	int						weapon_pda;
 	int						weapon_fists;
 #ifdef _D3XP
 	int						weapon_bloodstone;
@@ -489,13 +467,6 @@ public:
 	void					RemoveInventoryItem( const char *name );
 	idDict *				FindInventoryItem( const char *name );
 
-	void					GivePDA( const char *pdaName, idDict *item );
-	void					GiveVideo( const char *videoName, idDict *item );
-	void					GiveEmail( const char *emailName );
-	void					GiveSecurity( const char *security );
-	void					GiveObjective( const char *title, const char *text, const char *screenshot );
-	void					CompleteObjective( const char *title );
-
 	bool					GivePowerUp( int powerup, int time );
 	void					ClearPowerUps( void );
 	bool					PowerUpActive( int powerup ) const;
@@ -537,12 +508,9 @@ public:
 
 	void					PerformImpulse( int impulse );
 	void					Spectate( bool spectate );
-	void					TogglePDA( void );
 	void					ToggleScoreboard( void );
 	void					RouteGuiMouse( idUserInterface *gui );
 	void					UpdateHud( void );
-	const idDeclPDA *		GetPDA( void ) const;
-	const idDeclVideo *		GetVideo( int index );
 	void					SetInfluenceFov( float fov );
 	void					SetInfluenceView( const char *mtr, const char *skinname, float radius, idEntity *ent );
 	void					SetInfluenceLevel( int level );
@@ -553,14 +521,9 @@ public:
 	void					UpdateHudWeapon( bool flashWeapon = true );
 	void					UpdateHudStats( idUserInterface *hud );
 	void					UpdateHudAmmo( idUserInterface *hud );
-	void					Event_StopAudioLog( void );
-	void					StartAudioLog( void );
-	void					StopAudioLog( void );
 	void					ShowTip( const char *title, const char *tip, bool autoHide );
 	void					HideTip( void );
 	bool					IsTipVisible( void ) { return tipUp; };
-	void					ShowObjective( const char *obj );
-	void					HideObjective( void );
 
 	virtual void			ClientPredictionThink( void );
 	virtual void			WriteToSnapshot( idBitMsgDelta &msg ) const;
@@ -699,12 +662,7 @@ private:
 	int						oldMouseX;
 	int						oldMouseY;
 
-	idStr					pdaAudio;
-	idStr					pdaVideo;
-	idStr					pdaVideoWave;
-
 	bool					tipUp;
-	bool					objectiveUp;
 
 	int						lastDamageDef;
 	idVec3					lastDamageDir;
@@ -773,11 +731,7 @@ private:
 	void					ClearFocus( void );
 	void					UpdateFocus( void );
 	void					UpdateLocation( void );
-	idUserInterface *		ActiveGui( void );
-	void					UpdatePDAInfo( bool updatePDASel );
-	int						AddGuiPDAData( const declType_t dataType, const char *listName, const idDeclPDA *src, idUserInterface *gui );
-	void					ExtractEmailInfo( const idStr &email, const char *scan, idStr &out );
-	void					UpdateObjectiveInfo( void );
+	idUserInterface *		ActiveGui( void ) { return focusUI; }
 
 #ifdef _D3XP
 	bool					WeaponAvailable( const char* name );
@@ -795,9 +749,6 @@ private:
 	void					Event_GetPreviousWeapon( void );
 	void					Event_SelectWeapon( const char *weaponName );
 	void					Event_GetWeaponEntity( void );
-	void					Event_OpenPDA( void );
-	void					Event_PDAAvailable( void );
-	void					Event_InPDA( void );
 	void					Event_ExitTeleporter( void );
 	void					Event_HideTip( void );
 	void					Event_LevelTrigger( void );

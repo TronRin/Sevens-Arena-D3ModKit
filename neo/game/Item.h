@@ -120,41 +120,6 @@ private:
 	int						type;
 };
 
-class idObjective : public idItem {
-public:
-	CLASS_PROTOTYPE( idObjective );
-
-							idObjective();
-
-	void					Save( idSaveGame *savefile ) const;
-	void					Restore( idRestoreGame *savefile );
-
-	void					Spawn();
-
-private:
-	idVec3					playerPos;
-
-	void					Event_Trigger( idEntity *activator );
-	void					Event_HideObjective( idEntity *e );
-	void					Event_GetPlayerPos();
-	void					Event_CamShot();
-};
-
-class idVideoCDItem : public idItem {
-public:
-	CLASS_PROTOTYPE( idVideoCDItem );
-
-	void					Spawn();
-	virtual bool			GiveToPlayer( idPlayer *player );
-};
-
-class idPDAItem : public idItem {
-public:
-	CLASS_PROTOTYPE( idPDAItem );
-
-	virtual bool			GiveToPlayer( idPlayer *player );
-};
-
 class idMoveableItem : public idItem {
 public:
 	CLASS_PROTOTYPE( idMoveableItem );
@@ -267,14 +232,6 @@ private:
 
 #endif
 
-
-class idMoveablePDAItem : public idMoveableItem {
-public:
-	CLASS_PROTOTYPE( idMoveablePDAItem );
-
-	virtual bool			GiveToPlayer( idPlayer *player );
-};
-
 /*
 ===============================================================================
 
@@ -292,25 +249,6 @@ public:
 
 private:
 	void					Event_Trigger( idEntity *activator );
-};
-
-class idObjectiveComplete : public idItemRemover {
-public:
-	CLASS_PROTOTYPE( idObjectiveComplete );
-
-							idObjectiveComplete();
-
-	void					Save( idSaveGame *savefile ) const;
-	void					Restore( idRestoreGame *savefile );
-
-	void					Spawn();
-
-private:
-	idVec3					playerPos;
-
-	void					Event_Trigger( idEntity *activator );
-	void					Event_HideObjective( idEntity *e );
-	void					Event_GetPlayerPos();
 };
 
 #endif /* !__GAME_ITEM_H__ */

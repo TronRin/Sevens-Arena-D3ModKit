@@ -3545,29 +3545,6 @@ bool idEntity::HandleGuiCommands( idEntity *entityGui, const char *cmds ) {
 				continue;
 			}
 
-			if ( !token.Icmp( "turkeyscore" ) ) {
-				if ( src.ReadToken( &token2 ) && entityGui->renderEntity.gui[0] ) {
-					int score = entityGui->renderEntity.gui[0]->State().GetInt( "score" );
-					score += atoi( token2 );
-					entityGui->renderEntity.gui[0]->SetStateInt( "score", score );
-					if ( gameLocal.GetLocalPlayer() && score >= 25000 && !gameLocal.GetLocalPlayer()->inventory.turkeyScore ) {
-						gameLocal.GetLocalPlayer()->GiveEmail( "highScore" );
-						gameLocal.GetLocalPlayer()->inventory.turkeyScore = true;
-					}
-				}
-				continue;
-			}
-
-#ifdef _D3XP
-
-			if ( !token.Icmp( "martianbuddycomplete" ) ) {
-				gameLocal.GetLocalPlayer()->GiveEmail( "MartianBuddyGameComplete" );
-				continue;
-			}
-
-#endif
-
-
 			// handy for debugging GUI stuff
 			if ( !token.Icmp( "print" ) ) {
 				idStr msg;

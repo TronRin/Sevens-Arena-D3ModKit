@@ -416,7 +416,6 @@ set(src_framework
 	framework/DeclFX.cpp
 	framework/DeclManager.cpp
 	framework/DeclParticle.cpp
-	framework/DeclPDA.cpp
 	framework/DeclSkin.cpp
 	framework/DeclTable.cpp
 	framework/EditField.cpp
@@ -746,9 +745,6 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 	# Particle Editor
 	file(GLOB src_particleeditor "tools/particle/*.cpp")
 	add_globbed_headers(src_particleeditor "tools/particle")
-	# PDA editor
-	file(GLOB src_pdaeditor "tools/pda/*.cpp")
-	add_globbed_headers(src_pdaeditor "tools/pda")
 	# Radiant ( Map editor )
 	file(GLOB src_map_editor "tools/radiant/*.cpp")
 	add_globbed_headers(src_map_editor "tools/radiant")
@@ -787,7 +783,6 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 		${src_gui_editor}
 		${src_materialeditor}
 		${src_particleeditor}
-		${src_pdaeditor}
 		${src_map_editor}
 		${src_script_editor}
 		${src_sound_editor}

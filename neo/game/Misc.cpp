@@ -1522,14 +1522,12 @@ void idStaticEntity::Think( void ) {
 		if ( runGui && renderEntity.gui[0] ) {
 			idPlayer *player = gameLocal.GetLocalPlayer();
 			if ( player ) {
-				if ( !player->objectiveSystemOpen ) {
-					renderEntity.gui[0]->StateChanged( gameLocal.time, true );
-					if ( renderEntity.gui[1] ) {
-						renderEntity.gui[1]->StateChanged( gameLocal.time, true );
-					}
-					if ( renderEntity.gui[2] ) {
-						renderEntity.gui[2]->StateChanged( gameLocal.time, true );
-					}
+				renderEntity.gui[0]->StateChanged( gameLocal.time, true );
+				if ( renderEntity.gui[1] ) {
+					renderEntity.gui[1]->StateChanged( gameLocal.time, true );
+				}
+				if ( renderEntity.gui[2] ) {
+					renderEntity.gui[2]->StateChanged( gameLocal.time, true );
 				}
 			}
 		}
