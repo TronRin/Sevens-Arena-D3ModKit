@@ -462,8 +462,6 @@ idEntity::idEntity() {
 	timeGroup = TIME_GROUP1;
 	xrayEntityHandle = -1;
 	xraySkin = NULL;
-
-	noGrab = false;
 #endif
 }
 
@@ -511,8 +509,6 @@ void idEntity::Spawn( void ) {
 	renderEntity.entityNum = entityNumber;
 
 #ifdef _D3XP
-	noGrab = spawnArgs.GetBool( "noGrab", "0" );
-
 	xraySkin = NULL;
 	renderEntity.xrayIndex = 1;
 
@@ -717,7 +713,6 @@ void idEntity::Save( idSaveGame *savefile ) const {
 
 #ifdef _D3XP
 	savefile->WriteInt( timeGroup );
-	savefile->WriteBool( noGrab );
 	savefile->WriteRenderEntity( xrayEntity );
 	savefile->WriteInt( xrayEntityHandle );
 	savefile->WriteSkin( xraySkin );
@@ -800,7 +795,6 @@ void idEntity::Restore( idRestoreGame *savefile ) {
 
 #ifdef _D3XP
 	savefile->ReadInt( timeGroup );
-	savefile->ReadBool( noGrab );
 	savefile->ReadRenderEntity( xrayEntity );
 	savefile->ReadInt( xrayEntityHandle );
 	if ( xrayEntityHandle != -1 ) {
@@ -5066,24 +5060,6 @@ void idEntity::DetermineTimeGroup( bool slowmo ) {
 	else {
 		timeGroup = TIME_GROUP2;
 	}
-}
-
-/*
-================
-idEntity::SetGrabbedState
-================
-*/
-void idEntity::SetGrabbedState( bool grabbed ) {
-	fl.grabbed = grabbed;
-}
-
-/*
-================
-idEntity::IsGrabbed
-================
-*/
-bool idEntity::IsGrabbed() {
-	return fl.grabbed;
 }
 #endif
 

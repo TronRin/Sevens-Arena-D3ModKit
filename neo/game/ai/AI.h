@@ -293,10 +293,6 @@ public:
 							// Finds the best collision free trajectory for a clip model.
 	static bool				PredictTrajectory( const idVec3 &firePos, const idVec3 &target, float projectileSpeed, const idVec3 &projGravity, const idClipModel *clip, int clipmask, float max_height, const idEntity *ignore, const idEntity *targetEntity, int drawtime, idVec3 &aimDir );
 
-#ifdef _D3XP
-	virtual void			Gib( const idVec3 &dir, const char *damageDefName );
-#endif
-
 protected:
 	// navigation
 	idAAS *					aas;
@@ -423,8 +419,6 @@ protected:
 	bool					spawnClearMoveables;
 
 	idHashTable<funcEmitter_t> funcEmitters;
-
-	idEntityPtr<idHarvestable>	harvestEnt;
 #endif
 
 	// script variables
@@ -650,9 +644,6 @@ protected:
 	void					Event_TestMeleeAttack( void );
 	void					Event_TestAnimAttack( const char *animname );
 	void					Event_Shrivel( float shirvel_time );
-	void					Event_Burn( void );
-	void					Event_PreBurn( void );
-	void					Event_ClearBurn( void );
 	void					Event_SetSmokeVisibility( int num, int on );
 	void					Event_NumSmokeEmitters( void );
 	void					Event_StopThinking( void );

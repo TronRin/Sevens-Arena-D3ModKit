@@ -17,6 +17,12 @@ const int BUILD_NUMBER			= 1305;
 #define BUILD_CPU				"@cpu@"
 #define BUILD_BRANCH			"@branch@"
 
+#if defined( _DEBUG )
+	#define	BUILD_BUILD_TYPE	"-debug"
+#else
+	#define	BUILD_BUILD_TYPE "-release"
+#endif
+
 #define BUILD_LIBRARY_SUFFIX	"@CMAKE_SHARED_LIBRARY_SUFFIX@"
 
 #define BUILD_LIBDIR			"@libdir@"

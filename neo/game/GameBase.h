@@ -30,9 +30,9 @@ If you have questions concerning this license or the applicable additional terms
 #define	__GAMEBASE_H__
 
 // default scripts
-#define SCRIPT_DEFAULTDEFS		"script/doom_defs.script"
-#define SCRIPT_DEFAULT			"script/doom_main.script"
-#define SCRIPT_DEFAULTFUNC		"doom_main"
+#define SCRIPT_DEFAULTDEFS		"script/game_defs.script"
+#define SCRIPT_DEFAULT			"script/game_main.script"
+#define SCRIPT_DEFAULTFUNC		"GameMain"
 
 #define TIME_GROUP1				0
 #define TIME_GROUP2				1
@@ -50,7 +50,7 @@ If you have questions concerning this license or the applicable additional terms
 #endif
 
 // the "gameversion" client command will print this plus compile date
-#define	GAME_VERSION			"baseDOOM-1"
+#define	GAME_VERSION			"baseMYGAME-1"
 
 #define	MAX_CLIENTS				32
 #define	GENTITYNUM_BITS			12

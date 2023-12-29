@@ -286,15 +286,7 @@ public:
 	idEntityPtr<idWeapon>	weapon;
 	idUserInterface *		hud;				// MP: is NULL if not local player
 
-	int						weapon_soulcube;
 	int						weapon_fists;
-#ifdef _D3XP
-	int						weapon_bloodstone;
-	int						weapon_bloodstone_active1;
-	int						weapon_bloodstone_active2;
-	int						weapon_bloodstone_active3;
-	bool					harvest_lock;
-#endif
 
 	int						heartRate;
 	idInterpolate<float>	heartInfo;
@@ -313,7 +305,6 @@ public:
 
 
 	bool					hiddenWeapon;		// if the weapon is hidden ( in noWeapons maps )
-	idEntityPtr<idProjectile> soulCubeProjectile;
 
 	// mp stuff
 #ifdef _D3XP
@@ -490,8 +481,7 @@ public:
 	void					RemoveWeapon( const char *weap );
 	bool					CanShowWeaponViewmodel( void ) const;
 
-	void					AddAIKill( void );
-	void					SetSoulCubeProjectile( idProjectile *projectile );
+	void					AddAIKill( void ) {}
 
 	void					AdjustHeartRate( int target, float timeInSecs, float delay, bool force );
 	void					SetCurrentHeartRate( void );

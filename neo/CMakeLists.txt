@@ -641,7 +641,6 @@ set(src_game
 	game/ai/AI.cpp
 	game/ai/AI_events.cpp
 	game/ai/AI_pathing.cpp
-	game/ai/AI_Vagary.cpp
 	game/gamesys/DebugGraph.cpp
 	game/gamesys/Class.cpp
 	game/gamesys/Event.cpp
@@ -675,8 +674,6 @@ set(src_game
 	game/physics/Physics_Static.cpp
 	game/physics/Physics_StaticMulti.cpp
 	game/physics/Push.cpp
-	game/Grabber.cpp
-	game/physics/Force_Grab.cpp
 )
 
 add_globbed_headers(src_game "game")

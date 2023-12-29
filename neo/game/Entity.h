@@ -158,22 +158,16 @@ public:
 		bool				isDormant			:1;	// if true the entity is dormant
 		bool				hasAwakened			:1;	// before a monster has been awakened the first time, use full PVS for dormant instead of area-connected
 		bool				networkSync			:1; // if true the entity is synchronized over the network
-		bool				grabbed				:1;	// if true object is currently being grabbed
 	} fl;
 
 #ifdef _D3XP
 	int						timeGroup;
-
-	bool					noGrab;
 
 	renderEntity_t			xrayEntity;
 	qhandle_t				xrayEntityHandle;
 	const idDeclSkin *		xraySkin;
 
 	void					DetermineTimeGroup( bool slowmo );
-
-	void					SetGrabbedState( bool grabbed );
-	bool					IsGrabbed();
 #endif
 
 public:

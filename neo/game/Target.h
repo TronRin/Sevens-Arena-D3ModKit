@@ -296,61 +296,6 @@ private:
 	void				Event_Activate( idEntity *activator );
 };
 
-
-/*
-===============================================================================
-
-idTarget_SetInfluence
-
-===============================================================================
-*/
-
-#ifdef _D3XP
-typedef struct SavedGui_s {
-	SavedGui_s() {memset(gui, 0, sizeof(idUserInterface*)*MAX_RENDERENTITY_GUI); };
-	idUserInterface*	gui[MAX_RENDERENTITY_GUI];
-} SavedGui_t;
-#endif
-
-class idTarget_SetInfluence : public idTarget {
-public:
-	CLASS_PROTOTYPE( idTarget_SetInfluence );
-
-						idTarget_SetInfluence( void );
-
-	void				Save( idSaveGame *savefile ) const;
-	void				Restore( idRestoreGame *savefile );
-
-	void				Spawn( void );
-
-private:
-	void				Event_Activate( idEntity *activator );
-	void				Event_RestoreInfluence();
-	void				Event_GatherEntities();
-	void				Event_Flash( float flash, int out );
-	void				Event_ClearFlash( float flash );
-	void				Think( void );
-
-	idList<int>			lightList;
-	idList<int>			guiList;
-	idList<int>			soundList;
-	idList<int>			genericList;
-	float				flashIn;
-	float				flashOut;
-	float				delay;
-	idStr				flashInSound;
-	idStr				flashOutSound;
-	idEntity *			switchToCamera;
-	idInterpolate<float>fovSetting;
-	bool				soundFaded;
-	bool				restoreOnTrigger;
-
-#ifdef _D3XP
-	idList<SavedGui_t>	savedGuiList;
-#endif
-};
-
-
 /*
 ===============================================================================
 
@@ -427,7 +372,7 @@ private:
 /*
 ===============================================================================
 
-idTarget_LockDoor
+idTarget_EnableLevelWeapons
 
 ===============================================================================
 */

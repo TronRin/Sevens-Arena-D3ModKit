@@ -356,7 +356,6 @@ idAI::idAI() {
 
 #ifdef _D3XP
 	spawnClearMoveables	= false;
-	harvestEnt			= NULL;
 #endif
 
 	num_cinematics		= 0;
@@ -407,12 +406,6 @@ idAI::~idAI() {
 		gameRenderWorld->FreeLightDef( worldMuzzleFlashHandle );
 		worldMuzzleFlashHandle = -1;
 	}
-
-#ifdef _D3XP
-	if ( harvestEnt.GetEntity() ) {
-		harvestEnt.GetEntity()->PostEventMS( &EV_Remove, 0 );
-	}
-#endif
 }
 
 /*
@@ -554,8 +547,6 @@ void idAI::Save( idSaveGame *savefile ) const {
 		savefile->WriteJoint(emitter->joint);
 		savefile->WriteObject(emitter->particle);
 	}
-
-	harvestEnt.Save( savefile);
 #endif
 }
 
@@ -726,7 +717,6 @@ void idAI::Restore( idRestoreGame *savefile ) {
 	}
 
 #ifdef _D3XP
-
 	//Clean up the emitters
 	for(int i = 0; i < funcEmitters.Num(); i++) {
 		funcEmitter_t* emitter = funcEmitters.GetIndex(i);
@@ -753,12 +743,6 @@ void idAI::Restore( idRestoreGame *savefile ) {
 
 		funcEmitters.Set(newEmitter.name, newEmitter);
 	}
-
-	harvestEnt.Restore(savefile);
-	//if(harvestEnt.GetEntity()) {
-	//	harvestEnt.GetEntity()->SetParent(this);
-	//}
-
 #endif
 }
 
@@ -1000,17 +984,6 @@ void idAI::Spawn( void ) {
 	spawnArgs.GetBool( "spawnClearMoveables", "0", spawnClearMoveables );
 #endif
 }
-
-
-#ifdef _D3XP
-void idAI::Gib( const idVec3 &dir, const char *damageDefName ) {
-	if(harvestEnt.GetEntity()) {
-		//Let the harvest ent know that we gibbed
-		harvestEnt.GetEntity()->Gib();
-	}
-	idActor::Gib(dir, damageDefName);
-}
-#endif
 
 /*
 ===================
@@ -3533,10 +3506,6 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		physicsObj.SetLinearVelocity( vec3_zero );
 		physicsObj.PutToRest();
 		physicsObj.DisableImpact();
-#ifdef _D3XP
-		// No grabbing if "model_death"
-		noGrab = true;
-#endif
 	}
 
 	restartParticles = false;
@@ -3554,30 +3523,6 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		gameLocal.SpawnEntityDef( args );
 		kv = spawnArgs.MatchPrefix( "def_drops", kv );
 	}
-
-#ifndef _D3XP
-	if ( ( attacker && attacker->IsType( idPlayer::Type ) ) && ( inflictor && !inflictor->IsType( idSoulCubeMissile::Type ) ) ) {
-		static_cast< idPlayer* >( attacker )->AddAIKill();
-	}
-#endif
-
-#ifdef _D3XP
-	if(spawnArgs.GetBool("harvest_on_death")) {
-		const idDict *harvestDef = gameLocal.FindEntityDefDict( spawnArgs.GetString("def_harvest_type"), false );
-		if ( harvestDef ) {
-			idEntity *temp;
-			gameLocal.SpawnEntityDef( *harvestDef, &temp, false );
-			harvestEnt = static_cast<idHarvestable *>(temp);
-
-		}
-
-		if(harvestEnt.GetEntity()) {
-			//Let the harvest entity set itself up
-			harvestEnt.GetEntity()->Init(this);
-			harvestEnt.GetEntity()->BecomeActive( TH_THINK );
-		}
-	}
-#endif
 }
 
 /***********************************************************************

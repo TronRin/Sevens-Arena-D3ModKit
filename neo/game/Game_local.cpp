@@ -93,8 +93,22 @@ idGameLocal					gameLocal;
 idGame *					game = &gameLocal;	// statically pointed at an idGameLocal
 
 const char *idGameLocal::sufaceTypeNames[ MAX_SURFACE_TYPES ] = {
-	"none",	"metal", "stone", "flesh", "wood", "cardboard", "liquid", "glass", "tile", "pipe", "plastic",
-	"ricochet", "surftype10", "surftype11", "surftype12", "surftype13"
+	"none",
+	"metal",
+	"stone",
+	"flesh",
+	"wood",
+	"cardboard",
+	"liquid",
+	"glass",
+	"tile",
+	"pipe",
+	"plastic",
+	"ricochet",
+	"surftype10",
+	"surftype11",
+	"surftype12",
+	"surftype13"
 };
 
 #ifdef _D3XP
@@ -323,11 +337,8 @@ void idGameLocal::Init( void ) {
 	idAAS *aas;
 
 #ifndef GAME_DLL
-
 	TestGameAPI();
-
 #else
-
 	// initialize idLib
 	idLib::Init();
 
@@ -336,7 +347,6 @@ void idGameLocal::Init( void ) {
 
 	// initialize processor specific SIMD
 	idSIMD::InitProcessor( "game", com_forceGenericSIMD.GetBool() );
-
 #endif
 
 	Printf( "----- Initializing Game -----\n" );
@@ -363,40 +373,8 @@ void idGameLocal::Init( void ) {
 
 	InitConsoleCommands();
 
-
-#ifdef _D3XP
-	if(!g_xp_bind_run_once.GetBool()) {
-		//The default config file contains remapped controls that support the XP weapons
-		//We want to run this once after the base doom config file has run so we can
-		//have the correct xp binds
-		cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec default.cfg\n" );
-		cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "seta g_xp_bind_run_once 1\n" );
-		cmdSystem->ExecuteCommandBuffer();
-	}
-#endif
-
 	// load default scripts
 	program.Startup( SCRIPT_DEFAULT );
-
-#ifdef _D3XP
-	//BSM Nerve: Loads a game specific main script file
-	idStr gamedir;
-	int i;
-	for ( i = 0; i < 2; i++ ) {
-		if ( i == 0 ) {
-			gamedir = cvarSystem->GetCVarString( "fs_game_base" );
-		} else if ( i == 1 ) {
-			gamedir = cvarSystem->GetCVarString( "fs_game" );
-		}
-		if( gamedir.Length() > 0 ) {
-			idStr scriptFile = va( "script/%s_main.script", gamedir.c_str() );
-			if ( fileSystem->ReadFile( scriptFile.c_str(), NULL ) > 0 ) {
-				program.CompileFile( scriptFile.c_str() );
-				program.FinishCompilation();
-			}
-		}
-	}
-#endif
 
 	smokeParticles = new idSmokeParticles;
 
@@ -524,7 +502,11 @@ void idGameLocal::SaveGame( idFile *f ) {
 	// DG: add some more information to savegame to make future quirks easier
 	savegame.WriteInt( INTERNAL_SAVEGAME_VERSION ); // to be independent of BUILD_NUMBER
 	savegame.WriteString( D3_OSTYPE ); // operating system - from CMake
-	savegame.WriteString( D3_ARCH ); // CPU architecture (e.g. "x86" or "x86_64") - from CMake
+#ifdef _MSC_VER
+	savegame.WriteString( D3_ARCH ); // CPU architecture (e.g. "x86" or "x86_64") - from sys/platform.h
+#else
+	savegame.WriteString( BUILD_CPU ); // CPU architecture (e.g. "x86" or "x86_64") - from CMake
+#endif // _MSC_VER
 	savegame.WriteString( BUILD_ENGINE_VERSION );
 	savegame.WriteShort( (short)sizeof(void*) ); // tells us if it's from a 32bit (4) or 64bit system (8)
 	savegame.WriteShort( SDL_BYTEORDER ) ; // SDL_LIL_ENDIAN or SDL_BIG_ENDIAN
@@ -1098,8 +1080,6 @@ void idGameLocal::LocalMapRestart( ) {
 
 	MapClear( false );
 
-
-
 	// clear the smoke particle free list
 	smokeParticles->Init();
 
@@ -1164,8 +1144,6 @@ void idGameLocal::MapRestart( ) {
 	}
 #endif
 
-
-
 	if ( isClient ) {
 		LocalMapRestart();
 	} else {
@@ -1201,11 +1179,6 @@ void idGameLocal::MapRestart( ) {
 #ifdef CTF
 	if ( isMultiplayer ) {
 		gameLocal.mpGame.ReloadScoreboard();
-		//		gameLocal.mpGame.Reset();	// force reconstruct the GUIs when reloading maps, different gametypes have different GUIs
-		//		gameLocal.mpGame.UpdateMainGui();
-		//		gameLocal.mpGame.StartMenu();
-		//		gameLocal.mpGame.DisableMenu();
-		//		gameLocal.mpGame.Precache();
 	}
 #endif
 }
@@ -1301,6 +1274,7 @@ void idGameLocal::MapPopulate( void ) {
 	if ( isMultiplayer ) {
 		cvarSystem->SetCVarBool( "r_skipSpecular", false );
 	}
+
 	// parse the key/value pairs and spawn entities
 	SpawnMapEntities();
 
@@ -1436,7 +1410,7 @@ bool idGameLocal::InitFromSaveGame( const char *mapName, idRenderWorld *renderWo
 	g_skill.SetInteger( i );
 
 	// precache the player
-	FindEntityDef( "player_doommarine", false );
+	FindEntityDef( "player_sp", false );
 
 	// precache any media specified in the map
 	for ( i = 0; i < mapFile->GetNumEntities(); i++ ) {
@@ -1752,20 +1726,6 @@ void idGameLocal::DumpOggSounds( void ) {
 				soundName = soundShader->GetSound( j );
 				soundName.BackSlashesToSlashes();
 
-#ifdef _D3XP
-				// D3XP :: don't add sounds that are in Doom 3's pak files
-				if ( fileSystem->FileIsInPAK( soundName ) ) {
-					continue;
-				} else {
-					// Also check for a pre-ogg'd version in the pak file
-					idStr testName = soundName;
-
-					testName.SetFileExtension( ".ogg" );
-					if ( fileSystem->FileIsInPAK( testName ) ) {
-						continue;
-					}
-				}
-#endif
 				// don't OGG sounds that cause a shake because that would
 				// cause continuous seeking on the OGG file which is expensive
 				if ( parms->shakes != 0.0f ) {
@@ -1774,17 +1734,10 @@ void idGameLocal::DumpOggSounds( void ) {
 				}
 
 				// if not voice over or combat chatter
-				if (	soundName.Find( "/vo/", false ) == -1 &&
-						soundName.Find( "/combat_chatter/", false ) == -1 &&
-						soundName.Find( "/bfgcarnage/", false ) == -1 &&
-						soundName.Find( "/enpro/", false ) == - 1 &&
-						soundName.Find( "/soulcube/energize_01.wav", false ) == -1 ) {
+				if (	soundName.Find( "/vo/", false ) == -1 ) {
 					// don't OGG weapon sounds
 					if (	soundName.Find( "weapon", false ) != -1 ||
-							soundName.Find( "gun", false ) != -1 ||
-							soundName.Find( "bullet", false ) != -1 ||
-							soundName.Find( "bfg", false ) != -1 ||
-							soundName.Find( "plasma", false ) != -1 ) {
+							soundName.Find( "bullet", false ) != -1 ) {
 						weaponSounds.AddUnique( soundName );
 						continue;
 					}
@@ -1804,6 +1757,7 @@ void idGameLocal::DumpOggSounds( void ) {
 		}
 	}
 
+	// Was fs_savepath, fs_basepath its more fithing for developtment stuffs
 	file = fileSystem->OpenFileWrite( "makeogg.bat", "fs_savepath" );
 	if ( file == NULL ) {
 		common->Warning( "Couldn't open makeogg.bat" );
@@ -1836,8 +1790,8 @@ void idGameLocal::DumpOggSounds( void ) {
 		size = fileSystem->ReadFile( oggSounds[i], NULL, NULL );
 		totalSize += size;
 		oggSounds[i].Replace( "/", "\\" );
-		file->Printf( "z:\\d3xp\\ogg\\oggenc -q 0 \"%s\\d3xp\\%s\"\n", cvarSystem->GetCVarString( "fs_basepath" ), oggSounds[i].c_str() );
-		file->Printf( "del \"%s\\d3xp\\%s\"\n", cvarSystem->GetCVarString( "fs_basepath" ), oggSounds[i].c_str() );
+		file->Printf( "oggenc.exe -q 0 \"%cd%\\%s\\%s\"\n", cvarSystem->GetCVarString( "fs_basepath" ), oggSounds[i].c_str() );
+		file->Printf( "del \"%cd%\\%s\\%s\"\n", cvarSystem->GetCVarString( "fs_basepath" ), oggSounds[i].c_str() );
 	}
 	file->Printf( "\n\necho %d kB in OGG sounds\n\n\n", totalSize >> 10 );
 
@@ -1882,13 +1836,6 @@ avoid the fast pre-cache check associated with each entityDef
 void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 	const idKeyValue *kv;
 
-	if ( dict == NULL ) {
-		if ( cvarSystem->GetCVarBool( "com_makingBuild") ) {
-			DumpOggSounds();
-		}
-		return;
-	}
-
 	if ( cvarSystem->GetCVarBool( "com_makingBuild" ) ) {
 		GetShakeSounds( dict );
 	}
@@ -1920,7 +1867,6 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 		}
 		kv = dict->MatchPrefix( "snd", kv );
 	}
-
 
 	kv = dict->MatchPrefix( "gui", NULL );
 	while( kv ) {
@@ -2023,7 +1969,7 @@ void idGameLocal::InitScriptForMap( void ) {
 	frameCommandThread->ManualDelete();
 	frameCommandThread->SetThreadName( "frameCommands" );
 
-	// run the main game script function (not the level specific main)
+	// run the main game script entry function (not the level specific main)
 	const function_t *func = program.FindFunction( SCRIPT_DEFAULTFUNC );
 	if ( func != NULL ) {
 		idThread *thread = new idThread( func );
@@ -2050,13 +1996,13 @@ void idGameLocal::SpawnPlayer( int clientNum ) {
 	args.Set( "name", va( "player%d", clientNum + 1 ) );
 #ifdef CTF
 	if ( isMultiplayer && gameType != GAME_CTF )
-		args.Set( "classname", "player_doommarine_mp" );
+		args.Set( "classname", "player_mp" );
 	else if ( isMultiplayer && gameType == GAME_CTF )
-		args.Set( "classname", "player_doommarine_ctf" );
+		args.Set( "classname", "player_mp_ctf" );
 	else
-		args.Set( "classname", "player_doommarine" );
+		args.Set( "classname", "player_sp" );
 #else
-	args.Set( "classname", isMultiplayer ? "player_doommarine_mp" : "player_doommarine" );
+	args.Set( "classname", isMultiplayer ? "player_mp" : "player_sp" );
 #endif
 	if ( !SpawnEntityDef( args, &ent ) || !entities[ clientNum ] ) {
 		Error( "Failed to spawn player as '%s'", args.GetString( "classname" ) );
@@ -3444,32 +3390,10 @@ bool idGameLocal::InhibitEntitySpawn( idDict &spawnArgs ) {
 		spawnArgs.GetBool( "not_easy", "0", result );
 	} else if ( g_skill.GetInteger() == 1 ) {
 		spawnArgs.GetBool( "not_medium", "0", result );
-	} else {
+	} else if ( g_skill.GetInteger() == 2 ){
 		spawnArgs.GetBool( "not_hard", "0", result );
-#ifdef _D3XP
-		if ( !result && g_skill.GetInteger() == 3 ) {
-			spawnArgs.GetBool( "not_nightmare", "0", result );
-		}
-#endif
-	}
-
-
-	const char *name;
-	if ( g_skill.GetInteger() == 3 ) {
-		name = spawnArgs.GetString( "classname" );
-		// _D3XP :: remove moveable medkit packs also
-		if ( idStr::Icmp( name, "item_medkit" ) == 0 || idStr::Icmp( name, "item_medkit_small" ) == 0 ||
-			 idStr::Icmp( name, "moveable_item_medkit" ) == 0 || idStr::Icmp( name, "moveable_item_medkit_small" ) == 0 ) {
-
-			result = true;
-		}
-	}
-
-	if ( gameLocal.isMultiplayer ) {
-		name = spawnArgs.GetString( "classname" );
-		if ( idStr::Icmp( name, "weapon_bfg" ) == 0 || idStr::Icmp( name, "weapon_soulcube" ) == 0 ) {
-			result = true;
-		}
+	} else if ( g_skill.GetInteger() == 3 ) {
+		spawnArgs.GetBool( "not_nightmare", "0", result );
 	}
 
 	return result;

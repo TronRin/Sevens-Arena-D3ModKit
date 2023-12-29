@@ -61,11 +61,7 @@ idPlayerView::idPlayerView() {
 	tunnelMaterial = declManager->FindMaterial( "textures/decals/tunnel" );
 	armorMaterial = declManager->FindMaterial( "armorViewEffect" );
 	berserkMaterial = declManager->FindMaterial( "textures/decals/berserk" );
-	irGogglesMaterial = declManager->FindMaterial( "textures/decals/irblend" );
-	bloodSprayMaterial = declManager->FindMaterial( "textures/decals/bloodspray" );
-	bfgMaterial = declManager->FindMaterial( "textures/decals/bfgvision" );
 	lagoMaterial = declManager->FindMaterial( LAGO_MATERIAL, false );
-	bfgVision = false;
 	dvFinishTime = 0;
 	kickFinishTime = 0;
 	kickAngles.Zero();
@@ -117,14 +113,10 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteMaterial( dvMaterial );
 	savefile->WriteInt( kickFinishTime );
 	savefile->WriteAngles( kickAngles );
-	savefile->WriteBool( bfgVision );
 
 	savefile->WriteMaterial( tunnelMaterial );
 	savefile->WriteMaterial( armorMaterial );
 	savefile->WriteMaterial( berserkMaterial );
-	savefile->WriteMaterial( irGogglesMaterial );
-	savefile->WriteMaterial( bloodSprayMaterial );
-	savefile->WriteMaterial( bfgMaterial );
 	savefile->WriteFloat( lastDamageTime );
 
 	savefile->WriteVec4( fadeColor );
@@ -174,14 +166,10 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadMaterial( dvMaterial );
 	savefile->ReadInt( kickFinishTime );
 	savefile->ReadAngles( kickAngles );
-	savefile->ReadBool( bfgVision );
 
 	savefile->ReadMaterial( tunnelMaterial );
 	savefile->ReadMaterial( armorMaterial );
 	savefile->ReadMaterial( berserkMaterial );
-	savefile->ReadMaterial( irGogglesMaterial );
-	savefile->ReadMaterial( bloodSprayMaterial );
-	savefile->ReadMaterial( bfgMaterial );
 	savefile->ReadFloat( lastDamageTime );
 
 	savefile->ReadVec4( fadeColor );
@@ -227,7 +215,6 @@ void idPlayerView::ClearEffects() {
 	}
 
 	fadeTime = 0;
-	bfgVision = false;
 }
 
 /*
@@ -331,53 +318,6 @@ void idPlayerView::DamageImpulse( idVec3 localKickDir, const idDict *damageDef )
 		//
 		lastDamageTime = MS2SEC( gameLocal.slow.time );
 	}
-}
-
-/*
-==================
-idPlayerView::AddBloodSpray
-
-If we need a more generic way to add blobs then we can do that
-but having it localized here lets the material be pre-looked up etc.
-==================
-*/
-void idPlayerView::AddBloodSpray( float duration ) {
-/*
-	if ( duration <= 0 || bloodSprayMaterial == NULL || g_skipViewEffects.GetBool() ) {
-		return;
-	}
-	// visit this for chainsaw
-	screenBlob_t *blob = GetScreenBlob();
-	blob->startFadeTime = gameLocal.slow.time;
-	blob->finishTime = gameLocal.slow.time + ( duration * 1000 );
-	blob->material = bloodSprayMaterial;
-	blob->x = ( gameLocal.random.RandomInt() & 63 ) - 32;
-	blob->y = ( gameLocal.random.RandomInt() & 63 ) - 32;
-	blob->driftAmount = 0.5f + gameLocal.random.CRandomFloat() * 0.5;
-	float scale = ( 256 + ( ( gameLocal.random.RandomInt()&63 ) - 32 ) ) / 256.0f;
-	blob->w = 600 * g_blobSize.GetFloat() * scale;
-	blob->h = 480 * g_blobSize.GetFloat() * scale;
-	float s1 = 0.0f;
-	float t1 = 0.0f;
-	float s2 = 1.0f;
-	float t2 = 1.0f;
-	if ( blob->driftAmount < 0.6 ) {
-		s1 = 1.0f;
-		s2 = 0.0f;
-	} else if ( blob->driftAmount < 0.75 ) {
-		t1 = 1.0f;
-		t2 = 0.0f;
-	} else if ( blob->driftAmount < 0.85 ) {
-		s1 = 1.0f;
-		s2 = 0.0f;
-		t1 = 1.0f;
-		t2 = 0.0f;
-	}
-	blob->s1 = s1;
-	blob->t1 = t1;
-	blob->s2 = s2;
-	blob->t2 = t2;
-*/
 }
 
 /*
@@ -572,12 +512,6 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 			renderSystem->SetColor4( ( player->health <= 0.0f ) ? MS2SEC( gameLocal.slow.time ) : lastDamageTime, 1.0f, 1.0f, ( player->health <= 0.0f ) ? 0.0f : alpha );
 			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, tunnelMaterial );
 		}
-
-		if ( bfgVision ) {
-			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
-			renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, bfgMaterial );
-		}
-
 	}
 
 	// test a single material drawn over everything

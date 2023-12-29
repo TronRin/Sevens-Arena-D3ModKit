@@ -293,7 +293,6 @@ protected:
 
 	bool					allowPain;
 	bool					allowEyeFocus;
-	bool					finalBoss;
 
 	int						painTime;
 

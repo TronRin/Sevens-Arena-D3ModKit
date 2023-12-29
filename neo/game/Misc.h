@@ -722,33 +722,6 @@ private:
 	void				Event_Activate( idEntity *activator );
 };
 
-
-/*
-===============================================================================
-
-idFuncRadioChatter
-
-===============================================================================
-*/
-
-class idFuncRadioChatter : public idEntity {
-public:
-	CLASS_PROTOTYPE( idFuncRadioChatter );
-
-						idFuncRadioChatter();
-
-	void				Spawn( void );
-
-	void				Save( idSaveGame *savefile ) const;
-	void				Restore( idRestoreGame *savefile );
-
-private:
-	float				time;
-	void				Event_Activate( idEntity *activator );
-	void				Event_ResetRadioHud( idEntity *activator );
-};
-
-
 /*
 ===============================================================================
 

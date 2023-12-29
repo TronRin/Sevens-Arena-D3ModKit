@@ -481,8 +481,6 @@ idActor::idActor( void ) {
 	blink_min			= 0;
 	blink_max			= 0;
 
-	finalBoss			= false;
-
 	attachments.SetGranularity( 1 );
 
 	enemyNode.SetOwner( this );
@@ -669,8 +667,6 @@ void idActor::Spawn( void ) {
 		}
 	}
 
-	finalBoss = spawnArgs.GetBool( "finalBoss" );
-
 	FinishSetup();
 }
 
@@ -750,7 +746,6 @@ void idActor::SetupHead( void ) {
 		// copy slowmo param to the head
 		args.SetBool( "slowmo", spawnArgs.GetBool("slowmo", "1") );
 #endif
-
 
 		headEnt = static_cast<idAFAttachment *>( gameLocal.SpawnEntityType( idAFAttachment::Type, &args ) );
 		headEnt->SetName( va( "%s_head", name.c_str() ) );
@@ -930,8 +925,6 @@ void idActor::Save( idSaveGame *savefile ) const {
 		savefile->WriteInt( attachments[i].channel );
 	}
 
-	savefile->WriteBool( finalBoss );
-
 	idToken token;
 
 	//FIXME: this is unneccesary
@@ -1077,8 +1070,6 @@ void idActor::Restore( idRestoreGame *savefile ) {
 		attach.ent.Restore( savefile );
 		savefile->ReadInt( attach.channel );
 	}
-
-	savefile->ReadBool( finalBoss );
 
 	idStr statename;
 
@@ -2311,21 +2302,6 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 #ifdef _D3XP
 	SetTimeState ts( timeGroup );
-
-	// Helltime boss is immune to all projectiles except the helltime killer
-	if ( finalBoss && idStr::Icmp(inflictor->GetEntityDefName(), "projectile_helltime_killer") ) {
-		return;
-	}
-
-	// Maledict is immume to the falling asteroids
-	if ( !idStr::Icmp( GetEntityDefName(), "monster_boss_d3xp_maledict" ) &&
-		(!idStr::Icmp( damageDefName, "damage_maledict_asteroid" ) || !idStr::Icmp( damageDefName, "damage_maledict_asteroid_splash" ) ) ) {
-		return;
-	}
-#else
-	if ( finalBoss && !inflictor->IsType( idSoulCubeMissile::Type ) ) {
-		return;
-	}
 #endif
 
 	const idDict *damageDef = gameLocal.FindEntityDefDict( damageDefName );

@@ -32,7 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "script/Script_Thread.h"
 #include "Entity.h"
 #include "Light.h"
-#include "Grabber.h"
 #include "Actor.h"
 
 class idFuncEmitter;
@@ -148,7 +147,6 @@ public:
 
 #ifdef _D3XP
 	weaponStatus_t			GetStatus() { return status; };
-
 #endif
 
 	// Script state management
@@ -180,7 +178,6 @@ public:
 	int						AmmoRequired( void ) const;
 #ifdef _D3XP
 	int						AmmoCount() const;
-	int						GetGrabberState() const;
 #endif
 
 	virtual void			WriteToSnapshot( idBitMsgDelta &msg ) const;
@@ -400,15 +397,6 @@ private:
 	void					Event_NetEndReload( void );
 
 #ifdef _D3XP
-	idGrabber				grabber;
-	int						grabberState;
-
-	void					Event_Grabber( int enable );
-	void					Event_GrabberHasTarget( void );
-	void					Event_GrabberSetGrabDistance( float dist );
-	void					Event_LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power );
-	void					Event_LaunchPowerup( const char* powerup, float duration, int useAmmo );
-
 	void					Event_StartWeaponSmoke();
 	void					Event_StopWeaponSmoke();
 

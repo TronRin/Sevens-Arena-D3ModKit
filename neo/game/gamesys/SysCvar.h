@@ -267,10 +267,6 @@ extern idCVar	g_grabberHardStop;
 extern idCVar	g_grabberDamping;
 #endif
 
-#ifdef _D3XP
-extern idCVar	g_xp_bind_run_once;
-#endif
-
 extern idCVar	aas_test;
 extern idCVar	aas_showAreas;
 extern idCVar	aas_showPath;
