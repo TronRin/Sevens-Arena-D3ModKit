@@ -678,11 +678,7 @@ private:
 
 	float				surfaceArea;		// only for listSurfaceAreas
 
-	// we defer loading of the editor image until it is asked for, so the game doesn't load up
-	// all the invisible and uncompressed images.
-	// If editorImage is NULL, it will atempt to load editorImageName, and set editorImage to that or defaultImage
-	idStr				editorImageName;
-	mutable idImage *	editorImage;		// image used for non-shaded preview
+	// In Radiant we need to tweak the alpha of some textures.
 	float				editorAlpha;
 
 	bool				suppressInSubview;

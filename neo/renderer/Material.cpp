@@ -99,7 +99,6 @@ void idMaterial::CommonInit() {
 	numStages = 0;
 	numAmbientStages = 0;
 	stages = NULL;
-	editorImage = NULL;
 	lightFalloffImage = NULL;
 	shouldCreateBackSides = false;
 	entityGui = 0;
@@ -195,37 +194,30 @@ idMaterial::GetEditorImage
 ==============
 */
 idImage *idMaterial::GetEditorImage( void ) const {
-	if ( editorImage ) {
-		return editorImage;
-	}
+	idImage* diffuseImage = nullptr;
 
-	// if we don't have an editorImageName, use the first stage image
-	if ( !editorImageName.Length()) {
-		// _D3XP :: First check for a diffuse image, then use the first
-		if ( numStages && stages ) {
-			int i;
-			for( i = 0; i < numStages; i++ ) {
-				if ( stages[i].lighting == SL_DIFFUSE ) {
-					editorImage = stages[i].texture.image;
-					break;
-				}
+	// First check for a diffuse image, then use the first
+	if ( numStages && stages ) {
+		int i;
+		for( i = 0; i < numStages; i++ ) {
+			if ( stages[i].lighting == SL_DIFFUSE ) {
+				diffuseImage = stages[i].texture.image;
+				break;
 			}
-			if ( !editorImage ) {
-				editorImage = stages[0].texture.image;
-			}
-		} else {
-			editorImage = globalImages->defaultImage;
+		}
+
+		if ( !diffuseImage ) {
+			diffuseImage = stages[0].texture.image;
 		}
 	} else {
-		// look for an explicit one
-		editorImage = globalImages->ImageFromFile( editorImageName, TF_DEFAULT, true, TR_REPEAT, TD_DEFAULT );
+		diffuseImage = globalImages->defaultImage;
 	}
 
-	if ( !editorImage ) {
-		editorImage = globalImages->defaultImage;
+	if ( !diffuseImage ) {
+		diffuseImage = globalImages->defaultImage;
 	}
 
-	return editorImage;
+	return diffuseImage;
 }
 
 
@@ -237,54 +229,54 @@ typedef struct {
 
 static const infoParm_t	infoParms[] = {
 	// game relevant attributes
-	{"solid",		0,	0,	CONTENTS_SOLID },		// may need to override a clearSolid
-	{"water",		1,	0,	CONTENTS_WATER },		// used for water
-	{"playerclip",	0,	0,	CONTENTS_PLAYERCLIP },	// solid to players
-	{"monsterclip",	0,	0,	CONTENTS_MONSTERCLIP },	// solid to monsters
-	{"moveableclip",0,	0,	CONTENTS_MOVEABLECLIP },// solid to moveable entities
-	{"ikclip",		0,	0,	CONTENTS_IKCLIP },		// solid to IK
-	{"blood",		0,	0,	CONTENTS_BLOOD },		// used to detect blood decals
-	{"trigger",		0,	0,	CONTENTS_TRIGGER },		// used for triggers
-	{"aassolid",	0,	0,	CONTENTS_AAS_SOLID },	// solid for AAS
-	{"aasobstacle",	0,	0,	CONTENTS_AAS_OBSTACLE },// used to compile an obstacle into AAS that can be enabled/disabled
-	{"flashlight_trigger",	0,	0,	CONTENTS_FLASHLIGHT_TRIGGER }, // used for triggers that are activated by the flashlight
-	{"nonsolid",	1,	0,	0 },					// clears the solid flag
-	{"nullNormal",	0,	SURF_NULLNORMAL,0 },		// renderbump will draw as 0x80 0x80 0x80
+	{"solid",				0,	0,	CONTENTS_SOLID },				// may need to override a clearSolid
+	{"water",				1,	0,	CONTENTS_WATER },				// used for water
+	{"playerclip",			0,	0,	CONTENTS_PLAYERCLIP },			// solid to players
+	{"monsterclip",			0,	0,	CONTENTS_MONSTERCLIP },			// solid to monsters
+	{"moveableclip",		0,	0,	CONTENTS_MOVEABLECLIP },		// solid to moveable entities
+	{"ikclip",				0,	0,	CONTENTS_IKCLIP },				// solid to IK
+	{"blood",				0,	0,	CONTENTS_BLOOD },				// used to detect blood decals
+	{"trigger",				0,	0,	CONTENTS_TRIGGER },				// used for triggers
+	{"aassolid",			0,	0,	CONTENTS_AAS_SOLID },			// solid for AAS
+	{"aasobstacle",			0,	0,	CONTENTS_AAS_OBSTACLE },		// used to compile an obstacle into AAS that can be enabled/disabled
+	{"flashlight_trigger",	0,	0,	CONTENTS_FLASHLIGHT_TRIGGER },	// used for triggers that are activated by the flashlight
+	{"nonsolid",			1,	0,	0 },							// clears the solid flag
+	{"nullNormal",			0,	SURF_NULLNORMAL,0 },				// renderbump will draw as 0x80 0x80 0x80
 
 	// utility relevant attributes
-	{"areaportal",	1,	0,	CONTENTS_AREAPORTAL },	// divides areas
-	{"qer_nocarve",	1,	0,	CONTENTS_NOCSG},		// don't cut brushes in editor
+	{"areaportal",			1,	0,	CONTENTS_AREAPORTAL },			// divides areas
+	{"qer_nocarve",			1,	0,	CONTENTS_NOCSG},				// don't cut brushes in editor
 
-	{"discrete",	1,	SURF_DISCRETE,	0 },		// surfaces should not be automatically merged together or
-													// clipped to the world,
-													// because they represent discrete objects like gui shaders
-													// mirrors, or autosprites
-	{"noFragment",	0,	SURF_NOFRAGMENT,	0 },
+	{"discrete",			1,	SURF_DISCRETE,	0 },				// surfaces should not be automatically merged together or
+																	// clipped to the world,
+																	// because they represent discrete objects like gui shaders
+																	// mirrors, or autosprites
+	{"noFragment",			0,	SURF_NOFRAGMENT,	0 },
 
-	{"slick",		0,	SURF_SLICK,		0 },
-	{"collision",	0,	SURF_COLLISION,	0 },
-	{"noimpact",	0,	SURF_NOIMPACT,	0 },		// don't make impact explosions or marks
-	{"nodamage",	0,	SURF_NODAMAGE,	0 },		// no falling damage when hitting
-	{"ladder",		0,	SURF_LADDER,	0 },		// climbable
-	{"nosteps",		0,	SURF_NOSTEPS,	0 },		// no footsteps
+	{"slick",				0,	SURF_SLICK,		0 },
+	{"collision",			0,	SURF_COLLISION,	0 },
+	{"noimpact",			0,	SURF_NOIMPACT,	0 },				// don't make impact explosions or marks
+	{"nodamage",			0,	SURF_NODAMAGE,	0 },				// no falling damage when hitting
+	{"ladder",				0,	SURF_LADDER,	0 },				// climbable
+	{"nosteps",				0,	SURF_NOSTEPS,	0 },				// no footsteps
 
 	// material types for particle, sound, footstep feedback
-	{"metal",		0,  SURFTYPE_METAL,		0 },	// metal
-	{"stone",		0,  SURFTYPE_STONE,		0 },	// stone
-	{"flesh",		0,  SURFTYPE_FLESH,		0 },	// flesh
-	{"wood",		0,  SURFTYPE_WOOD,		0 },	// wood
-	{"cardboard",	0,	SURFTYPE_CARDBOARD,	0 },	// cardboard
-	{"liquid",		0,	SURFTYPE_LIQUID,	0 },	// liquid
-	{"pipe",		0,	SURFTYPE_PIPE,		0 },	// pipe
-	{"glass",		0,	SURFTYPE_GLASS,		0 },	// glass
-	{"plastic",		0,	SURFTYPE_PLASTIC,	0 },	// plastic
-	{"ricochet",	0,	SURFTYPE_RICOCHET,	0 },	// behaves like metal but causes a ricochet sound
+	{"metal",				0,  SURFTYPE_METAL,		0 },			// metal
+	{"stone",				0,  SURFTYPE_STONE,		0 },			// stone
+	{"flesh",				0,  SURFTYPE_FLESH,		0 },			// flesh
+	{"wood",				0,  SURFTYPE_WOOD,		0 },			// wood
+	{"cardboard",			0,	SURFTYPE_CARDBOARD,	0 },			// cardboard
+	{"liquid",				0,	SURFTYPE_LIQUID,	0 },			// liquid
+	{"pipe",				0,	SURFTYPE_PIPE,		0 },			// pipe
+	{"glass",				0,	SURFTYPE_GLASS,		0 },			// glass
+	{"plastic",				0,	SURFTYPE_PLASTIC,	0 },			// plastic
+	{"ricochet",			0,	SURFTYPE_RICOCHET,	0 },			// behaves like metal but causes a ricochet sound
 
 	// unassigned surface types
-	{"surftype10",	0,	SURFTYPE_10,	0 },
-	{"surftype11",	0,	SURFTYPE_11,	0 },
-	{"surftype12",	0,	SURFTYPE_12,	0 },
-	{"surftype13",	0,	SURFTYPE_13,	0 },
+	{"surftype10",			0,	SURFTYPE_10,	0 },
+	{"surftype11",			0,	SURFTYPE_11,	0 },
+	{"surftype12",			0,	SURFTYPE_12,	0 },
+	{"surftype13",			0,	SURFTYPE_13,	0 },
 };
 
 static const int numInfoParms = sizeof(infoParms) / sizeof (infoParms[0]);
@@ -1842,12 +1834,6 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		if ( token == "}" ) {
 			break;
 		}
-		else if ( !token.Icmp( "qer_editorimage") ) {
-			src.ReadTokenOnLine( &token );
-			editorImageName = token.c_str();
-			src.SkipRestOfLine();
-			continue;
-		}
 		// description
 		else if ( !token.Icmp( "description") ) {
 			src.ReadTokenOnLine( &token );
@@ -2205,7 +2191,7 @@ bool idMaterial::Parse( const char *text, const int textLength ) {
 	// parse it
 	ParseMaterial( src );
 
-	// if we are doing an fs_copyfiles, also reference the editorImage
+	// if we are doing an fs_copyfiles, also reference the diffuse stage, since we use this for Radiant
 	if ( cvarSystem->GetCVarInteger( "fs_copyFiles" ) ) {
 		GetEditorImage();
 	}
