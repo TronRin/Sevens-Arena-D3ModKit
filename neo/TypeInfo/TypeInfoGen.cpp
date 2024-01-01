@@ -844,12 +844,7 @@ void idTypeInfoGen::CreateTypeInfo( const char *path ) {
 	common->Printf( "Type Info Generator v" TYPE_INFO_GEN_VERSION " (c) 2004 - 2011 id Software\n" );
 	common->Printf( "%s\n", path );
 
-	// Change the direcotry base uppon the game that's being build uppon
-#ifdef _D3XP
-	fileName = "neo/d3xp/game_precompiled.cpp";
-#else
 	fileName = "neo/game/game_precompiled.cpp";
-#endif // _D3XP
 
 	common->Printf( "processing '%s' for type info...\n", fileName.c_str() );
 
@@ -1093,32 +1088,7 @@ void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 				}
 
 				// HACK!
-				if ( strstr( varName, "idMenuDataSource" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "idMenuScreen" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "doomLeaderboard_t" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "optionData_t" ) ) {
-					continue;
-				}
-
-				// HACK!
 				if( strstr( varName, "rididBodyIState_s" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "simulatedProjectile_t" ) ) {
 					continue;
 				}
 
@@ -1185,34 +1155,8 @@ void idTypeInfoGen::WriteTypeInfo( const char *fileName ) const {
 				if ( typeName == info->functions[j].name ) {
 					continue;
 				}
-
-				// HACK!
-				if ( strstr( varName, "idMenuDataSource" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "idMenuScreen" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "doomLeaderboard_t" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "optionData_t" ) ) {
-					continue;
-				}
-
 				// HACK!
 				if ( strstr( varName, "rididBodyIState_s" ) ) {
-					continue;
-				}
-
-				// HACK!
-				if ( strstr( varName, "simulatedProjectile_t" ) ) {
 					continue;
 				}
 

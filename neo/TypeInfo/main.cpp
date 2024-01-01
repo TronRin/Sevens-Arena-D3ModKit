@@ -47,41 +47,29 @@ int main( int argc, char** argv ) {
 	idLib::common = common;
 	idLib::cvarSystem = cvarSystem;
 	idLib::fileSystem = fileSystem;
-	idLib::sys = sys;
 
 	idLib::Init();
 	cmdSystem->Init();
 	cvarSystem->Init();
 	idCVar::RegisterStaticVars();
+
+	cvarSystem->SetCVarString( "fs_game", "neo" );
+
 	fileSystem->Init();
 
 	generator = new idTypeInfoGen;
 
-	// Change the direcotry base uppon the game that's being build uppon
-#ifdef _D3XP
-	sourcePath = "d3xp";
-	fileName = "../neo/d3xp/gamesys/GameTypeInfo";
-#else
-	sourcePath = "game";
-	fileName = "../neo/game/gamesys/GameTypeInfo";
-#endif // _D3XP
+	generator->AddDefine( "__cplusplus" );
+	generator->AddDefine( "GAME_DLL" );
+	generator->AddDefine( "ID_TYPEINFO" );
+	generator->AddDefine( "TYPEINFO" );
+	generator->AddDefine( "__TYPEINFOGEN__" );
+	generator->AddDefine( "_WIN32" );
+	generator->AddDefine( "CTF" );
+	generator->AddDefine( "_D3XP" );
 
-	if ( argc > 3 ) {
-		for ( int i = 3; i < argc; i++ ) {
-			generator->AddDefine( argv[i] );
-		}
-	} else {
-		generator->AddDefine( "__cplusplus" );
-		generator->AddDefine( "GAME_DLL" );		
-#ifdef _D3XP
-		generator->AddDefine( "CTF" );
-		generator->AddDefine( "_D3XP" );
-#endif // _D3XP
-		generator->AddDefine( "ID_TYPEINFO" );
-	}
-
-	generator->CreateTypeInfo( sourcePath );
-	generator->WriteTypeInfo( fileName );
+	generator->CreateTypeInfo( "game" );
+	generator->WriteTypeInfo( "../neo/game/gamesys/GameTypeInfo" );
 
 	delete generator;
 

@@ -100,11 +100,8 @@ bool idLangDict::Load( const char *fileName, bool clear /* _D3XP */ ) {
 			idLangKeyValue kv;
 			kv.key = tok;
 			kv.value = tok2;
-			// DG: D3LE has #font_ entries in english.lang, maybe from D3BFG? not supported here, just skip them
-			if(kv.key.Cmpn("#font_", 6) != 0) {
-				assert( kv.key.Cmpn( STRTABLE_ID, STRTABLE_ID_LENGTH ) == 0 );
-				hash.Add( GetHashKey( kv.key ), args.Append( kv ) );
-			}
+			assert( kv.key.Cmpn( STRTABLE_ID, STRTABLE_ID_LENGTH ) == 0 );
+			hash.Add( GetHashKey( kv.key ), args.Append( kv ) );
 		}
 	}
 	idLib::common->Printf( "%i strings read from %s\n", args.Num(), fileName );
@@ -167,7 +164,7 @@ const char *idLangDict::GetString( const char *str ) const {
 		}
 	}
 
-	idLib::common->Warning( "Unknown string id %s", str );
+	idLib::common->Warning( "Unknown string id " S_COLOR_GREEN "%s", str );
 	return str;
 }
 

@@ -81,7 +81,6 @@ void MatBuildDir_f( const idCmdArgs& args ) {
 		mtrBuffer += va( "// MANUAL EDITING MAY BE REQUIERED\n" );
 		mtrBuffer += va( "textures/%s/%s\n", args.Argv(1), imagepath.c_str() );
 		mtrBuffer += va( "{\n");
-		mtrBuffer += va( "\tqer_editorimage textures/%s/%s_d.%s\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
 		mtrBuffer += va( "\tdiffusemap textures/%s/%s_d.%s\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
 		mtrBuffer += va( "\tbumpmap addnormals ( textures/%s/%s_local.%s, heightmap ( textures/%s/%s_h.%s, 4 ) )\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
 		mtrBuffer += va( "\tspecularmap textures/%s/%s_spec.%s\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
