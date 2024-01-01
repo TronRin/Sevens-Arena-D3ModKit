@@ -468,7 +468,9 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 			s.AppendPath( BASE_GAMEDIR );
 
 			if ( _stat( s.c_str(), &st ) != -1 && ( st.st_mode & _S_IFDIR ) ) {
+#ifdef DEBUG
 				common->Warning( "using path of executable: %s", path.c_str() );
+#endif // DEBUG
 				return true;
 			}
 
