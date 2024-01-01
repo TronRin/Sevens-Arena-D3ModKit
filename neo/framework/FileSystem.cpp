@@ -797,8 +797,10 @@ const char *idFileSystemLocal::BuildOSPath( const char *base, const char *game, 
 		testPath.StripFilename();
 
 		if ( testPath.HasUpper() ) {
-
+			// This doesn't mean much under windows, for Linux systems
+#if defined ( DEBUG )
 			common->DPrintf( "Non-portable: path contains uppercase characters: %s\n", testPath.c_str() );
+#endif // DEBUG
 
 			// attempt a fixup on the fly
 			if ( fs_caseSensitiveOS.GetBool() ) {
