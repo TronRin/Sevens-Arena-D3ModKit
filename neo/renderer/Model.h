@@ -163,14 +163,6 @@ are reasonable arguments as to why this is a bad idea for releases but it suits 
 Dhewm3 Issue https://github.com/dhewm/dhewm3/issues/171
 =================================================================================================== */
 
-/* ===================================================================================================
-RBMIKKT_TANGENT: My attempt to port the support for mikkt tangent-space from RB-DOOM3-BFG. As far as I
-can see this should be working but comparisons made with bakes provided by Arl suggest some divergence
-from RenderBump - though that may just be down to differences in the baking - no further testing done.
-Enabled by including 'mikktspace' in the material definition.
-idTech4 Discord https://discord.com/channels/488393111014342656/488393514690805790/1053987460452982865
-=================================================================================================== */
-
 // using shorts for triangle indexes can save a significant amount of traffic, but
 // to support the large models that renderBump loads, they need to be 32 bits
 #if 1
