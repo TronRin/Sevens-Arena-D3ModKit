@@ -421,12 +421,12 @@ This is the same as in idEditWindow
 */
 void idListWindow::InitScroller( bool horizontal )
 {
-	const char *thumbImage = "guis/assets/scrollbar_thumb.tga";
-	const char *barImage = "guis/assets/scrollbarv.tga";
+	const char *thumbImage = "textures/guis/ui/scrollbar_thumb.tga";
+	const char *barImage = "textures/guis/ui/scrollbarv.tga";
 	const char *scrollerName = "_scrollerWinV";
 
 	if (horizontal) {
-		barImage = "guis/assets/scrollbarh.tga";
+		barImage = "textures/guis/ui/scrollbarh.tga";
 		scrollerName = "_scrollerWinH";
 	}
 
