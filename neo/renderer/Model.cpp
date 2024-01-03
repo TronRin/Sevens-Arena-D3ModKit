@@ -593,7 +593,6 @@ void idRenderModelStatic::FinishSurfaces() {
 		return;
 	}
 
-	// renderBump doesn't care about most of this
 	if ( fastLoad ) {
 		bounds.Zero();
 		for ( i = 0 ; i < surfaces.Num() ; i++ ) {
@@ -819,13 +818,6 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 
 		bool normalsParsed = mesh->normalsParsed;
 
-		// completely ignore any explict normals on surfaces with a renderbump command
-		// which will guarantee the best contours and least vertexes.
-		const char *rb = im1->GetRenderBump();
-		if ( rb && rb[0] ) {
-			normalsParsed = false;
-		}
-
 		// It seems like the tools our artists are using often generate
 		// verts and texcoords slightly separated that should be merged
 		// note that we really should combine the surfaces with common materials
@@ -835,7 +827,6 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 		vRemap = (int *)R_StaticAlloc( mesh->numVertexes * sizeof( vRemap[0] ) );
 
 		if ( fastLoad ) {
-			// renderbump doesn't care about vertex count
 			for ( j = 0; j < mesh->numVertexes; j++ ) {
 				vRemap[j] = j;
 			}
@@ -856,7 +847,6 @@ bool idRenderModelStatic::ConvertASEToModelSurfaces( const struct aseModel_s *as
 		tvRemap = (int *)R_StaticAlloc( mesh->numTVertexes * sizeof( tvRemap[0] ) );
 
 		if ( fastLoad ) {
-			// renderbump doesn't care about vertex count
 			for ( j = 0; j < mesh->numTVertexes; j++ ) {
 				tvRemap[j] = j;
 			}
@@ -1166,7 +1156,6 @@ bool idRenderModelStatic::ConvertLWOToModelSurfaces( const struct st_lwObject *l
 	vRemap = (int *)R_StaticAlloc( layer->point.count * sizeof( vRemap[0] ) );
 
 	if ( fastLoad ) {
-		// renderbump doesn't care about vertex count
 		for ( j = 0; j < layer->point.count; j++ ) {
 			vRemap[j] = j;
 		}
@@ -1187,7 +1176,6 @@ bool idRenderModelStatic::ConvertLWOToModelSurfaces( const struct st_lwObject *l
 	tvRemap = (int *)R_StaticAlloc( numTVertexes * sizeof( tvRemap[0] ) );
 
 	if ( fastLoad ) {
-		// renderbump doesn't care about vertex count
 		for ( j = 0; j < numTVertexes; j++ ) {
 			tvRemap[j] = j;
 		}
@@ -1210,13 +1198,6 @@ bool idRenderModelStatic::ConvertLWOToModelSurfaces( const struct st_lwObject *l
 		im1 = declManager->FindMaterial( lwoSurf->name );
 
 		bool normalsParsed = true;
-
-		// completely ignore any explict normals on surfaces with a renderbump command
-		// which will guarantee the best contours and least vertexes.
-		const char *rb = im1->GetRenderBump();
-		if ( rb && rb[0] ) {
-			normalsParsed = false;
-		}
 
 		// we need to find out how many unique vertex / texcoord combinations there are
 
@@ -1664,13 +1645,6 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 
 		bool normalsParsed = mesh->normalsParsed;
 
-		// completely ignore any explict normals on surfaces with a renderbump command
-		// which will guarantee the best contours and least vertexes.
-		const char *rb = im1->GetRenderBump();
-		if ( rb && rb[0] ) {
-			normalsParsed = false;
-		}
-
 		// It seems like the tools our artists are using often generate
 		// verts and texcoords slightly separated that should be merged
 		// note that we really should combine the surfaces with common materials
@@ -1680,7 +1654,6 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 		vRemap = (int *)R_StaticAlloc( mesh->numVertexes * sizeof( vRemap[0] ) );
 
 		if ( fastLoad ) {
-			// renderbump doesn't care about vertex count
 			for ( j = 0; j < mesh->numVertexes; j++ ) {
 				vRemap[j] = j;
 			}
@@ -1701,7 +1674,6 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 		tvRemap = (int *)R_StaticAlloc( mesh->numTVertexes * sizeof( tvRemap[0] ) );
 
 		if ( fastLoad ) {
-			// renderbump doesn't care about vertex count
 			for ( j = 0; j < mesh->numTVertexes; j++ ) {
 				tvRemap[j] = j;
 			}

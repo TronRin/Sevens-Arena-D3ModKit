@@ -163,8 +163,6 @@ are reasonable arguments as to why this is a bad idea for releases but it suits 
 Dhewm3 Issue https://github.com/dhewm/dhewm3/issues/171
 =================================================================================================== */
 
-// using shorts for triangle indexes can save a significant amount of traffic, but
-// to support the large models that renderBump loads, they need to be 32 bits
 #if 1
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT

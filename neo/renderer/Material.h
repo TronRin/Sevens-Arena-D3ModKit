@@ -337,7 +337,7 @@ typedef enum {
 	SURF_NOSTEPS				= BIT(9),	// no footstep sounds
 	SURF_DISCRETE				= BIT(10),	// not clipped or merged by utilities
 	SURF_NOFRAGMENT				= BIT(11),	// dmap won't cut surface at each bsp boundary
-	SURF_NULLNORMAL				= BIT(12)	// renderbump will draw this surface as 0x80 0x80 0x80, which
+	SURF_NULLNORMAL				= BIT(12)	// normals will draw this surface as 0x80 0x80 0x80, which
 											// won't collect light from any angle
 } surfaceFlags_t;
 
@@ -415,9 +415,9 @@ public:
 						// with apropriate order reversal.
 	bool				ShouldCreateBackSides( void ) const { return shouldCreateBackSides; }
 
-						// characters and models that are created by a complete renderbump can use a faster
+						// characters and models that has already baked normals can use a faster
 						// method of tangent and normal vector generation than surfaces which have a flat
-						// renderbump wrapped over them.
+						// normal wrapped over them.
 	bool				UseUnsmoothedTangents( void ) const { return unsmoothedTangents; }
 
 						// by default, monsters can have blood overlays placed on them, but this can
@@ -484,9 +484,6 @@ public:
 	idImage	*			LightFalloffImage() const { return lightFalloffImage; }
 
 	//------------------------------------------------------------------
-
-						// returns the renderbump command line for this shader, or an empty string if not present
-	const char *		GetRenderBump() const { return renderBump; };
 
 						// set specific material flag(s)
 	void				SetMaterialFlag( const int flag ) const { materialFlags |= flag; }
@@ -622,7 +619,6 @@ private:
 
 private:
 	idStr				desc;				// description
-	idStr				renderBump;			// renderbump command options, without the "renderbump" at the start
 
 	idImage	*			lightFalloffImage;
 

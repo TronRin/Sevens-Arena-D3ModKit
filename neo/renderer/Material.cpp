@@ -83,7 +83,6 @@ idMaterial::CommonInit
 */
 void idMaterial::CommonInit() {
 	desc = "<none>";
-	renderBump = "";
 	contentFlags = CONTENTS_SOLID;
 	surfaceFlags = SURFTYPE_NONE;
 	materialFlags = 0;
@@ -2048,11 +2047,6 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		// decalInfo <staySeconds> <fadeSeconds> ( <start rgb> ) ( <end rgb> )
 		else if ( !token.Icmp( "decalInfo" ) ) {
 			ParseDecalInfo( src );
-			continue;
-		}
-		// renderbump <args...>
-		else if ( !token.Icmp( "renderbump") ) {
-			src.ParseRestOfLine( renderBump );
 			continue;
 		}
 		// diffusemap for stage shortcut
