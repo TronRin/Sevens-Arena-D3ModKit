@@ -1599,7 +1599,6 @@
 #define ID_ENTITY_START                 40000
 #define ID_ENTITY_END                   45000
 #define IDD_NEWNAME                     45000
-#define IDD_RENDERBUMPFLAT              45001
 #define IDD_TOOLS_OPEN                  45002
 #define IDD_DIALOG_GOTOLINE             45003
 #define IDB_TOOLS_OPEN                  45004
@@ -1609,9 +1608,6 @@
 #define IDC_TOOLS_LOOKIN                45008
 #define IDC_TOOLS_FILENAME              45009
 #define IDC_TOOLS_FILELIST              45010
-#define IDC_RBF_WIDTH                   45011
-#define IDC_RBF_HEIGHT                  45012
-#define IDC_RBF_FILENAME                45013
 #define IDC_GOTOLINE_STATIC             45014
 #define IDC_GOTOLINE_EDIT               45015
 

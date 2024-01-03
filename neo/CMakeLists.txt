@@ -496,12 +496,6 @@ set(src_roq
 
 add_globbed_headers(src_roq "tools/compilers/roqvq")
 
-set(src_renderbump
-	tools/compilers/renderbump/renderbump.cpp
-)
-
-add_globbed_headers(src_renderbump "tools/compilers/renderbump")
-
 set(src_matbuild
 	tools/compilers/matbuild/matbuild.cpp
 )
@@ -697,7 +691,6 @@ set(src_core
 	${src_dmap}
 	${src_aas}
 	${src_roq}
-	${src_renderbump}
 	${src_matbuild}
 	${src_snd}
 	${src_ui}
@@ -724,7 +717,6 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 	add_globbed_headers(src_tools_common "tools/common")
 
 	#Compilers.
-	# DG: this is always added, why add it again? file(GLOB src_compiler_renderbump "neo/tools/compilers/renderbump/*.cpp")
 	file(GLOB src_compiler_roqvq	  "tools/compilers/roqvq/*.cpp") # FIXME: some of those were added before
 	add_globbed_headers(src_compiler_roqvq "tools/compilers/roqvq")
 	#tools
@@ -775,7 +767,6 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 	list(APPEND src_editor_tools
 		${src_comafx}
 		${src_tools_common}
-		${src_compiler_renderbump}
 		${src_afeditor}
 		${src_decleditor}
 		${src_gui_editor}
