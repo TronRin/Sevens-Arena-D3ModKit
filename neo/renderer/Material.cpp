@@ -1799,6 +1799,12 @@ void idMaterial::ParseMaterial( idLexer &src ) {
 		if ( token == "}" ) {
 			break;
 		}
+		else if ( !token.Icmp( "qer_editorimage" ) ) {
+			// Fully skip this, we only use it for RadiantEditor
+			src.ReadTokenOnLine( &token );
+			src.SkipRestOfLine();
+			continue;
+		}
 		// description
 		else if ( !token.Icmp( "description") ) {
 			src.ReadTokenOnLine( &token );
