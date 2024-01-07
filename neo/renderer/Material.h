@@ -269,7 +269,6 @@ typedef enum {
 	MF_FORCESHADOWS				= BIT(3),
 	MF_NOSELFSHADOW				= BIT(4),
 	MF_NOPORTALFOG				= BIT(5),	// this fog volume won't ever consider a portal fogged out
-	MF_EDITOR_VISIBLE			= BIT(6)	// in use (visible) per editor
 } materialFlags_t;
 
 // contents flags, NOTE: make sure to keep the defines in doom_defs.script up to date with these!
@@ -293,7 +292,7 @@ typedef enum {
 
 	// contents used by utils
 	CONTENTS_AREAPORTAL			= BIT(20),	// portal separating renderer areas
-	CONTENTS_NOCSG				= BIT(21),	// don't cut this brush with CSG operations in the editor
+	CONTENTS_NOCSG				= BIT(21),	// don't cut this brush with CSG operations
 
 	CONTENTS_REMOVE_UTIL		= ~(CONTENTS_AREAPORTAL|CONTENTS_NOCSG)
 } contentsFlags_t;
@@ -531,8 +530,6 @@ public:
 						// get cull type
 	const cullType_t	GetCullType( void ) const { return cullType; }
 
-	float				GetEditorAlpha( void ) const { return editorAlpha; }
-
 	int					GetEntityGui( void ) const { return entityGui; }
 
 	decalInfo_t			GetDecalInfo( void ) const { return decalInfo; }
@@ -560,8 +557,6 @@ public:
 
 	//------------------------------------------------------------------
 
-						// gets an image for the editor to use
-	idImage *			GetEditorImage( void ) const;
 	int					GetImageWidth( void ) const;
 	int					GetImageHeight( void ) const;
 
@@ -673,9 +668,6 @@ private:
 	struct mtrParsingData_s	*pd;			// only used during parsing
 
 	float				surfaceArea;		// only for listSurfaceAreas
-
-	// In Radiant we need to tweak the alpha of some textures.
-	float				editorAlpha;
 
 	bool				suppressInSubview;
 	bool				portalSky;

@@ -2403,7 +2403,6 @@ idSessionLocal::UpdateScreen
 void idSessionLocal::UpdateScreen( bool outOfSequence ) {
 
 #ifdef _WIN32
-
 	if ( com_editors ) {
 		if ( !Sys_IsWindowVisible() ) {
 			return;
@@ -2457,7 +2456,7 @@ void idSessionLocal::Frame() {
 	CheckOpenALDeviceAndRecoverIfNeeded();
 
 	// Editors that completely take over the game
-	if ( com_editorActive && ( com_editors & ( EDITOR_RADIANT | EDITOR_GUI ) ) ) {
+	if ( com_editorActive && ( com_editors & EDITOR_GUI ) ) {
 		return;
 	}
 

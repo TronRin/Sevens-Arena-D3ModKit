@@ -122,12 +122,6 @@ bool			com_editorActive;		//  true if an editor has focus
 
 bool			com_debuggerSupported;	// only set to true when the updateDebugger function is set. see GetAdditionalFunction()
 
-#ifdef _WIN32
-HWND			com_hwndMsg = NULL;
-bool			com_outputMsg = false;
-unsigned int	com_msgID = -1;
-#endif
-
 #ifdef __DOOM_DLL__
 idGame *		game = NULL;
 idGameEdit *	gameEdit = NULL;
@@ -303,37 +297,6 @@ void idCommonLocal::EndRedirect( void ) {
 	rd_flush = NULL;
 }
 
-#ifdef _WIN32
-
-/*
-==================
-EnumWindowsProc
-==================
-*/
-BOOL CALLBACK EnumWindowsProc( HWND hwnd, LPARAM lParam ) {
-	char buff[1024];
-
-	::GetWindowText( hwnd, buff, sizeof( buff ) );
-	if ( idStr::Icmpn( buff, EDITOR_WINDOWTEXT, strlen( EDITOR_WINDOWTEXT ) ) == 0 ) {
-		com_hwndMsg = hwnd;
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/*
-==================
-FindEditor
-==================
-*/
-bool FindEditor( void ) {
-	com_hwndMsg = NULL;
-	EnumWindows( EnumWindowsProc, 0 );
-	return !( com_hwndMsg == NULL );
-}
-
-#endif
-
 /*
 ==================
 idCommonLocal::SetRefreshOnPrint
@@ -422,25 +385,6 @@ void idCommonLocal::VPrintf( const char *fmt, va_list args ) {
 		// let session redraw the animated loading screen if necessary
 		session->PacifierUpdate();
 	}
-
-#ifdef _WIN32
-
-	if ( com_outputMsg ) {
-		if ( com_msgID == -1 ) {
-			com_msgID = ::RegisterWindowMessage( DMAP_MSGID );
-			if ( !FindEditor() ) {
-				com_outputMsg = false;
-			} else {
-				Sys_ShowWindow( false );
-			}
-		}
-		if ( com_hwndMsg ) {
-			ATOM atom = ::GlobalAddAtom( msg );
-			::PostMessage( com_hwndMsg, com_msgID, 0, static_cast<LPARAM>(atom) );
-		}
-	}
-
-#endif
 }
 
 /*
@@ -776,14 +720,6 @@ idCommonLocal::Quit
 ==================
 */
 void idCommonLocal::Quit( void ) {
-
-#ifdef ID_ALLOW_TOOLS
-	if ( com_editors & EDITOR_RADIANT ) {
-		RadiantInit();
-		return;
-	}
-#endif
-
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		Shutdown();
@@ -876,25 +812,13 @@ and force fullscreen off in those cases
 ==================
 */
 void idCommonLocal::CheckToolMode( void ) {
-	int			i;
-
-	for ( i = 0 ; i < com_numConsoleLines ; i++ ) {
+	for ( int i = 0 ; i < com_numConsoleLines ; i++ ) {
 		if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" ) ) {
 			com_editors |= EDITOR_GUI;
 		}
 		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "debugger" ) ) {
 			com_editors |= EDITOR_DEBUGGER;
-		}
-		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "editor" ) ) {
-			com_editors |= EDITOR_RADIANT;
-		}
-		// Nerve: Add support for the material editor
-		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "materialEditor" ) ) {
-			com_editors |= EDITOR_MATERIAL;
-		}
-
-		if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "editor" )
-			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" )
+		} if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "debugger" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "dmap" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "materialEditor" )
@@ -1137,17 +1061,6 @@ int	idCommonLocal::KeyState( int key ) {
 
 #ifdef ID_ALLOW_TOOLS
 /*
-==================
-Com_Editor_f
-
-  we can start the editor dynamically, but we won't ever get back
-==================
-*/
-static void Com_Editor_f( const idCmdArgs &args ) {
-	RadiantInit();
-}
-
-/*
 =============
 Com_ScriptDebugger_f
 =============
@@ -1172,18 +1085,9 @@ Com_EditGUIs_f
 =============
 */
 static void Com_EditGUIs_f( const idCmdArgs &args ) {
-	GUIEditorInit();
-}
-
-/*
-=============
-Com_MaterialEditor_f
-=============
-*/
-static void Com_MaterialEditor_f( const idCmdArgs &args ) {
 	// Turn off sounds
 	soundSystem->SetMute( true );
-	MaterialEditorInit();
+	GUIEditorInit();
 }
 #endif // ID_ALLOW_TOOLS
 
@@ -2317,7 +2221,6 @@ void idCommonLocal::InitCommands( void ) {
 
 #ifdef ID_ALLOW_TOOLS
 	// editors
-	cmdSystem->AddCommand( "editor", Com_Editor_f, CMD_FL_TOOL, "launches the level editor Radiant" );
 	cmdSystem->AddCommand( "editLights", Com_EditLights_f, CMD_FL_TOOL, "launches the in-game Light Editor" );
 	cmdSystem->AddCommand( "editSounds", Com_EditSounds_f, CMD_FL_TOOL, "launches the in-game Sound Editor" );
 	cmdSystem->AddCommand( "editDecls", Com_EditDecls_f, CMD_FL_TOOL, "launches the in-game Declaration Editor" );
@@ -2326,9 +2229,6 @@ void idCommonLocal::InitCommands( void ) {
 	cmdSystem->AddCommand( "editScripts", Com_EditScripts_f, CMD_FL_TOOL, "launches the in-game Script Editor" );
 	cmdSystem->AddCommand( "editGUIs", Com_EditGUIs_f, CMD_FL_TOOL, "launches the GUI Editor" );
 	cmdSystem->AddCommand( "debugger", Com_ScriptDebugger_f, CMD_FL_TOOL, "launches the Script Debugger" );
-
-	//BSM Nerve: Add support for the material editor
-	cmdSystem->AddCommand( "materialEditor", Com_MaterialEditor_f, CMD_FL_TOOL, "launches the Material Editor" );
 #endif
 
 	cmdSystem->AddCommand( "printMemInfo", PrintMemInfo_f, CMD_FL_SYSTEM, "prints memory debugging data" );

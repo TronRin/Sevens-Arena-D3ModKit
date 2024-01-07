@@ -1,4 +1,5 @@
 cmake_minimum_required( VERSION 3.27.8 )
+cmake_minimum_required( VERSION 3.27.8 )
 
 # Check if vcpkg exist in our source folder
 if ( EXISTS "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" )
@@ -729,15 +730,12 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 	# GUI Editor.
 	file(GLOB src_gui_editor "tools/guied/*.cpp")
 	add_globbed_headers(src_gui_editor "tools/guied")
-	# Material editor
-	file(GLOB src_materialeditor "tools/materialeditor/*.cpp")
-	add_globbed_headers(src_materialeditor "tools/materialeditor")
+	# Ligth Editor.
+	file(GLOB src_ligth_editor "tools/ligtheditor/*.cpp")
+	add_globbed_headers(src_gui_editor "tools/ligtheditor")
 	# Particle Editor
 	file(GLOB src_particleeditor "tools/particle/*.cpp")
 	add_globbed_headers(src_particleeditor "tools/particle")
-	# Radiant ( Map editor )
-	file(GLOB src_map_editor "tools/radiant/*.cpp")
-	add_globbed_headers(src_map_editor "tools/radiant")
 	# Script editor
 	file(GLOB src_script_editor "tools/script/*.cpp")
 	add_globbed_headers(src_script_editor "tools/script")
@@ -770,9 +768,8 @@ if (TOOLS AND MFC_TOOLS AND MSVC)
 		${src_afeditor}
 		${src_decleditor}
 		${src_gui_editor}
-		${src_materialeditor}
+		${src_ligth_editor}
 		${src_particleeditor}
-		${src_map_editor}
 		${src_script_editor}
 		${src_sound_editor}
 		${src_script_debugger}

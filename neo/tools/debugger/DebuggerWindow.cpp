@@ -30,12 +30,12 @@ If you have questions concerning this license or the applicable additional terms
 
 
 #include "../../sys/win32/rc/resource.h"
+#include "../../sys/win32/win_local.h"
 #include "DebuggerApp.h"
-#include "../Common/OpenFileDialog.h"
 #include "DebuggerQuickWatchDlg.h"
 #include "DebuggerFindDlg.h"
 
-#define DEBUGGERWINDOWCLASS		"DHEWM3_DEBUGGER_WINDOW"
+#define DEBUGGERWINDOWCLASS		"SCRIPT_DEBUGGER_WINDOW"
 #define ID_DBG_WINDOWMIN		18900
 #define ID_DBG_WINDOWMAX		19900
 
@@ -170,7 +170,7 @@ bool rvDebuggerWindow::Create ( HINSTANCE instance )
 
 	UpdateTitle ( );
 
-	Printf ( "Dhewm3 Script Debugger v1.1\n\n" );
+	Printf ( "Script Debugger v1.1\n\n" );
 
 	ShowWindow ( mWnd, SW_SHOW );
 	UpdateWindow ( mWnd );
@@ -531,7 +531,7 @@ void rvDebuggerWindow::UpdateTitle ( void )
 {
 	idStr title;
 
-	title = "Dhewm3 Script Debugger - ";
+	title = "Script Debugger - ";
 
 	if ( mClient->IsConnected ( ) )
 	{
@@ -1338,16 +1338,25 @@ int rvDebuggerWindow::HandleCommand ( WPARAM wparam, LPARAM lparam )
 
 		case ID_DBG_FILE_OPEN:
 		{
-			rvOpenFileDialog dlg;
-			dlg.SetTitle ( "Open Script" );
-			dlg.SetFilter ( "*.script; *.gui; *.state" );
-			dlg.SetFlags ( OFD_MUSTEXIST );
-			if ( dlg.DoModal ( mWnd ) )
-			{
-				if ( !OpenScript ( dlg.GetFilename ( ) ) )
-				{
-					MessageBox ( mWnd, va("Failed to open script '%s'",dlg.GetFilename ( )), "Quake 4 Script Debugger", MB_OK );
-				}
+			OPENFILENAME ofn;
+			char		 szFile[MAX_PATH] = "";
+
+			// Initialize OPENFILENAME
+			ZeroMemory(&ofn, sizeof(OPENFILENAME));
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.hwndOwner = win32.hWnd;
+			ofn.lpstrFile = szFile;
+			ofn.nMaxFile = sizeof(szFile);
+			ofn.lpstrFilter = "Game Script\0*.script\0All Files\0*.*\0";
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+			// Display the Open dialog box.
+			if ( GetOpenFileName( &ofn ) == TRUE ) {
+				OpenScript ( ofn.lpstrFile );
 			}
 			break;
 		}
@@ -1843,7 +1852,7 @@ LRESULT CALLBACK rvDebuggerWindow::WndProc ( HWND wnd, UINT msg, WPARAM wparam, 
 		case WM_CLOSE:
 			if ( window->mClient->IsConnected ( ) )
 			{
-				if ( IDNO == MessageBox ( wnd, "The debugger is currently connected to a running version of the game.  Are you sure you want to close now?", "Dhewm3 Script Debugger", MB_YESNO|MB_ICONQUESTION ) )
+				if ( IDNO == MessageBox ( wnd, "The debugger is currently connected to a running version of the game.  Are you sure you want to close now?", "Script Debugger", MB_YESNO|MB_ICONQUESTION ) )
 				{
 					return 0;
 				}

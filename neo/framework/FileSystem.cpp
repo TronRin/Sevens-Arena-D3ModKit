@@ -77,7 +77,7 @@ to the current directory, but it can be overridden with "+set fs_cdpath g:\doom"
 command line.
 
 The "dev path" is the path to an alternate hierarchy where the editors and tools used
-during development (Radiant, AF editor, dmap, runAAS) will write files to. It defaults to
+during development (AF editor, dmap, runAAS) will write files to. It defaults to
 the cd path, but can be overridden with a "+set fs_devpath c:\doom" on the command line.
 
 If a user runs the game directly from a CD, the base path would be on the CD. This

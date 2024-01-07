@@ -263,7 +263,7 @@ public:
 	virtual void				ANIM_CreateAnimFrame( const idRenderModel *model, const idMD5Anim *anim, int numJoints, idJointMat *frame, int time, const idVec3 &offset, bool remove_origin_offset );
 	virtual idRenderModel *		ANIM_CreateMeshForAnim( idRenderModel *model, const char *classname, const char *animname, int frame, bool remove_origin_offset );
 
-	// Articulated Figure calls for AF editor and Radiant.
+	// Articulated Figure calls for AF editor.
 	virtual bool				AF_SpawnEntity( const char *fileName );
 	virtual void				AF_UpdateEntities( const char *fileName );
 	virtual void				AF_UndoChanges( void );

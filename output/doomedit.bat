@@ -1,1 +1,0 @@
-start engine.exe +editor

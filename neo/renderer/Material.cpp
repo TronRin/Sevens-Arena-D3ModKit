@@ -110,7 +110,6 @@ void idMaterial::CommonInit() {
 	unsmoothedTangents = false;
 	gui = NULL;
 	memset( deformRegisters, 0, sizeof( deformRegisters ) );
-	editorAlpha = 1.0;
 	spectrum = 0;
 	polygonOffset = 0;
 	suppressInSubview = false;
@@ -187,39 +186,6 @@ void idMaterial::FreeData() {
 	}
 }
 
-/*
-==============
-idMaterial::GetEditorImage
-==============
-*/
-idImage *idMaterial::GetEditorImage( void ) const {
-	idImage* diffuseImage = nullptr;
-
-	// First check for a diffuse image, then use the first
-	if ( numStages && stages ) {
-		int i;
-		for( i = 0; i < numStages; i++ ) {
-			if ( stages[i].lighting == SL_DIFFUSE ) {
-				diffuseImage = stages[i].texture.image;
-				break;
-			}
-		}
-
-		if ( !diffuseImage ) {
-			diffuseImage = stages[0].texture.image;
-		}
-	} else {
-		diffuseImage = globalImages->defaultImage;
-	}
-
-	if ( !diffuseImage ) {
-		diffuseImage = globalImages->defaultImage;
-	}
-
-	return diffuseImage;
-}
-
-
 // info parms
 typedef struct {
 	const char	*name;
@@ -240,7 +206,7 @@ static const infoParm_t	infoParms[] = {
 	{"aasobstacle",			0,	0,	CONTENTS_AAS_OBSTACLE },		// used to compile an obstacle into AAS that can be enabled/disabled
 	{"flashlight_trigger",	0,	0,	CONTENTS_FLASHLIGHT_TRIGGER },	// used for triggers that are activated by the flashlight
 	{"nonsolid",			1,	0,	0 },							// clears the solid flag
-	{"nullNormal",			0,	SURF_NULLNORMAL,0 },				// renderbump will draw as 0x80 0x80 0x80
+	{"nullNormal",			0,	SURF_NULLNORMAL,0 },				// normals will draw as 0x80 0x80 0x80
 
 	// utility relevant attributes
 	{"areaportal",			1,	0,	CONTENTS_AREAPORTAL },			// divides areas
@@ -2185,11 +2151,6 @@ bool idMaterial::Parse( const char *text, const int textLength ) {
 	// parse it
 	ParseMaterial( src );
 
-	// if we are doing an fs_copyfiles, also reference the diffuse stage, since we use this for Radiant
-	if ( cvarSystem->GetCVarInteger( "fs_copyFiles" ) ) {
-		GetEditorImage();
-	}
-
 	//
 	// count non-lit stages
 	numAmbientStages = 0;
@@ -2242,13 +2203,6 @@ bool idMaterial::Parse( const char *text, const int textLength ) {
 	} else {
 		// mark the contents as opaque
 		contentFlags |= CONTENTS_OPAQUE;
-	}
-
-	// if we are translucent, draw with an alpha in the editor
-	if ( coverage == MC_TRANSLUCENT ) {
-		editorAlpha = 0.5;
-	} else {
-		editorAlpha = 1.0;
 	}
 
 	// the sorts can make reasonable defaults

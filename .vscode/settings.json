@@ -2,6 +2,7 @@
     "cmake.options.statusBarVisibility": "visible",
     "cmake.sourceDirectory": "${workspaceRoot}/neo",
     "search.exclude": {
-        "**/vcpkg": true
+        "**/vcpkg": true,
+        "**/neo/libs": true
     }
 }

@@ -98,8 +98,6 @@ const int BUILD_NUMBER			= 1305;
 	Information related to the engine tools.
 */
 #ifdef _WIN32
-	#define EDITOR_REGISTRY_KEY	"Radiant"
-	#define EDITOR_WINDOWTEXT	"Radiant Editor"
 	#define WIN32_CONSOLE_CLASS	"Game Console"
 #endif // _WIN32
 
