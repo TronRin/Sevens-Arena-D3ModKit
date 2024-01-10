@@ -838,7 +838,7 @@ void idSessionLocal::StartPlayingRenderDemo( idStr demoName ) {
 	// bring up the loading screen manually, since demos won't
 	// call ExecuteMapChange()
 	guiLoading = uiManager->FindGui( "guis/map/loading.gui", true, false, true );
-	guiLoading->SetStateString( "demo", common->GetLanguageDict()->GetString( "#str_02087" ) );
+	guiLoading->SetStateString( "demo", common->GetLanguageDict()->GetString( "#str_loading" ) );
 	readDemo = new idDemoFile;
 	demoName.DefaultFileExtension( ".demo" );
 	if ( !readDemo->OpenForReading( demoName ) ) {
@@ -884,7 +884,7 @@ void idSessionLocal::TimeRenderDemo( const char *demoName, bool twice ) {
 
 	if ( twice && readDemo ) {
 		// cycle through once to precache everything
-		guiLoading->SetStateString( "demo", common->GetLanguageDict()->GetString( "#str_04852" ) );
+		guiLoading->SetStateString( "demo", common->GetLanguageDict()->GetString( "#str_loading_precache" ) );
 		guiLoading->StateChanged( com_frameTime );
 		while ( readDemo ) {
 			insideExecuteMapChange = true;
@@ -1748,13 +1748,13 @@ bool idSessionLocal::SaveGame( const char *saveName, bool autosave, const char* 
 	}
 
 	if ( game->GetPersistentPlayerInfo( 0 ).GetInt( "health" ) <= 0 ) {
-		MessageBox( MSG_OK, common->GetLanguageDict()->GetString ( "#str_04311" ), common->GetLanguageDict()->GetString ( "#str_04312" ), true );
+		MessageBox( MSG_OK, common->GetLanguageDict()->GetString ( "#str_messagegox_save_dead" ), common->GetLanguageDict()->GetString ( "#str_messagebox_save_error" ), true );
 		common->Printf( "You must be alive to save the game\n" );
 		return false;
 	}
 
 	if ( Sys_GetDriveFreeSpace( cvarSystem->GetCVarString( "fs_savepath" ) ) < 25 ) {
-		MessageBox( MSG_OK, common->GetLanguageDict()->GetString ( "#str_04313" ), common->GetLanguageDict()->GetString ( "#str_04314" ), true );
+		MessageBox( MSG_OK, common->GetLanguageDict()->GetString ( "#str_messagebox_no_space" ), common->GetLanguageDict()->GetString ( "#str_messagebox_warning" ), true );
 		common->Printf( "Not enough drive space to save the game\n" );
 		return false;
 	}
@@ -1983,7 +1983,7 @@ bool idSessionLocal::LoadGame( const char *saveName ) {
 
 bool idSessionLocal::QuickSave()
 {
-	idStr saveName = common->GetLanguageDict()->GetString( "#str_07178" );
+	idStr saveName = common->GetLanguageDict()->GetString( "#str_quicksave" );
 
 	idStr saveFilePathBase = saveName;
 	ScrubSaveGameFileName( saveFilePathBase );
@@ -2036,7 +2036,7 @@ bool idSessionLocal::QuickSave()
 
 bool idSessionLocal::QuickLoad()
 {
-	idStr saveName = common->GetLanguageDict()->GetString( "#str_07178" );
+	idStr saveName = common->GetLanguageDict()->GetString( "#str_quicksave" );
 
 	idStr saveFilePathBase = saveName;
 	ScrubSaveGameFileName( saveFilePathBase );

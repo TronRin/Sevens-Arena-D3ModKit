@@ -1211,7 +1211,7 @@ bool idGameLocal::NextMap( void ) {
 	int					i;
 
 	if ( !g_mapCycle.GetString()[0] ) {
-		Printf( "%s", common->GetLanguageDict()->GetString( "#str_04294" ) );
+		Printf( "%s", common->GetLanguageDict()->GetString( "#str_no_mapcycle" ) );
 		return false;
 	}
 	if ( fileSystem->ReadFile( g_mapCycle.GetString(), NULL, NULL ) < 0 ) {

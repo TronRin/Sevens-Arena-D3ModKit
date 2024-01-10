@@ -97,9 +97,9 @@ const char *idMultiplayerGame::ThrottleVars[] = {
 };
 
 const char *idMultiplayerGame::ThrottleVarsInEnglish[] = {
-	"#str_06738",
-	"#str_06737",
-	"#str_01991",
+	"#str_spec_mode",
+	"#str_ready_mode",
+	"#str_team",
 	NULL
 };
 
@@ -473,7 +473,7 @@ void idMultiplayerGame::UpdateScoreboard( idUserInterface *scoreBoard, idPlayer 
 	idPlayer *p;
 	int value;
 
-	scoreBoard->SetStateString( "scoretext", gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_04242" ) : common->GetLanguageDict()->GetString( "#str_04243" ) );
+	scoreBoard->SetStateString( "scoretext", gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_lives" ) : common->GetLanguageDict()->GetString( "#str_frags" ) );
 
 	iline = 0; // the display lines
 	if ( gameState != WARMUP ) {
@@ -539,31 +539,31 @@ void idMultiplayerGame::UpdateScoreboard( idUserInterface *scoreBoard, idPlayer 
 
 			iline++;
 			if ( !playerState[ i ].ingame ) {
-				scoreBoard->SetStateString( va( "player%i", iline ), common->GetLanguageDict()->GetString( "#str_04244" ) );
-				scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_04245" ) );
+				scoreBoard->SetStateString( va( "player%i", iline ), common->GetLanguageDict()->GetString( "#str_new_player" ) );
+				scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_connecting" ) );
 				// no color band
 				scoreBoard->SetStateInt( va( "rank%i", iline ), 0 );
 			} else {
 				scoreBoard->SetStateString( va( "player%i", iline ), gameLocal.userInfo[ i ].GetString( "ui_name" ) );
 				if ( gameState == WARMUP ) {
 					if ( p->spectating ) {
-						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_04246" ) );
+						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_spectating" ) );
 						// no color band
 						scoreBoard->SetStateInt( va( "rank%i", iline ), 0 );
 					} else {
-						scoreBoard->SetStateString( va( "player%i_score", iline ), p->IsReady() ? common->GetLanguageDict()->GetString( "#str_04247" ) : common->GetLanguageDict()->GetString( "#str_04248" ) );
+						scoreBoard->SetStateString( va( "player%i_score", iline ), p->IsReady() ? common->GetLanguageDict()->GetString( "#str_ready" ) : common->GetLanguageDict()->GetString( "#str_not_ready" ) );
 						// set the color band
 						scoreBoard->SetStateInt( va( "rank%i", iline ), 1 );
 						UpdateRankColor( scoreBoard, "rank%i_color%i", iline, p->colorBar );
 					}
 				} else {
 					if ( gameLocal.gameType == GAME_LASTMAN && playerState[ i ].fragCount == LASTMAN_NOLIVES ) {
-						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_06736" ) );
+						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_no_lives" ) );
 						// set the color band
 						scoreBoard->SetStateInt( va( "rank%i", iline ), 1 );
 						UpdateRankColor( scoreBoard, "rank%i_color%i", iline, p->colorBar );
 					} else {
-						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_04246" ) );
+						scoreBoard->SetStateString( va( "player%i_score", iline ), common->GetLanguageDict()->GetString( "#str_spectating" ) );
 						// no color band
 						scoreBoard->SetStateInt( va( "rank%i", iline ), 0 );
 					}
@@ -597,24 +597,24 @@ void idMultiplayerGame::UpdateScoreboard( idUserInterface *scoreBoard, idPlayer 
 		iline++;
 	}
 
-	gameinfo = va( "%s: %s", common->GetLanguageDict()->GetString( "#str_02376" ), gameLocal.serverInfo.GetString( "si_gameType" ) );
+	gameinfo = va( "%s: %s", common->GetLanguageDict()->GetString( "#str_gametype" ), gameLocal.serverInfo.GetString( "si_gameType" ) );
 	if ( gameLocal.gameType == GAME_LASTMAN ) {
 		if ( gameState == GAMEON || gameState == SUDDENDEATH ) {
-			livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_04264" ), startFragLimit );
+			livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_max_lives" ), startFragLimit );
 		} else {
-			livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_04264" ), gameLocal.serverInfo.GetInt( "si_fragLimit" ) );
+			livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_max_lives" ), gameLocal.serverInfo.GetInt( "si_fragLimit" ) );
 		}
 #ifdef CTF
 	} else if ( gameLocal.gameType != GAME_CTF ) {
 #else
 	} else {
 #endif
-		livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_01982" ), gameLocal.serverInfo.GetInt( "si_fragLimit" ) );
+		livesinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_frag_limit" ), gameLocal.serverInfo.GetInt( "si_fragLimit" ) );
 	}
 	if ( gameLocal.serverInfo.GetInt( "si_timeLimit" ) > 0 ) {
-		timeinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_01983" ), gameLocal.serverInfo.GetInt( "si_timeLimit" ) );
+		timeinfo = va( "%s: %i", common->GetLanguageDict()->GetString( "#str_time_limit" ), gameLocal.serverInfo.GetInt( "si_timeLimit" ) );
 	} else {
-		timeinfo = va("%s", common->GetLanguageDict()->GetString( "#str_07209" ));
+		timeinfo = va("%s", common->GetLanguageDict()->GetString( "#str_no_time_limit" ));
 	}
 	scoreBoard->SetStateString( "gameinfo", gameinfo );
 	scoreBoard->SetStateString( "livesinfo", livesinfo );
@@ -644,7 +644,7 @@ void idMultiplayerGame::UpdateCTFScoreboard( idUserInterface *scoreBoard, idPlay
 	char *curTeam = NULL;
 
 	/* Word "frags" */
-	scoreBoard->SetStateString( "scoretext", gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_04242" ) : common->GetLanguageDict()->GetString( "#str_04243" ) );
+	scoreBoard->SetStateString( "scoretext", gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_lives" ) : common->GetLanguageDict()->GetString( "#str_frags" ) );
 
 	// Blank the flag carrier on the scoreboard.  We update these in the loop below if necessary.
 	if ( this->player_blue_flag == -1 )
@@ -739,10 +739,10 @@ void idMultiplayerGame::UpdateCTFScoreboard( idUserInterface *scoreBoard, idPlay
 		if ( !playerState[ i ].ingame ) {
 
 			/* "New Player" on player's name location */
-			scoreBoard->SetStateString( va( "player%i_%s", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_04244" ) );
+			scoreBoard->SetStateString( va( "player%i_%s", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_new_player" ) );
 
 			/* "Connecting" on player's score location */
-			scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_04245" ) );
+			scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_connecting" ) );
 
 
 		} else {
@@ -756,12 +756,12 @@ void idMultiplayerGame::UpdateCTFScoreboard( idUserInterface *scoreBoard, idPlay
 				if ( player->spectating ) {
 
 					/* "Spectating" on player's score location */
-					scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_04246" ) );
+					scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), common->GetLanguageDict()->GetString( "#str_spectating" ) );
 
 				} else {
 
 					/* Display "ready" in player's score location if they're ready.  Display nothing if not.  No room for 'not ready'.  */
-					scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), player->IsReady() ? common->GetLanguageDict()->GetString( "#str_04247" ) : "" );
+					scoreBoard->SetStateString( va( "player%i_%s_score", ilines[ player->team ], curTeam ), player->IsReady() ? common->GetLanguageDict()->GetString( "#str_ready" ) : "" );
 
 				}
 			}
@@ -801,13 +801,13 @@ void idMultiplayerGame::UpdateCTFScoreboard( idUserInterface *scoreBoard, idPlay
 
 		/* Prints "Capture Limit: %i" at the bottom of the scoreboard, left */
 		if ( captureLimit )
-			scoreBoard->SetStateString( "gameinfo_red", va( common->GetLanguageDict()->GetString( "#str_11108" ), captureLimit) );
+			scoreBoard->SetStateString( "gameinfo_red", va( common->GetLanguageDict()->GetString( "#str_flag_capture_limit" ), captureLimit) );
 		else
 			scoreBoard->SetStateString( "gameinfo_red", "" );
 
 		/* Prints "Time Limit: %i" at the bottom of the scoreboard, right */
 		if ( timeLimit )
-			scoreBoard->SetStateString( "gameinfo_blue", va( common->GetLanguageDict()->GetString( "#str_11109" ), timeLimit) );
+			scoreBoard->SetStateString( "gameinfo_blue", va( common->GetLanguageDict()->GetString( "#str_flag_time_limit" ), timeLimit) );
 		else
 			scoreBoard->SetStateString( "gameinfo_blue", "" );
 	}
@@ -1989,9 +1989,9 @@ void idMultiplayerGame::UpdateMainGui( void ) {
 	mainGui->SetStateInt( "readyoff", gameState != WARMUP ? 1 : 0 );
 	idStr strReady = cvarSystem->GetCVarString( "ui_ready" );
 	if ( strReady.Icmp( "ready") == 0 ){
-		strReady = common->GetLanguageDict()->GetString( "#str_04248" );
+		strReady = common->GetLanguageDict()->GetString( "#str_ready" );
 	} else {
-		strReady = common->GetLanguageDict()->GetString( "#str_04247" );
+		strReady = common->GetLanguageDict()->GetString( "#str_not_ready" );
 	}
 	mainGui->SetStateString( "ui_ready", strReady );
 	mainGui->SetStateInt( "teamon", IsGametypeTeamBased() ? 1 : 0 ); /* CTF */
@@ -2435,9 +2435,9 @@ bool idMultiplayerGame::Draw( int clientNum ) {
 		}
 #endif
 		if ( player->wantSpectate ) {
-			mainGui->SetStateString( "spectext", common->GetLanguageDict()->GetString( "#str_04249" ) );
+			mainGui->SetStateString( "spectext", common->GetLanguageDict()->GetString( "#str_enter_game" ) );
 		} else {
-			mainGui->SetStateString( "spectext", common->GetLanguageDict()->GetString( "#str_04250" ) );
+			mainGui->SetStateString( "spectext", common->GetLanguageDict()->GetString( "#str_spectate" ) );
 		}
 		DrawChat();
 		if ( currentMenu == 1 ) {
@@ -2466,33 +2466,33 @@ bool idMultiplayerGame::Draw( int clientNum ) {
 			int ispecline = 0;
 			if ( gameLocal.gameType == GAME_TOURNEY ) {
 				if ( !player->wantSpectate ) {
-					spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_04246" );
+					spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_spectating" );
 					switch ( player->tourneyLine ) {
 						case 0:
-							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_07003" );
+							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_warnup_inline" );
 							break;
 						case 1:
-							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_07004" );
+							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_warnup_first" );
 							break;
 						case 2:
-							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_07005" );
+							spectatetext[ 0 ] += common->GetLanguageDict()->GetString( "#str_warnup_second" );
 							break;
 						default:
-							spectatetext[ 0 ] += va( common->GetLanguageDict()->GetString( "#str_07006" ), player->tourneyLine );
+							spectatetext[ 0 ] += va( common->GetLanguageDict()->GetString( "#str_warnup_line" ), player->tourneyLine );
 							break;
 					}
 					ispecline++;
 				}
 			} else if ( gameLocal.gameType == GAME_LASTMAN ) {
 				if ( !player->wantSpectate ) {
-					spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_07007" );
+					spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_spectating_no_lifes" );
 					ispecline++;
 				}
 			}
 			if ( player->spectator != player->entityNumber ) {
-				spectatetext[ ispecline ] = va( common->GetLanguageDict()->GetString( "#str_07008" ), viewPlayer->GetUserInfo()->GetString( "ui_name" ) );
+				spectatetext[ ispecline ] = va( common->GetLanguageDict()->GetString( "#str_spectating_following" ), viewPlayer->GetUserInfo()->GetString( "ui_name" ) );
 			} else if ( !ispecline ) {
-				spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_04246" );
+				spectatetext[ 0 ] = common->GetLanguageDict()->GetString( "#str_spectating" );
 			}
 			spectateGui->SetStateString( "spectatetext0", spectatetext[0].c_str() );
 			spectateGui->SetStateString( "spectatetext1", spectatetext[1].c_str() );
@@ -2526,13 +2526,13 @@ void idMultiplayerGame::UpdateHud( idPlayer *player, idUserInterface *hud ) {
 
 	if ( gameState == WARMUP ) {
 		if ( player->IsReady() ) {
-			hud->SetStateString( "warmuptext", common->GetLanguageDict()->GetString( "#str_04251" ) );
+			hud->SetStateString( "warmuptext", common->GetLanguageDict()->GetString( "#str_warnup" ) );
 		} else {
-			hud->SetStateString( "warmuptext", common->GetLanguageDict()->GetString( "#str_07002" ) );
+			hud->SetStateString( "warmuptext", common->GetLanguageDict()->GetString( "#str_warnup_not_ready" ) );
 		}
 	}
 
-	hud->SetStateString( "timer", ( Warmup() ) ? common->GetLanguageDict()->GetString( "#str_04251" ) : ( gameState == SUDDENDEATH ) ? common->GetLanguageDict()->GetString( "#str_04252" ) : GameTime() );
+	hud->SetStateString( "timer", ( Warmup() ) ? common->GetLanguageDict()->GetString( "#str_warnup" ) : ( gameState == SUDDENDEATH ) ? common->GetLanguageDict()->GetString( "#str_spect_death" ) : GameTime() );
 	if ( vote != VOTE_NONE ) {
 		hud->SetStateString( "vote", va( "%s (y: %d n: %d)", voteString.c_str(), (int)yesVotes, (int)noVotes ) );
 	} else {
@@ -2831,60 +2831,60 @@ void idMultiplayerGame::PrintMessageEvent( int to, msg_evt_t evt, int parm1, int
 	switch ( evt ) {
 		case MSG_SUICIDE:
 			assert( parm1 >= 0 );
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04293" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_deathnotice_suicide" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			break;
 		case MSG_KILLED:
 			assert( parm1 >= 0 && parm2 >= 0 );
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04292" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_deathnotice_killed" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
 			break;
 		case MSG_KILLEDTEAM:
 			assert( parm1 >= 0 && parm2 >= 0 );
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04291" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_deathnotice_friendlyfire" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
 			break;
 		case MSG_TELEFRAGGED:
 			assert( parm1 >= 0 && parm2 >= 0 );
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04290" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_deathnotice_telefrag" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );
 			break;
 		case MSG_DIED:
 			assert( parm1 >= 0 );
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04289" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_deathnotice_generic" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			break;
 		case MSG_VOTE:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04288" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_vote_start" ) );
 			break;
 		case MSG_SUDDENDEATH:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04287" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_sudden_death" ) );
 			break;
 		case MSG_FORCEREADY:
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04286" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_server_ready" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			if ( gameLocal.entities[ parm1 ] && gameLocal.entities[ parm1 ]->IsType( idPlayer::Type ) ) {
 				static_cast< idPlayer * >( gameLocal.entities[ parm1 ] )->forcedReady = true;
 			}
 			break;
 		case MSG_JOINEDSPEC:
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04285" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_joined_spectator" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			break;
 		case MSG_TIMELIMIT:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04284" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_timelimit_reach" ) );
 			break;
 		case MSG_FRAGLIMIT:
 			if ( gameLocal.gameType == GAME_LASTMAN ) {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_04283" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_lastman_standing" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			} else if ( IsGametypeTeamBased() ) { /* CTF */
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_04282" ), gameLocal.userInfo[ parm1 ].GetString( "ui_team" ) );
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_fraglimit_team_reach" ), gameLocal.userInfo[ parm1 ].GetString( "ui_team" ) );
 			} else {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_04281" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_fraglimit_reach" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ) );
 			}
 			break;
 		case MSG_JOINTEAM:
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_04280" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), parm2 ? common->GetLanguageDict()->GetString( "#str_02500" ) : common->GetLanguageDict()->GetString( "#str_02499" ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_joined_team" ), gameLocal.userInfo[ parm1 ].GetString( "ui_name" ), parm2 ? common->GetLanguageDict()->GetString( "#str_teamname_blue" ) : common->GetLanguageDict()->GetString( "#str_teamname_red" ) );
 			break;
 		case MSG_HOLYSHIT:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_06732" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_holyshit" ) );
 			break;
 #ifdef CTF
 		case MSG_POINTLIMIT:
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_11100" ), parm1 ? common->GetLanguageDict()->GetString( "#str_11110" ) : common->GetLanguageDict()->GetString( "#str_11111"  ) );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_team_win" ), parm1 ? common->GetLanguageDict()->GetString( "#str_teamname_colorcode_blue" ) : common->GetLanguageDict()->GetString( "#str_teamname_colorcode_red"  ) );
 			break;
 
 		case MSG_FLAGTAKEN :
@@ -2895,9 +2895,9 @@ void idMultiplayerGame::PrintMessageEvent( int to, msg_evt_t evt, int parm1, int
 				break;
 
 			if ( gameLocal.GetLocalPlayer()->team != parm1 ) {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_11101" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_stolen" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
 			} else {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_11102" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_stolen" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
 			}
 			break;
 
@@ -2906,9 +2906,9 @@ void idMultiplayerGame::PrintMessageEvent( int to, msg_evt_t evt, int parm1, int
 				break;
 
 			if ( gameLocal.GetLocalPlayer()->team != parm1 ) {
-				AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_11103" ) );	// your team
+				AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_flag_dropped" ) );	// your team
 			} else {
-				AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_11104" ) );	// enemy
+				AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_flag_enemy_dropped" ) );	// enemy
 			}
 			break;
 
@@ -2918,12 +2918,12 @@ void idMultiplayerGame::PrintMessageEvent( int to, msg_evt_t evt, int parm1, int
 
 			if ( parm2 >= 0 && parm2 < MAX_CLIENTS ) {
 				if ( gameLocal.GetLocalPlayer()->team != parm1 ) {
-					AddChatLine( common->GetLanguageDict()->GetString( "#str_11120" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
+					AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_enemy_return" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
 				} else {
-					AddChatLine( common->GetLanguageDict()->GetString( "#str_11121" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
+					AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_return" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
 				}
 			} else {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_11105" ), parm1 ? common->GetLanguageDict()->GetString( "#str_11110" ) : common->GetLanguageDict()->GetString( "#str_11111" ) );
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_generic_returned" ), parm1 ? common->GetLanguageDict()->GetString( "#str_teamname_colorcode_blue" ) : common->GetLanguageDict()->GetString( "#str_teamname_colorcode_red" ) );
 			}
 			break;
 
@@ -2935,16 +2935,16 @@ void idMultiplayerGame::PrintMessageEvent( int to, msg_evt_t evt, int parm1, int
 				break;
 
 			if ( gameLocal.GetLocalPlayer()->team != parm1 ) {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_11122" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_enemy_capture" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// your team
 			} else {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_11123" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_capture" ), gameLocal.userInfo[ parm2 ].GetString( "ui_name" ) );	// enemy
 			}
 
-//			AddChatLine( common->GetLanguageDict()->GetString( "#str_11106" ), parm1 ? common->GetLanguageDict()->GetString( "#str_11110" ) : common->GetLanguageDict()->GetString( "#str_11111" ) );
+//			AddChatLine( common->GetLanguageDict()->GetString( "#str_flag_generic_capture" ), parm1 ? common->GetLanguageDict()->GetString( "#str_teamname_colorcode_blue" ) : common->GetLanguageDict()->GetString( "#str_teamname_colorcode_red" ) );
 			break;
 
 		case MSG_SCOREUPDATE:
-			AddChatLine( common->GetLanguageDict()->GetString( "#str_11107" ), parm1, parm2 );
+			AddChatLine( common->GetLanguageDict()->GetString( "#str_scoreboard_stat" ), parm1, parm2 );
 			break;
 #endif
 		default:
@@ -3265,7 +3265,7 @@ void idMultiplayerGame::ClientStartVote( int clientNum, const char *_voteString 
 	}
 
 	voteString = _voteString;
-	AddChatLine( common->GetLanguageDict()->GetString( "#str_04279" ), gameLocal.userInfo[ clientNum ].GetString( "ui_name" ) );
+	AddChatLine( common->GetLanguageDict()->GetString( "#str_vote_caller" ), gameLocal.userInfo[ clientNum ].GetString( "ui_name" ) );
 	gameSoundWorld->PlayShaderDirectly( GlobalSoundStrings[ SND_VOTE ] );
 	if ( clientNum == gameLocal.localClientNum ) {
 		voted = true;
@@ -3305,14 +3305,14 @@ void idMultiplayerGame::ClientUpdateVote( vote_result_t status, int yesCount, in
 
 	switch ( status ) {
 		case VOTE_FAILED:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04278" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_vote_failed" ) );
 			gameSoundWorld->PlayShaderDirectly( GlobalSoundStrings[ SND_VOTE_FAILED ] );
 			if ( gameLocal.isClient ) {
 				vote = VOTE_NONE;
 			}
 			break;
 		case VOTE_PASSED:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04277" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_vote_passed" ) );
 			gameSoundWorld->PlayShaderDirectly( GlobalSoundStrings[ SND_VOTE_PASSED ] );
 			break;
 		case VOTE_RESET:
@@ -3321,7 +3321,7 @@ void idMultiplayerGame::ClientUpdateVote( vote_result_t status, int yesCount, in
 			}
 			break;
 		case VOTE_ABORTED:
-			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_04276" ) );
+			AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_vote_aborted" ) );
 			if ( gameLocal.isClient ) {
 				vote = VOTE_NONE;
 			}
@@ -3375,12 +3375,12 @@ void idMultiplayerGame::CastVote( int clientNum, bool castVote ) {
 
 	// sanity
 	if ( vote == VOTE_NONE ) {
-		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04275" ) );
+		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_vote_no_vote" ) );
 		common->DPrintf( "client %d: cast vote while no vote in progress\n", clientNum );
 		return;
 	}
 	if ( playerState[ clientNum ].vote != PLAYER_VOTE_WAIT ) {
-		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04274" ) );
+		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_vote_double" ) );
 		common->DPrintf( "client %d: cast vote - vote %d != PLAYER_VOTE_WAIT\n", clientNum, playerState[ clientNum ].vote );
 		return;
 	}
@@ -3414,48 +3414,48 @@ void idMultiplayerGame::ServerCallVote( int clientNum, const idBitMsg &msg ) {
 
 	// sanity checks - setup the vote
 	if ( vote != VOTE_NONE ) {
-		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04273" ) );
+		gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_vote_inprogress" ) );
 		common->DPrintf( "client %d: called vote while voting already in progress - ignored\n", clientNum );
 		return;
 	}
 	switch ( voteIndex ) {
 		case VOTE_RESTART:
 			ServerStartVote( clientNum, voteIndex, "" );
-			ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_04271" ) );
+			ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_vote_restart_map" ) );
 			break;
 		case VOTE_NEXTMAP:
 			ServerStartVote( clientNum, voteIndex, "" );
-			ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_04272" ) );
+			ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_vote_next_map" ) );
 			break;
 		case VOTE_TIMELIMIT:
 			vote_timeLimit = strtol( value, NULL, 10 );
 			if ( vote_timeLimit == gameLocal.serverInfo.GetInt( "si_timeLimit" ) ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04270" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_vote_timelimit_double" ) );
 				common->DPrintf( "client %d: already at the voted Time Limit\n", clientNum );
 				return;
 			}
 			if ( vote_timeLimit < si_timeLimit.GetMinValue() || vote_timeLimit > si_timeLimit.GetMaxValue() ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04269" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_vote_timelimit_invalid" ) );
 				common->DPrintf( "client %d: timelimit value out of range for vote: %s\n", clientNum, value );
 				return;
 			}
 			ServerStartVote( clientNum, voteIndex, value );
-			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_04268" ), vote_timeLimit ) );
+			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_timelimit_set" ), vote_timeLimit ) );
 			break;
 		case VOTE_FRAGLIMIT:
 			vote_fragLimit = strtol( value, NULL, 10 );
 			if ( vote_fragLimit == gameLocal.serverInfo.GetInt( "si_fragLimit" ) ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04267" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_fraglimit_voted" ) );
 				common->DPrintf( "client %d: already at the voted Frag Limit\n", clientNum );
 				return;
 			}
 			if ( vote_fragLimit < si_fragLimit.GetMinValue() || vote_fragLimit > si_fragLimit.GetMaxValue() ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04266" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_fraglimit_invalid" ) );
 				common->DPrintf( "client %d: fraglimit value out of range for vote: %s\n", clientNum, value );
 				return;
 			}
 			ServerStartVote( clientNum, voteIndex, value );
-			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_04303" ), gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_04264" ) : common->GetLanguageDict()->GetString( "#str_04265" ), vote_fragLimit ) );
+			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_change_to" ), gameLocal.gameType == GAME_LASTMAN ? common->GetLanguageDict()->GetString( "#str_max_lives" ) : common->GetLanguageDict()->GetString( "#str_frag_limit" ), vote_fragLimit ) );
 			break;
 		case VOTE_GAMETYPE:
 			vote_gameTypeIndex = strtol( value, NULL, 10 );
@@ -3489,26 +3489,26 @@ void idMultiplayerGame::ServerCallVote( int clientNum, const idBitMsg &msg ) {
 #endif
 			}*/
 			if ( !idStr::Icmp( value, gameLocal.serverInfo.GetString( "si_gameType" ) ) ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04259" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_gametype_already_set" ) );
 				common->DPrintf( "client %d: already at the voted Game Type\n", clientNum );
 				return;
 			}
 			ServerStartVote( clientNum, voteIndex, value );
-			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_04258" ), value ) );
+			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_gametype_changed" ), value ) );
 			break;
 		case VOTE_KICK:
 			vote_clientNum = strtol( value, NULL, 10 );
 			if ( vote_clientNum == gameLocal.localClientNum ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_04257" ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", common->GetLanguageDict()->GetString( "#str_kick_host" ) );
 				common->DPrintf( "client %d: called kick for the server host\n", clientNum );
 				return;
 			}
 			ServerStartVote( clientNum, voteIndex, va( "%d", vote_clientNum ) );
-			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_04302" ), vote_clientNum, gameLocal.userInfo[ vote_clientNum ].GetString( "ui_name" ) ) );
+			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_kick_player" ), vote_clientNum, gameLocal.userInfo[ vote_clientNum ].GetString( "ui_name" ) ) );
 			break;
 		case VOTE_MAP: {
 			if ( idStr::FindText( gameLocal.serverInfo.GetString( "si_map" ), value ) != -1 ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_04295" ), value ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_already_map" ), value ) );
 				common->DPrintf( "client %d: already running the voted map: %s\n", clientNum, value );
 				return;
 			}
@@ -3524,25 +3524,25 @@ void idMultiplayerGame::ServerCallVote( int clientNum, const idBitMsg &msg ) {
 				}
 			}
 			if ( !haveMap ) {
-				gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_04296" ), value ) );
+				gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_map_not_found" ), value ) );
 				common->Printf( "client %d: map not found: %s\n", clientNum, value );
 				return;
 			}
 			ServerStartVote( clientNum, voteIndex, value );
-			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_04256" ), common->GetLanguageDict()->GetString( dict ? dict->GetString( "name" ) : value ) ) );
+			ClientStartVote( clientNum, va( common->GetLanguageDict()->GetString( "#str_map_change" ), common->GetLanguageDict()->GetString( dict ? dict->GetString( "name" ) : value ) ) );
 			break;
 		}
 		case VOTE_SPECTATORS:
 			if ( gameLocal.serverInfo.GetBool( "si_spectators" ) ) {
 				ServerStartVote( clientNum, voteIndex, "" );
-				ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_04255" ) );
+				ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_no_spectators" ) );
 			} else {
 				ServerStartVote( clientNum, voteIndex, "" );
-				ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_04254" ) );
+				ClientStartVote( clientNum, common->GetLanguageDict()->GetString( "#str_allow_spectating" ) );
 			}
 			break;
 		default:
-			gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_04297" ), (int)voteIndex ) );
+			gameLocal.ServerSendChatMessage( clientNum, "server", va( common->GetLanguageDict()->GetString( "#str_unknow_vote" ), (int)voteIndex ) );
 			common->DPrintf( "client %d: unknown vote index %d\n", clientNum, voteIndex );
 	}
 }
@@ -3859,7 +3859,7 @@ void idMultiplayerGame::ToggleSpectate( void ) {
 		if ( gameLocal.serverInfo.GetBool( "si_spectators" ) ) {
 			cvarSystem->SetCVarString( "ui_spectate", "Spectate" );
 		} else {
-			gameLocal.mpGame.AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_06747" ) );
+			gameLocal.mpGame.AddChatLine( "%s", common->GetLanguageDict()->GetString( "#str_spectating_disable" ) );
 		}
 	}
 }
@@ -3913,7 +3913,7 @@ void idMultiplayerGame::ThrottleUserInfo( void ) {
 		if ( idStr::Icmp( gameLocal.userInfo[ gameLocal.localClientNum ].GetString( ThrottleVars[ i ] ),
 			cvarSystem->GetCVarString( ThrottleVars[ i ] ) ) ) {
 			if ( gameLocal.realClientTime < switchThrottle[ i ] ) {
-				AddChatLine( common->GetLanguageDict()->GetString( "#str_04299" ), common->GetLanguageDict()->GetString( ThrottleVarsInEnglish[ i ] ), ( switchThrottle[ i ] - gameLocal.time ) / 1000 + 1 );
+				AddChatLine( common->GetLanguageDict()->GetString( "#str_setting_too_fast" ), common->GetLanguageDict()->GetString( ThrottleVarsInEnglish[ i ] ), ( switchThrottle[ i ] - gameLocal.time ) / 1000 + 1 );
 				cvarSystem->SetCVarString( ThrottleVars[ i ], gameLocal.userInfo[ gameLocal.localClientNum ].GetString( ThrottleVars[ i ] ) );
 			} else {
 				switchThrottle[ i ] = gameLocal.time + ThrottleDelay[ i ] * 1000;
@@ -3944,7 +3944,7 @@ void idMultiplayerGame::EnterGame( int clientNum ) {
 		playerState[ clientNum ].ingame = true;
 		if ( gameLocal.isMultiplayer ) {
 			// can't use PrintMessageEvent as clients don't know the nickname yet
-			gameLocal.ServerSendChatMessage( -1, common->GetLanguageDict()->GetString( "#str_02047" ), va( common->GetLanguageDict()->GetString( "#str_07177" ), gameLocal.userInfo[ clientNum ].GetString( "ui_name" ) ) );
+			gameLocal.ServerSendChatMessage( -1, common->GetLanguageDict()->GetString( "#str_server" ), va( common->GetLanguageDict()->GetString( "#str_joined_game" ), gameLocal.userInfo[ clientNum ].GetString( "ui_name" ) ) );
 		}
 	}
 }

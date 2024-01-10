@@ -252,17 +252,17 @@ allowReply_t idGameLocal::ServerAllowClient( int numClients, const char *IP, con
 	reason[0] = '\0';
 
 	if ( serverInfo.GetInt( "si_pure" ) && !mpGame.IsPureReady() ) {
-		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_07139" );
+		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_spawning_pure" );
 		return ALLOW_NOTYET;
 	}
 
 	if ( !serverInfo.GetInt( "si_maxPlayers" ) ) {
-		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_07140" );
+		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_spawning" );
 		return ALLOW_NOTYET;
 	}
 
 	if ( numClients >= serverInfo.GetInt( "si_maxPlayers" ) ) {
-		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_07141" );
+		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_server_full" );
 		return ALLOW_NOTYET;
 	}
 
@@ -275,7 +275,7 @@ allowReply_t idGameLocal::ServerAllowClient( int numClients, const char *IP, con
 		common->Warning( "si_usepass is set but g_password is empty" );
 		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "say si_usepass is set but g_password is empty" );
 		// avoids silent misconfigured state
-		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_07142" );
+		idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_server_config_error" );
 		return ALLOW_NOTYET;
 	}
 
@@ -283,7 +283,7 @@ allowReply_t idGameLocal::ServerAllowClient( int numClients, const char *IP, con
 		return ALLOW_YES;
 	}
 
-	idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_07143" );
+	idStr::snPrintf( reason, MAX_STRING_CHARS, "#str_server_invalid_password" );
 	Printf( "Rejecting client %s from IP %s: invalid password\n", guid, IP );
 	return ALLOW_BADPASS;
 }

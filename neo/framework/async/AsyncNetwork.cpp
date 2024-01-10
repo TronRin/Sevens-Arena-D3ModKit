@@ -439,7 +439,7 @@ void idAsyncNetwork::Kick_f( const idCmdArgs &args ) {
 		return;
 	}
 
-	server.DropClient( iclient, "#str_07134" );
+	server.DropClient( iclient, "#str_kicked" );
 }
 
 /*
@@ -489,18 +489,4 @@ void idAsyncNetwork::UpdateUI_f( const idCmdArgs &args ) {
 	}
 	int clientNum = atoi( args.Args( 1 ) );
 	server.UpdateUI( clientNum );
-}
-
-/*
-===============
-idAsyncNetwork::BuildInvalidKeyMsg
-===============
-*/
-void idAsyncNetwork::BuildInvalidKeyMsg( idStr &msg, bool valid[ 2 ] ) {
-	if ( !valid[ 0 ] ) {
-		msg += common->GetLanguageDict()->GetString( "#str_07194" );
-	}
-
-	msg += "\n";
-	msg += common->GetLanguageDict()->GetString( "#str_04304" );
 }

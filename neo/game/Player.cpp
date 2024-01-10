@@ -1928,7 +1928,7 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteFloat( pm_stamina.GetFloat() );
 
 	if ( hud ) {
-		hud->SetStateString( "message", common->GetLanguageDict()->GetString( "#str_02916" ) );
+		hud->SetStateString( "message", common->GetLanguageDict()->GetString( "#str_game_saved" ) );
 		hud->HandleNamedEvent( "Message" );
 	}
 
@@ -2652,7 +2652,7 @@ bool idPlayer::UserInfoChanged( bool canModify ) {
 
 	newready = ( idStr::Icmp( userInfo->GetString( "ui_ready" ), "Ready" ) == 0 );
 	if ( ready != newready && gameLocal.mpGame.GetGameState() == idMultiplayerGame::WARMUP && !wantSpectate ) {
-		gameLocal.mpGame.AddChatLine( common->GetLanguageDict()->GetString( "#str_07180" ), userInfo->GetString( "ui_name" ), newready ? common->GetLanguageDict()->GetString( "#str_04300" ) : common->GetLanguageDict()->GetString( "#str_04301" ) );
+		gameLocal.mpGame.AddChatLine( common->GetLanguageDict()->GetString( "#str_player_is" ), userInfo->GetString( "ui_name" ), newready ? common->GetLanguageDict()->GetString( "#str_ready" ) : common->GetLanguageDict()->GetString( "#str_not_ready" ) );
 	}
 	ready = newready;
 	team = ( idStr::Icmp( userInfo->GetString( "ui_team" ), "Blue" ) == 0 );
@@ -4585,7 +4585,7 @@ void idPlayer::UpdateLocation( void ) {
 		if ( locationEntity ) {
 			hud->SetStateString( "location", locationEntity->GetLocation() );
 		} else {
-			hud->SetStateString( "location", common->GetLanguageDict()->GetString( "#str_02911" ) );
+			hud->SetStateString( "location", common->GetLanguageDict()->GetString( "#str_location" ) );
 		}
 	}
 }
@@ -4834,7 +4834,7 @@ void idPlayer::UpdateFocus( void ) {
 			hud->SetStateString( "npc", focusCharacter->spawnArgs.GetString( "npc_name", "Joe" ) );
 #ifdef _D3XP
 			//Use to code to update the npc action string to fix bug 1159
-			hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_02036" ));
+			hud->SetStateString( "npc_action", common->GetLanguageDict()->GetString( "#str_npc_talk" ));
 #endif
 			hud->HandleNamedEvent( "showNPC" );
 		} else {

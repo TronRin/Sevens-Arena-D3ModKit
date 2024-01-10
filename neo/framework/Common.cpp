@@ -2271,7 +2271,7 @@ void idCommonLocal::InitRenderSystem( void ) {
 	}
 
 	renderSystem->InitOpenGL();
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04343" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading" ) );
 }
 
 /*
@@ -3047,7 +3047,7 @@ void idCommonLocal::InitGame( void ) {
 	// initialize string database right off so we can use it for loading messages
 	InitLanguageDict();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04344" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_events" ) );
 
 	// load the font, etc
 	console->LoadGraphics();
@@ -3055,10 +3055,9 @@ void idCommonLocal::InitGame( void ) {
 	// init journalling, etc
 	eventLoop->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04345" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_commands" ) );
 
 	// exec the startup scripts
-	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec editor.cfg\n" );
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec default.cfg\n" );
 
 	// skip the config file if "safe" is on the command line
@@ -3082,12 +3081,12 @@ void idCommonLocal::InitGame( void ) {
 	// init the user command input code
 	usercmdGen->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04346" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_sound" ) );
 
 	// start the sound system, but don't do any hardware operations yet
 	soundSystem->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04347" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_network" ) );
 
 	// init async network
 	idAsyncNetwork::Init();
@@ -3101,17 +3100,17 @@ void idCommonLocal::InitGame( void ) {
 		cvarSystem->SetCVarBool( "s_noSound", true );
 	} else {
 		// init OpenGL, which will open a window and connect sound and input hardware
-		PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04348" ) );
+		PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_render" ) );
 		InitRenderSystem();
 	}
 #endif
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04349" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_ui" ) );
 
 	// initialize the user interfaces
 	uiManager->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04350" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_game" ) );
 
 	// load the game dll
 	LoadGameDLL();
@@ -3120,7 +3119,7 @@ void idCommonLocal::InitGame( void ) {
 	if ( com_enableDebuggerServer.GetBool( ) )
 		DebuggerServerInit( );
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04351" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_menu" ) );
 
 	// init the session
 	session->Init();

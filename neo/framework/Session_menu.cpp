@@ -56,7 +56,7 @@ idSessionLocal::StartMainMenu
 ==============
 */
 void idSessionLocal::StartMenu( bool playIntro ) {
-	if ( guiActive == guiMainMenu ) {
+	if ( guiActive && guiActive == guiMainMenu ) {
 		return;
 	}
 
@@ -76,7 +76,7 @@ void idSessionLocal::StartMenu( bool playIntro ) {
 	SetGUI( guiMainMenu, NULL );
 	guiMainMenu->HandleNamedEvent( playIntro ? "playIntro" : "noIntro" );
 
-	guiMainMenu->SetStateString("game_list", common->GetLanguageDict()->GetString( "#str_07212" ));
+	guiMainMenu->SetStateString("game_list", common->GetLanguageDict()->GetString( "#str_gamelist_name" ));
 
 	console->Close();
 
@@ -382,6 +382,7 @@ bool idSessionLocal::HandleSaveGameMenuCommand( idCmdArgs &args, int &icmd ) {
 		if ( choice >= 0 && choice < loadGameList.Num() ) {
 			fileSystem->RemoveFile( va("savegames/%s.save", loadGameList[choice].c_str()) );
 			fileSystem->RemoveFile( va("savegames/%s.tga", loadGameList[choice].c_str()) );
+			fileSystem->RemoveFile( va("savegames/%s.jpg", loadGameList[choice].c_str()) );
 			fileSystem->RemoveFile( va("savegames/%s.txt", loadGameList[choice].c_str()) );
 			SetSaveGameGuiVars( );
 			guiActive->StateChanged( com_frameTime );
@@ -755,7 +756,7 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 							break;
 					}
 					if ( n_clients > maxclients ) {
-						if ( MessageBox( MSG_OKCANCEL, va( common->GetLanguageDict()->GetString( "#str_04315" ), dedicated ? maxclients : Min( 8, maxclients + 1 ) ), common->GetLanguageDict()->GetString( "#str_04316" ), true, "OK" )[ 0 ] == '\0' ) {
+						if ( MessageBox( MSG_OKCANCEL, va( common->GetLanguageDict()->GetString( "#str_internet_setting" ), dedicated ? maxclients : Min( 8, maxclients + 1 ) ), common->GetLanguageDict()->GetString( "#str_internet_maxplayer_limit" ), true, "OK" )[ 0 ] == '\0' ) {
 							continue;
 						}
 						cvarSystem->SetCVarInteger( "si_maxPlayers", dedicated ? maxclients : Min( 8, maxclients + 1 ) );
@@ -765,7 +766,7 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 
 			if ( !dedicated && !cvarSystem->GetCVarBool( "net_LANServer" ) && cvarSystem->GetCVarInteger("si_maxPlayers") > 4 ) {
 				// "Dedicated server mode is recommended for internet servers with more than 4 players. Continue in listen mode?"
-				if ( !MessageBox( MSG_YESNO, common->GetLanguageDict()->GetString ( "#str_00100625" ), common->GetLanguageDict()->GetString ( "#str_00100626" ), true, "yes" )[ 0 ] ) {
+				if ( !MessageBox( MSG_YESNO, common->GetLanguageDict()->GetString ( "#str_internet_players_perf" ), common->GetLanguageDict()->GetString ( "#str_internet_players_perf_title" ), true, "yes" )[ 0 ] ) {
 					continue;
 				}
 			}
@@ -855,10 +856,10 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 				cmdSystem->BufferCommandText( CMD_EXEC_NOW, "s_restart\n" );
 				if ( old != cvarSystem->GetCVarInteger( "s_numberOfSpeakers" ) ) {
 #ifdef _WIN32
-					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_04142" ), common->GetLanguageDict()->GetString( "#str_04141" ), true );
+					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_3daudio_speaker_error_win32" ), common->GetLanguageDict()->GetString( "#str_3daudio_speaker_init_error_win32" ), true );
 #else
 					// a message that doesn't mention the windows control panel
-					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_07230" ), common->GetLanguageDict()->GetString( "#str_04141" ), true );
+					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_3daudio_speaker_error_linux" ), common->GetLanguageDict()->GetString( "#str_3daudio_speaker_init_error" ), true );
 #endif
 				}
 			}
@@ -868,22 +869,22 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 					switch ( efx ) {
 					case 1:
 						// when you restart
-						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_04137" ), common->GetLanguageDict()->GetString( "#str_07231" ), true );
+						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_options_apply_notice" ), common->GetLanguageDict()->GetString( "#str_options_3daudio" ), true );
 						break;
 					case -1:
 						cvarSystem->SetCVarBool( "s_useEAXReverb", false );
 						// disabled
-						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_07233" ), common->GetLanguageDict()->GetString( "#str_07231" ), true );
+						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_options_3daudio_platform_null" ), common->GetLanguageDict()->GetString( "#str_options_3daudio" ), true );
 						break;
 					case 0:
 						cvarSystem->SetCVarBool( "s_useEAXReverb", false );
 						// not available
-						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_07232" ), common->GetLanguageDict()->GetString( "#str_07231" ), true );
+						MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_options_3daudio_not_found" ), common->GetLanguageDict()->GetString( "#str_options_3daudio" ), true );
 						break;
 					}
 				} else {
 					// when you restart
-					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_04137" ), common->GetLanguageDict()->GetString( "#str_07231" ), true );
+					MessageBox( MSG_OK, common->GetLanguageDict()->GetString( "#str_options_apply_notice" ), common->GetLanguageDict()->GetString( "#str_options_3daudio" ), true );
 				}
 			}
 			if ( !vcmd.Icmp( "drivar" ) ) {
@@ -1217,34 +1218,34 @@ const char* idSessionLocal::MessageBox( msgBoxType_t type, const char *message, 
 			guiMsg->SetStateString( "visible_right", "0" );
 			break;
 		case MSG_OK:
-			guiMsg->SetStateString( "mid", common->GetLanguageDict()->GetString( "#str_04339" ) );
+			guiMsg->SetStateString( "mid", common->GetLanguageDict()->GetString( "#str_messagebox_ok" ) );
 			guiMsg->SetStateString( "visible_mid", "1" );
 			guiMsg->SetStateString( "visible_left", "0" );
 			guiMsg->SetStateString( "visible_right", "0" );
 			break;
 		case MSG_ABORT:
-			guiMsg->SetStateString( "mid", common->GetLanguageDict()->GetString( "#str_04340" ) );
+			guiMsg->SetStateString( "mid", common->GetLanguageDict()->GetString( "#str_messagebox_cancel" ) );
 			guiMsg->SetStateString( "visible_mid", "1" );
 			guiMsg->SetStateString( "visible_left", "0" );
 			guiMsg->SetStateString( "visible_right", "0" );
 			break;
 		case MSG_OKCANCEL:
-			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_04339" ) );
-			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_04340" ) );
+			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_messagebox_ok" ) );
+			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_messagebox_cancel" ) );
 			guiMsg->SetStateString( "visible_mid", "0" );
 			guiMsg->SetStateString( "visible_left", "1" );
 			guiMsg->SetStateString( "visible_right", "1" );
 			break;
 		case MSG_YESNO:
-			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_04341" ) );
-			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_04342" ) );
+			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_messagebox_yes" ) );
+			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_messagebox_no" ) );
 			guiMsg->SetStateString( "visible_mid", "0" );
 			guiMsg->SetStateString( "visible_left", "1" );
 			guiMsg->SetStateString( "visible_right", "1" );
 			break;
 		case MSG_PROMPT:
-			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_04339" ) );
-			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_04340" ) );
+			guiMsg->SetStateString( "left", common->GetLanguageDict()->GetString( "#str_messagebox_ok" ) );
+			guiMsg->SetStateString( "right", common->GetLanguageDict()->GetString( "#str_messagebox_cancel" ) );
 			guiMsg->SetStateString( "visible_mid", "0" );
 			guiMsg->SetStateString( "visible_left", "1" );
 			guiMsg->SetStateString( "visible_right", "1" );
