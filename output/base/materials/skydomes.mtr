@@ -1,0 +1,49 @@
+material dome_clouds
+{
+	
+	noFragment
+	noshadows
+	nooverlays
+	forceOpaque
+
+	{
+		blend add
+		forceHighQuality 
+   		nopicmip 
+		map textures/skydomes/clouds
+	}	
+
+}
+
+material dome_day
+{
+	
+	noFragment
+	noshadows
+	nooverlays
+	forceOpaque
+
+	{
+		blend add
+		forceHighQuality 
+   		nopicmip 
+		map textures/skydomes/day
+	}	
+
+}
+
+material dome_sunset
+{
+	noFragment
+	noshadows
+	nooverlays
+	forceOpaque
+
+	{
+		blend add
+		forceHighQuality 
+   		nopicmip 
+		map textures/skydomes/sunset
+	}	
+
+}

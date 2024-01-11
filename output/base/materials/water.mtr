@@ -1,0 +1,11 @@
+// Clear water
+guide textures/water_source/water_clear basic_water("liquids/water_s.jpg", 0.5)
+
+// Toxin water
+guide textures/water_source/toxin basic_water("liquids/toxin_d.jpg", 0.3)
+
+// Neon water
+guide textures/water_source/neon basic_water("liquids/neon_d.jpg", 0.6)
+
+// Blood water
+guide textures/water_source/blood_1 basic_water("liquids/bloodwater_d.jpg", 0.8)

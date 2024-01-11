@@ -1,0 +1,14 @@
+/**********************************************************
+
+entity_mass.script
+
+Useful scripts related to water
+(getMass because it tells you entites are lighter in water)
+
+***********************************************************/
+
+
+// gets mass of a body for an entity
+scriptEvent float getMass( float body );
+// returns 1 if the entity is in or touching a liquid
+scriptEvent float isInLiquid();

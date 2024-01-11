@@ -1,0 +1,67 @@
+RadiantEditor Map Information File Version 2
+{
+	MapProperties
+	{
+		KeyValue { "EditTimeInSeconds" "931" } 
+		KeyValue { "LastCameraAngle" "-23.4 254.1 0" } 
+		KeyValue { "LastCameraPosition" "-7.36174 77.5889 83.4039" } 
+		KeyValue { "LastShaderClipboardMaterial" "textures/dev/dev_floor_cross" } 
+	}
+	MapEditTimings
+	{
+		TotalSecondsEdited { 931 }
+	}
+	Layers
+	{
+		Layer 0 { Default }
+	}
+	LayerProperties
+	{
+		ActiveLayer { 0 }
+		HiddenLayers {  }
+	}
+	LayerHierarchy
+	{
+		Layer 0 Parent { -1 }
+	}
+	NodeToLayerMapping
+	{
+		Node { 0 } // entity (world)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // entity (trigger_multiple_1)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // entity (info_portalsky_2)
+		Node { 0 } // entity (light_1)
+		Node { 0 } // entity (info_player_start_1)
+		Node { 0 } // entity (info_portalsky_1)
+		Node { 0 } // entity (func_static_1)
+		Node { 0 } // entity (func_static_2)
+	}
+	SelectionGroups
+	{
+	}
+	SelectionGroupNodeMapping
+	{
+	}
+	SelectionSets
+	{
+	}
+}

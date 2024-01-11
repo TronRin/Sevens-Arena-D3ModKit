@@ -1,0 +1,5 @@
+textures/nature/grassy_grass
+{
+	diffusemap	textures/nature/grass01_d.png
+	bumpmap	textures/nature/grass01_local.png
+}
