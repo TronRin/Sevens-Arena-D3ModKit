@@ -37,31 +37,28 @@ If you have questions concerning this license or the applicable additional terms
 
 /*
 ================
-MatBuild_f
+MatBuildDir_f
 ================
 */
-void MatBuildDir_f( const idCmdArgs& args ) {
-
-	if ( args.Argc() < 3 ) {
-		common->Warning( "Usage: matbuild <folder> <image type>\n" );
+void MatBuildDir_f( const idCmdArgs &args ) {
+	if ( args.Argc() < 2 ) {
+		common->Warning( "Usage: matbuilddir <folder>\n" );
 		return;
 	}
 
-	idFileList *fileList = fileSystem->ListFiles( va( "textures/%s", args.Argv(1) ), va( ".%s",args.Argv(2) ) );
+	idFileList *fileList = fileSystem->ListFiles( va( "textures/%s", args.Argv( 1 ) ), "" );
 	idStr mtrBuffer;
 
 	idStrList list = fileList->GetList();
 
-	for( int i = 0; i < fileList->GetNumFiles(); i++ ) {
+	mtrBuffer += va( "// NOTE:  THIS FILE IS WAS GENERATE BY THE ENGINE\n" );
+	mtrBuffer += va( "// MANUAL EDITING MAY BE REQUIERED\n" );
+
+	for ( int i = 0; i < fileList->GetNumFiles(); i++ ) {
 		idStr imagepath = list[i];
 
-		// Diffuse
-		if( strstr( imagepath.c_str(), "_d" ) ) {
-			continue;
-		}
-
 		// Normal maps
-		if( strstr( imagepath.c_str(), "_local" ) ) {
+		if ( strstr( imagepath.c_str(), "_local" ) ) {
 			continue;
 		}
 
@@ -69,26 +66,26 @@ void MatBuildDir_f( const idCmdArgs& args ) {
 		if ( strstr( imagepath.c_str(), "_spec" ) ) {
 			continue;
 		}
-		
+
 		// Height map
 		if ( strstr( imagepath.c_str(), "_h" ) ) {
 			continue;
 		}
 
 		imagepath = imagepath.StripFileExtension();
+		imagepath.Strip( "_d" );
 
-		mtrBuffer += va( "// NOTE:  THIS FILE IS WAS GENERATE BY THE ENGINE\n" );
-		mtrBuffer += va( "// MANUAL EDITING MAY BE REQUIERED\n" );
-		mtrBuffer += va( "textures/%s/%s\n", args.Argv(1), imagepath.c_str() );
-		mtrBuffer += va( "{\n");
-		mtrBuffer += va( "\tdiffusemap textures/%s/%s_d.%s\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
-		mtrBuffer += va( "\tbumpmap addnormals ( textures/%s/%s_local.%s, heightmap ( textures/%s/%s_h.%s, 4 ) )\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
-		mtrBuffer += va( "\tspecularmap textures/%s/%s_spec.%s\n", args.Argv(1), args.Argv(2), imagepath.c_str() );
+		mtrBuffer += va( "\n" );
+		mtrBuffer += va( "textures/%s/%s\n", args.Argv( 1 ), imagepath.c_str() );
+		mtrBuffer += va( "{\n" );
+		mtrBuffer += va( "\tdiffusemap textures/%s/%s_d\n", args.Argv( 1 ), imagepath.c_str() );
+		mtrBuffer += va( "\tbumpmap addnormals ( textures/%s/%s_local, heightmap ( textures/%s/%s_h, 4 ) )\n", args.Argv( 1 ), imagepath.c_str(),  args.Argv( 1 ), imagepath.c_str() );
+		mtrBuffer += va( "\tspecularmap textures/%s/%s_spec\n", args.Argv( 1 ), imagepath.c_str() );
 		mtrBuffer += va( "}\n" );
 	}
 
 	fileSystem->FreeFileList( fileList );
 
-	idStr mtrName = args.Argv(1);
-	fileSystem->WriteFile( va( "materials/%s.mtr", mtrName.c_str() ), mtrBuffer.c_str(), mtrBuffer.Length() );
+	idStr mtrName = args.Argv( 1 );
+	fileSystem->WriteFile( va( "materials/%s.mtr", mtrName.c_str() ), mtrBuffer.c_str(), mtrBuffer.Length(), "fs_basepath" );
 }
