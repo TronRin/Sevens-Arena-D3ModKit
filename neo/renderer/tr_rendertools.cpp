@@ -313,7 +313,7 @@ void RB_ShowOverdraw( void ) {
 		return;
 	}
 
-	material = declManager->FindMaterial( "textures/common/overdrawtest", false );
+	material = declManager->FindMaterial( "textures/editor/overdrawtest", false );
 	if ( material == NULL ) {
 		return;
 	}

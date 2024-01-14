@@ -41,8 +41,8 @@ If you have questions concerning this license or the applicable additional terms
 #define LAGO_IMG_HEIGHT			64
 #define LAGO_WIDTH				64
 #define LAGO_HEIGHT				44
-#define LAGO_MATERIAL			"textures/sfx/lagometer"
-#define LAGO_IMAGE				"textures/sfx/lagometer.tga"
+#define LAGO_MATERIAL			"textures/guis/lagometer"
+#define LAGO_IMAGE				"textures/guis/lagometer.tga"
 
 // if set to 1 the server sends the client PVS with snapshots and the client compares against what it sees
 #ifndef ASYNC_WRITE_PVS

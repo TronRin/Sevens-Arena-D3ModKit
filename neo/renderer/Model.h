@@ -124,7 +124,7 @@ a) Including a materials file which defines a shader for the first (decorated) L
 	nonsolid
 	noshadows
 b) Including a skin file aliasing the first (decorated) LOD to some existing shader and all others to;
-	"textures/common/nodraw"
+	"textures/editor/nodraw"
 ------------------------------------------------------------------------------------------------------
 The ai_showLevelOfDetail implementation is not pretty (passing the mesh/face count out via properties
 added to idRenderModel) but is sufficient for development/testing. Set MD5_ENABLE_LODS=1 for releases.
