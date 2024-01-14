@@ -1,6 +1,6 @@
-material dome_clouds
+models/skydomes/sky_day
 {
-	
+
 	noFragment
 	noshadows
 	nooverlays
@@ -10,40 +10,6 @@ material dome_clouds
 		blend add
 		forceHighQuality 
    		nopicmip 
-		map textures/skydomes/clouds
-	}	
-
-}
-
-material dome_day
-{
-	
-	noFragment
-	noshadows
-	nooverlays
-	forceOpaque
-
-	{
-		blend add
-		forceHighQuality 
-   		nopicmip 
-		map textures/skydomes/day
-	}	
-
-}
-
-material dome_sunset
-{
-	noFragment
-	noshadows
-	nooverlays
-	forceOpaque
-
-	{
-		blend add
-		forceHighQuality 
-   		nopicmip 
-		map textures/skydomes/sunset
-	}	
-
+		map textures/skydomes/sky_day.png
+	}
 }

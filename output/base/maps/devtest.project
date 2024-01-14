@@ -1,0 +1,92 @@
+RadiantEditor Map Information File Version 2
+{
+	MapProperties
+	{
+		KeyValue { "EditTimeInSeconds" "4292" } 
+		KeyValue { "LastCameraAngle" "-26.5701 281.922 0" } 
+		KeyValue { "LastCameraPosition" "730.752 3.518 126.069" } 
+		KeyValue { "LastShaderClipboardMaterial" "textures/brick/brick07" } 
+	}
+	MapEditTimings
+	{
+		TotalSecondsEdited { 4292 }
+	}
+	SelectionGroups
+	{
+		SelectionGroup 0 { "" }
+	}
+	SelectionGroupNodeMapping
+	{
+		Node { ( 0 25 ) ( 0 ) } // brush (Brush)
+		Node { ( 0 26 ) ( 0 ) } // brush (Brush)
+		Node { ( 0 27 ) ( 0 ) } // brush (Brush)
+		Node { ( 0 28 ) ( 0 ) } // brush (Brush)
+		Node { ( 0 29 ) ( 0 ) } // brush (Brush)
+		Node { ( 0 30 ) ( 0 ) } // brush (Brush)
+		Node { ( 5 ) ( 0 ) } // entity (info_portalsky_2)
+		Node { ( 6 ) ( 0 ) } // entity (func_static_2)
+	}
+	Layers
+	{
+		Layer 0 { Default }
+	}
+	LayerProperties
+	{
+		ActiveLayer { 0 }
+		HiddenLayers {  }
+	}
+	LayerHierarchy
+	{
+		Layer 0 Parent { -1 }
+	}
+	NodeToLayerMapping
+	{
+		Node { 0 } // entity (world)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // entity (info_player_start_1)
+		Node { 0 } // entity (light_1)
+		Node { 0 } // entity (light_2)
+		Node { 0 } // entity (light_3)
+		Node { 0 } // entity (info_portalsky_2)
+		Node { 0 } // entity (func_static_2)
+		Node { 0 } // entity (func_rotating_1)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // entity (func_bobbing_1)
+		Node { 0 } // brush (Brush)
+		Node { 0 } // entity (func_rotating_2)
+		Node { 0 } // brush (Brush)
+	}
+	SelectionSets
+	{
+	}
+}

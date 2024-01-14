@@ -1081,3 +1081,6 @@ install.log
 pak000
 pak000.pk4
 pak001.pk4
+
+# Radiant Editor
+*_autosave.project
