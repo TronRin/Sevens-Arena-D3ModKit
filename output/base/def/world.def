@@ -52,6 +52,7 @@ entityDef light
 	"editor_var start_off"		   "start toggled off"
 	"editor_var snd_broken"		   "sound shader to use if broken"
 	"editor_var mtr_broken"		   "material to use if broken"
+	"editor_var style"             "the ligth style, -1 means no ligth style at all"
 
 	"spawnclass"				   "idLight"
 	
@@ -61,6 +62,7 @@ entityDef light
 	"start_off"					   "0"
 	"count"						   "1"
 	"break"						   "0"
+	"style"						   "-1"
 }
 
 

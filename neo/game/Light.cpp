@@ -171,6 +171,12 @@ idLight::UpdateChangeableSpawnArgs
 */
 void idLight::UpdateChangeableSpawnArgs( const idDict *source ) {
 
+	lightStyleFrameTime = spawnArgs.GetInt( "light_frametime", "100" );
+	//lightStyle = spawnArgs.GetInt( "style", -1 );
+	lightStyle = spawnArgs.GetInt( "style", "-1" );
+
+	lightStyleState.Reset();
+
 	idEntity::UpdateChangeableSpawnArgs( source );
 
 	if ( source ) {
@@ -320,6 +326,9 @@ void idLight::Spawn( void ) {
 	// do the parsing the same way dmap and the editor do
 	gameEdit->ParseSpawnArgsToRenderLight( &spawnArgs, &renderLight );
 
+	// jmarshall: Store the original light radius for the light style.
+	lightStyleBase = renderLight.lightRadius;
+
 	// we need the origin and axis relative to the physics origin/axis
 	localLightOrigin = ( renderLight.origin - GetPhysics()->GetOrigin() ) * GetPhysics()->GetAxis().Transpose();
 	localLightAxis = renderLight.axis * GetPhysics()->GetAxis().Transpose();
@@ -369,6 +378,26 @@ void idLight::Spawn( void ) {
 	spawnArgs.GetString( "broken", "", brokenModel );
 	spawnArgs.GetBool( "break", "0", breakOnTrigger );
 	spawnArgs.GetInt( "count", "1", count );
+
+
+	lightStyleFrameTime = spawnArgs.GetInt( "light_frametime", "100" );
+	//lightStyle = spawnArgs.GetInt( "style", -1 );
+	lightStyle = spawnArgs.GetInt( "style", "-1");
+
+	int numStyles = spawnArgs.GetInt( "num_styles", "0" );
+	if ( numStyles > 0 ) {
+		for ( int i = 0; i < numStyles; i++ ) {
+			idStr style = spawnArgs.GetString( va( "light_style%d", i ) );
+			light_styles.Append( style );
+		}
+	} else {
+		// RB: it's not defined in entityDef light so use predefined Quake 1 table
+		for( int i = 0; i < 12; i++ )
+		{
+			idStr style = spawnArgs.GetString( va( "light_style%d", i ), predef_lightstyles[ i ] );
+			light_styles.Append( style );
+		}
+	}
 
 	triggercount = 0;
 
@@ -797,6 +826,100 @@ void idLight::Think( void ) {
 
 	RunPhysics();
 	Present();
+}
+
+/*
+================
+idLight::SharedThink
+================
+*/
+void idLight::SharedThink() {
+	float lightval;
+	int stringlength;
+	float offset;
+	int offsetwhole;
+	int otime;
+	int lastch, nextch;
+
+	if( lightStyle == -1 )
+	{
+		return;
+	}
+
+	if( lightStyle > light_styles.Num() )
+	{
+		//gameLocal.Error( "Light style out of range\n" );
+		return;
+	}
+
+	idStr dl_stylestring = light_styles[lightStyle];
+
+	otime = gameLocal.time - lightStyleState.dl_time;
+	stringlength = dl_stylestring.Length();
+
+	// it's been a long time since you were updated, lets assume a reset
+	if( otime > 2 * lightStyleFrameTime )
+	{
+		otime = 0;
+		lightStyleState.dl_frame = lightStyleState.dl_oldframe = 0;
+		lightStyleState.dl_backlerp = 0;
+	}
+
+	lightStyleState.dl_time = gameLocal.time;
+
+	offset = ( ( float )otime ) / lightStyleFrameTime;
+	offsetwhole = ( int )offset;
+
+	lightStyleState.dl_backlerp += offset;
+
+
+	if( lightStyleState.dl_backlerp > 1 )                      // we're moving on to the next frame
+	{
+		lightStyleState.dl_oldframe = lightStyleState.dl_oldframe + ( int )lightStyleState.dl_backlerp;
+		lightStyleState.dl_frame = lightStyleState.dl_oldframe + 1;
+		if( lightStyleState.dl_oldframe >= stringlength )
+		{
+			lightStyleState.dl_oldframe = ( lightStyleState.dl_oldframe ) % stringlength;
+			//if (cent->dl_oldframe < 3 && cent->dl_sound) { // < 3 so if an alarm comes back into the pvs it will only start a sound if it's going to be closely synced with the light, otherwise wait till the next cycle
+			//	engine->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, cgs.gameSounds[cent->dl_sound]);
+			//}
+		}
+
+		if( lightStyleState.dl_frame >= stringlength )
+		{
+			lightStyleState.dl_frame = ( lightStyleState.dl_frame ) % stringlength;
+		}
+
+		lightStyleState.dl_backlerp = lightStyleState.dl_backlerp - ( int )lightStyleState.dl_backlerp;
+	}
+
+
+	lastch = dl_stylestring[lightStyleState.dl_oldframe] - 'a';
+	nextch = dl_stylestring[lightStyleState.dl_frame] - 'a';
+
+	lightval = ( lastch * ( 1.0 - lightStyleState.dl_backlerp ) ) + ( nextch * lightStyleState.dl_backlerp );
+
+	// ydnar: dlight values go from 0-1.5ish
+#if 0
+	lightval = ( lightval * ( 1000.0f / 24.0f ) ) - 200.0f; // they want 'm' as the "middle" value as 300
+	lightval = max( 0.0f, lightval );
+	lightval = min( 1000.0f, lightval );
+#else
+	lightval *= 0.071429f;
+	lightval = Max( 0.0f, lightval );
+	lightval = Min( 20.0f, lightval );
+#endif
+
+	renderLight.lightRadius.x = lightval * lightStyleBase.x;
+	renderLight.lightRadius.y = lightval * lightStyleBase.y;
+	renderLight.lightRadius.z = lightval * lightStyleBase.z;
+
+
+	if( !gameLocal.isClient ) {
+		BecomeActive( TH_THINK );
+	}
+
+	PresentLightDefChange();
 }
 
 /*

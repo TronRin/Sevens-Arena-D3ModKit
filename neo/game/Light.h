@@ -44,6 +44,61 @@ extern const idEventDef EV_Light_GetLightParm;
 extern const idEventDef EV_Light_SetLightParm;
 extern const idEventDef EV_Light_SetLightParms;
 
+// RB: predefined Quake 1 light styles
+static char *predef_lightstyles[] = {
+	"m",
+	"mmnmmommommnonmmonqnmmo",
+	"abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba",
+	"mmmmmaaaaammmmmaaaaaabcdefgabcdefg",
+	"mamamamamama",
+	"jklmnopqrstuvwxyzyxwvutsrqponmlkj",
+	"nmonqnmomnmomomno",
+	"mmmaaaabcdefgmmmmaaaammmaamm",
+	"mmmaaammmaaammmabcdefaaaammmmabcdefmmmaaaa",
+	"aaaaaaaazzzzzzzz",
+	"mmamammmmammamamaaamammma",
+	"abcdefghijklmnopqrrqponmlkjihgfedcba"
+};
+
+static char *predef_lightstylesinfo[] = {
+	"Normal",
+	"Flicker A",
+	"Slow Strong Pulse",
+	"Candle A",
+	"Fast Strobe",
+	"Gentle Pulse",
+	"Flicker B",
+	"Candle B",
+	"Candle C",
+	"Slow Strobe",
+	"Fluorescent Flicker",
+	"Slow Pulse (no black)"
+};
+
+struct idLightStyleState_t {
+	idLightStyleState_t();
+
+	int				dl_frame;
+	float			dl_framef;
+	int				dl_oldframe;
+	int				dl_time;
+	float			dl_backlerp;
+
+	void			Reset();
+};
+
+ID_INLINE idLightStyleState_t::idLightStyleState_t() {
+	Reset();
+}
+
+ID_INLINE void idLightStyleState_t::Reset() {
+	dl_frame = 0;
+	dl_framef = 0;
+	dl_oldframe = 0;
+	dl_time = 0;
+	dl_backlerp = 0;
+}
+
 class idLight : public idEntity {
 public:
 	CLASS_PROTOTYPE( idLight );
@@ -61,7 +116,7 @@ public:
 	virtual void	FreeLightDef( void );
 	virtual bool	GetPhysicsToSoundTransform( idVec3 &origin, idMat3 &axis );
 	void			Present( void );
-
+	virtual void	SharedThink();
 	void			SaveState( idDict *args );
 	virtual void	SetColor( float red, float green, float blue );
 	virtual void	SetColor( const idVec3 &color );
@@ -113,6 +168,9 @@ private:
 	bool			breakOnTrigger;
 	int				count;
 	int				triggercount;
+	int				lightStyle;
+	int				lightStyleFrameTime;
+	idVec3			lightStyleBase;
 	idEntity *		lightParent;
 	idVec4			fadeFrom;
 	idVec4			fadeTo;
@@ -121,6 +179,9 @@ private:
 	bool			soundWasPlaying;
 
 private:
+	idList<idStr>	light_styles;
+	idLightStyleState_t lightStyleState;
+
 	void			PresentLightDefChange( void );
 	void			PresentModelDefChange( void );
 

@@ -229,8 +229,8 @@ public:
 
 	// animation
 	virtual bool			UpdateAnimationControllers( void );
-	bool					UpdateRenderEntity( renderEntity_s *renderEntity, const renderView_t *renderView );
-	static bool				ModelCallback( renderEntity_s *renderEntity, const renderView_t *renderView );
+	bool					UpdateRenderEntity( renderEntity_t *renderEntity, const renderView_t *renderView );
+	static bool				ModelCallback( renderEntity_t *renderEntity, const renderView_t *renderView );
 	virtual idAnimator *	GetAnimator( void );	// returns animator object used by this entity
 
 	// sound
@@ -413,6 +413,11 @@ private:
 
 	void					UpdatePVSAreas( void );
 
+	idVec3					GetOrigin( void );
+	float					DistanceTo( idEntity *ent );
+	float					DistanceTo( const idVec3 &pos ) const;
+	idStr					GetNextKey( const char *prefix, const char *lastMatch );
+
 	// events
 	void					Event_GetName( void );
 	void					Event_SetName( const char *name );
@@ -487,6 +492,14 @@ private:
 	void					Event_GuiNamedEvent(int guiNum, const char *event);
 #endif
 };
+
+ID_INLINE float idEntity::DistanceTo( idEntity *ent ) {
+	return DistanceTo( ent->GetPhysics()->GetOrigin() );
+}
+
+ID_INLINE float idEntity::DistanceTo( const idVec3 &pos ) const {
+	return ( pos - GetPhysics()->GetOrigin() ).LengthFast();
+}
 
 /*
 ===============================================================================
