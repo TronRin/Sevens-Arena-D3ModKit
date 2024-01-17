@@ -2590,6 +2590,8 @@ gameReturn_t idGameLocal::RunFrame(const usercmd_t* clientCmds) {
 		RunTimeGroup2();
 #endif
 
+		RunSharedThink();
+
 		// remove any entities that have stopped thinking
 		if ( numEntitiesToDeactivate ) {
 			idEntity *next_ent;
