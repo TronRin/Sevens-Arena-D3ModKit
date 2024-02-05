@@ -195,6 +195,7 @@ void SoundEditorRun( void ) {
 void SoundEditorShutdown( void ) {
 	delete g_SoundDialog;
 	g_SoundDialog = NULL;
+	com_editors &= ~EDITOR_SOUND;
 }
 
 void CDialogSound::OnActivate( UINT nState, CWnd *pWndOther, BOOL bMinimized ) {

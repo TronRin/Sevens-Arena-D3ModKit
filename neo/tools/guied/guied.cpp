@@ -58,6 +58,7 @@ GUIEditorShutdown
 ================
 */
 void GUIEditorShutdown( void ) {
+	com_editors &= ~EDITOR_GUI;
 }
 
 /*

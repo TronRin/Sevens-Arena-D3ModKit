@@ -199,6 +199,7 @@ ParticleEditorShutdown
 void ParticleEditorShutdown( void ) {
 	delete g_ParticleDialog;
 	g_ParticleDialog = NULL;
+	com_editors &= ~EDITOR_PARTICLE;
 }
 
 

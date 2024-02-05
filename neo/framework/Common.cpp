@@ -2296,7 +2296,7 @@ idCommonLocal::InitSIMD
 =================
 */
 void idCommonLocal::InitSIMD( void ) {
-	idSIMD::InitProcessor( "doom", com_forceGenericSIMD.GetBool() );
+	idSIMD::InitProcessor( "engine", com_forceGenericSIMD.GetBool() );
 	com_forceGenericSIMD.ClearModified();
 }
 
