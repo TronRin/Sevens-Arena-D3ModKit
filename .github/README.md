@@ -42,6 +42,8 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
     - Restore Command List windows.
   - Added Background music support for maps.
   - Added More Console Information.
+  - Quake 1 Style ligth styles.
+  - Ambient Music for maps.
 - The Dark Mod / Hardcorps
   - Re-implemented water system
 - Original Changes:
@@ -59,6 +61,10 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Refactored MFC Tools
 
 See [Changelog](./CHANGELOG.md) for the original dhewn3 changelog.
+
+## Configuration
+
+See [CONFIGURATION.md](./CONFIGURATION.md) for dhewm3-specific configuration, especially for using gamepads.
 
 ## Compiling
 
