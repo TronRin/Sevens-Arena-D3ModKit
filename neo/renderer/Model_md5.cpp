@@ -32,9 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "renderer/Model_local.h"
 
-#include "idlib/ScopedAllocator.hpp"
-using dg::ScopedAllocator;
-
 static const char *MD5_SnapshotName = "_MD5_Snapshot_";
 
 /***********************************************************************
@@ -441,8 +438,7 @@ void idMD5Mesh::ParseMesh(idLexer &parser, int numJoints, const idJointMat *join
 		verts = (idDrawVert*)Mem_Alloc16(allocaSize);
 	}
 	#else
-	ScopedAllocator sa;
-	idDrawVert *verts = sa.AllocPODs<idDrawVert>(texCoords.Num());
+	idDrawVert* verts = (idDrawVert*)_alloca16(texCoords.Num() * sizeof(idDrawVert));
 	#endif
 
 	for ( i = 0; i < texCoords.Num(); i++ ) {
@@ -669,8 +665,7 @@ idMD5Mesh::CalcBounds
 */
 idBounds idMD5Mesh::CalcBounds( const idJointMat *entJoints ) {
 	idBounds	bounds;
-	ScopedAllocator sa;
-	idDrawVert *verts = sa.AllocPODs<idDrawVert>(texCoords.Num());
+	idDrawVert *verts = (idDrawVert *) _alloca16( texCoords.Num() * sizeof( idDrawVert ) );
 
 	TransformVerts( verts, entJoints );
 
