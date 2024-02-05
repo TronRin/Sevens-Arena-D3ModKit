@@ -2449,6 +2449,18 @@ void idGameLocal::RunTimeGroup2() {
 
 /*
 ================
+idGameLocal::RunSharedThink
+================
+*/
+void idGameLocal::RunSharedThink( void ) {
+	idEntity *ent;
+	for ( ent = activeEntities.Next(); ent != NULL; ent = ent->activeNode.Next() ) {
+		ent->SharedThink();
+	}
+}
+
+/*
+================
 idGameLocal::RunFrame
 ================
 */
