@@ -48,6 +48,23 @@ static int MakePowerOfTwo( int num ) {
 #endif
 
 const int IMPULSE_DELAY = 150;
+
+const char *blurxMaterial[5] = {
+	"textures/fsfx/blurx64",
+	"textures/fsfx/blurx128",
+	"textures/fsfx/blurx256",
+	"textures/fsfx/blurx512",
+	"textures/fsfx/blurx1024"
+};
+
+const char *bluryMaterial[5] = {
+	"textures/fsfx/blury32",
+	"textures/fsfx/blury64",
+	"textures/fsfx/blury128",
+	"textures/fsfx/blury256",
+	"textures/fsfx/blury512"
+};
+
 /*
 ==============
 idPlayerView::idPlayerView
@@ -464,7 +481,7 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 #endif
 
 	// draw screen blobs
-	if ( !pm_thirdPerson.GetBool() && !g_skipViewEffects.GetBool() ) {
+	if ( !g_skipViewEffects.GetBool() ) {
 		for ( int i = 0 ; i < MAX_SCREEN_BLOBS ; i++ ) {
 			screenBlob_t	*blob = &screenBlobs[i];
 			if ( blob->finishTime <= gameLocal.slow.time ) {
@@ -482,7 +499,6 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 				renderSystem->DrawStretchPic( blob->x, blob->y, blob->w, blob->h,blob->s1, blob->t1, blob->s2, blob->t2, blob->material );
 			}
 		}
-		player->DrawHUD( hud );
 
 		// armor impulse feedback
 		float	armorPulse = ( gameLocal.fast.time - player->lastArmorPulse ) / 250.0f;
@@ -621,6 +637,11 @@ void idPlayerView::RenderPlayerView( idUserInterface *hud ) {
 	SingleView( hud, view );
 	ScreenFade();
 
+	/* Render the hud on top of everything */
+	if ( !g_skipViewEffects.GetBool() && !player->spectating ) {
+		player->DrawHUD( hud );
+	}
+
 	if ( net_clientLagOMeter.GetBool() && lagoMaterial && gameLocal.isClient ) {
 		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
 		renderSystem->DrawStretchPic( 10.0f, 380.0f, 64.0f, 64.0f, 0.0f, 0.0f, 1.0f, 1.0f, lagoMaterial );
@@ -652,10 +673,6 @@ void idPlayerView::FreeWarp( int id ) {
 		return;
 	}
 }
-
-
-
-
 
 /*
 ==================
@@ -738,10 +755,6 @@ void FxFader::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( msec );
 }
 
-
-
-
-
 /*
 ==================
 FullscreenFX_Helltime::Save
@@ -759,7 +772,6 @@ FullscreenFX_Helltime::Restore
 void FullscreenFX::Restore( idRestoreGame *savefile ) {
 	fader.Restore( savefile );
 }
-
 
 /*
 ==================
@@ -907,10 +919,6 @@ void FullscreenFX_Helltime::Restore( idRestoreGame *savefile ) {
 	clearAccumBuffer = true;
 }
 
-
-
-
-
 /*
 ==================
 FullscreenFX_Multiplayer::Initialize
@@ -1041,10 +1049,6 @@ void FullscreenFX_Multiplayer::Restore( idRestoreGame *savefile ) {
 	// latch the clear flag
 	clearAccumBuffer = true;
 }
-
-
-
-
 
 /*
 ==================
@@ -1203,10 +1207,6 @@ void FullscreenFX_Warp::HighQuality() {
 	}
 }
 
-
-
-
-
 /*
 ==================
 FullscreenFX_EnviroSuit::Initialize
@@ -1242,10 +1242,6 @@ void FullscreenFX_EnviroSuit::HighQuality() {
 	renderSystem->SetColor4( 1, 1, 1, 1 );
 	renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, material );
 }
-
-
-
-
 
 /*
 ==================
@@ -1322,9 +1318,6 @@ void FullscreenFX_DoubleVision::HighQuality() {
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale.y, (1-shift) * shiftScale.x, 0, material );
 }
 
-
-
-
 /*
 ==================
 FullscreenFX_InfluenceVision::Initialize
@@ -1384,21 +1377,34 @@ void FullscreenFX_InfluenceVision::HighQuality() {
 	}
 }
 
-
-
-
 /*
 ==================
 FullscreenFX_Bloom::Initialize
 ==================
 */
 void FullscreenFX_Bloom::Initialize() {
-	drawMaterial		= declManager->FindMaterial( "textures/smf/bloom2/draw" );
-	initMaterial		= declManager->FindMaterial( "textures/smf/bloom2/init" );
-	currentMaterial		= declManager->FindMaterial( "textures/smf/bloom2/currentMaterial" );
+	//initWeights				= false;
+	shiftSensitivityDelay		= 0;
+	screenHeight = screenWidth	= 0;
 
-	currentIntensity	= 0;
-	targetIntensity		= 0;
+	// This condition makes sure that, the 2 loops inside run once only when resolution changes or map starts.
+	if( screenHeight != renderSystem->GetScreenHeight() || screenWidth !=renderSystem->GetScreenWidth() ) {
+		int width = 1, height = 1;	
+
+		screenHeight	= renderSystem->GetScreenHeight();
+		screenWidth		= renderSystem->GetScreenWidth();
+
+		while( width < screenWidth ) {
+			width <<= 1;
+		}
+	
+		while( height < screenHeight ) {
+			height <<= 1;
+		}
+
+		shiftScale_x = screenWidth  / (float)width;
+		shiftScale_y = screenHeight / (float)height;
+	}
 }
 
 /*
@@ -1407,12 +1413,24 @@ FullscreenFX_Bloom::Active
 ==================
 */
 bool FullscreenFX_Bloom::Active() {
-	idPlayer *player;
 
-	player = fxman->GetPlayer();
-
-	if ( player && player->bloomEnabled ) {
+	int bloomType = r_bloom.GetInteger();
+	if ( bloomType != 0 ) {
 		return true;
+	}
+
+	// A global parameter (0) that is used by fake bloom effects to hide/lessen them etc - by Dram
+
+	// if the brightness of the hazes is not 1
+	if ( gameLocal.globalShaderParms[0] != 1 ) {
+		gameLocal.globalShaderParms[0] = 1; // set it to 1
+	}
+	
+	// A global parameter (1) that is used to scale the brightness of light rays if bloom is on - by Dram
+
+	// if the brightness scale of the light rays is not 1
+	if ( gameLocal.globalShaderParms[1] != 1 ) {
+		gameLocal.globalShaderParms[1] = 1; // set it to 1
 	}
 
 	return false;
@@ -1424,74 +1442,179 @@ FullscreenFX_Bloom::HighQuality
 ==================
 */
 void FullscreenFX_Bloom::HighQuality() {
-	float shift, delta;
-	idVec2 shiftScale;
-	idPlayer *player;
-	int num;
+	float blur_str, blur_cut, src_str, src_cut;
 
-	shift = 1;
-	player = fxman->GetPlayer();
-	shiftScale = fxman->GetShiftScale();
-	renderSystem->SetColor4( 1, 1, 1, 1 );
+	/* Render bloom */
+	int bloomType = r_bloom.GetInteger();
 
-	// if intensity value is different, start the blend
-	targetIntensity = g_testBloomIntensity.GetFloat();
+	// =====================================================
+	// LightRay - by Dram
+	// =====================================================
 
-	if ( player && player->bloomEnabled ) {
-		targetIntensity = player->bloomIntensity;
+	// set up the light haze brightness - by Dram
+	float lightHazeBrightness = 1 - ( r_bloom_blur_mult.GetFloat() - 0.5 ); // get the blur mult and derive a haze brightness
+
+	// if the haze brightness is lower then 0.2
+	if ( lightHazeBrightness < 0.2f ) {
+		lightHazeBrightness = 0.2f; // set it to 0.2
+	} else if ( lightHazeBrightness > 1 ) {// if the haze brightness is higher then 1
+		lightHazeBrightness = 1; // set it to 1
 	}
 
-	delta = targetIntensity - currentIntensity;
-	float step = 0.001f;
-
-	if ( step < fabs( delta ) ) {
-		if ( delta < 0 ) {
-			step = -step;
-		}
-
-		currentIntensity += step;
+	// if the haze global parameter other then equals the light haze brightness
+	if ( gameLocal.globalShaderParms[0] != lightHazeBrightness ) {
+		gameLocal.globalShaderParms[0] = lightHazeBrightness; // set it to light haze brightness
 	}
 
-	// draw the blends
-	num = g_testBloomNumPasses.GetInteger();
+	// if the brightness scale of the light rays is not r_bloom_lightRayScale
+	if ( gameLocal.globalShaderParms[1] != r_bloom_lightRayScale.GetFloat() ) {
+		gameLocal.globalShaderParms[1] = r_bloom_lightRayScale.GetFloat(); // set it to r_bloom_lightRayScale
+	}
 
-	for ( int i = 0; i < num; i++ ) {
-		float s1 = 0, t1 = 0, s2 = 1, t2 = 1;
-		float alpha;
+	renderSystem->CaptureRenderToImage( "_currentRender" );
 
-		// do the center scale
-		s1 -= 0.5;
-		s1 *= shift;
-		s1 += 0.5;
-		s1 *= shiftScale.x;
+	//------------------------------------------------
+	// Maha_x's Shift Sensitivity - Modified for compatibilty by Clone JCDenton
+	//------------------------------------------------
 
-		t1 -= 0.5;
-		t1 *= shift;
-		t1 += 0.5;
-		t1 *= shiftScale.y;
+	bool disableShiftSensitivity = ( r_bloom_shiftSensitivity_delay.GetInteger() == -1 );
+	if ( !disableShiftSensitivity && ( bloomType == 1 || bloomType == 2 ) && gameLocal.time > shiftSensitivityDelay ) { 
+		renderSystem->CropRenderSize( 2, 2, true, true );
+		shiftSensitivityDelay = gameLocal.time + r_bloom_shiftSensitivity_delay.GetInteger(); 
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/AFX/AFXweight" ) );
+		renderSystem->CaptureRenderToImage( "_afxweight" );
+		renderSystem->UnCrop();
+	}
 
-		s2 -= 0.5;
-		s2 *= shift;
-		s2 += 0.5;
-		s2 *= shiftScale.x;
+	//------------------------------------------------
 
-		t2 -= 0.5;
-		t2 *= shift;
-		t2 += 0.5;
-		t2 *= shiftScale.y;
+	//-------------------------------------------------
+	// User configurable buffer size - By Clone JC Denton
+	//-------------------------------------------------
 
-		// draw it
-		if ( num == 1 ) {
-			alpha = 1;
+	int bufferMult = 5 - r_bloom_buffer.GetInteger();
+	int blurMtrIndex;
+	if ( bufferMult < 5 ) {
+		if ( bufferMult <= 0 ) {
+			bufferMult = 1;
+			blurMtrIndex = 4;
+		} else {
+			blurMtrIndex = 4 - bufferMult;
+			bufferMult = 1<<bufferMult;
 		}
-		else {
-			alpha = 1 - (float)i / ( num - 1 );
+		renderSystem->CropRenderSize( 1024 / bufferMult, 512 / bufferMult, true, true );
+	} else {
+		renderSystem->CropRenderSize( 512, 256, true, true );
+		blurMtrIndex = 3;
+	}
+
+	//-------------------------------------------------
+	//renderSystem->CropRenderSize( 256, 128, true, true );
+
+	renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale_y, shiftScale_x, 0, declManager->FindMaterial( "_currentRender" ) );
+
+	int bloomContrast = r_bloom_contrast.GetInteger();
+
+	if ( bloomType == 2 && bloomContrast > 0 ) {
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );
+
+		if ( !disableShiftSensitivity ) {
+			renderSystem->SetColor4( r_bloom_contrast_mult.GetFloat(), r_bloom_contrast_min.GetFloat(), 1.0f, 1.0f );
+		} else {
+			renderSystem->SetColor4( r_bloom_contrast_mult.GetFloat(), r_bloom_contrast_mult.GetFloat(), 1.0f, 1.0f );
+		}
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/AFX/AFXmodulate" ) );
+	} else if( bloomType > 2 ) {
+		blur_str = r_bloom_blur_mult.GetFloat();
+		blur_cut = blur_str - (int)blur_str;
+		src_str = r_bloom_src_mult.GetFloat();
+		src_cut = src_str - (int)src_str;
+
+		if( bloomContrast == 1) {
+			renderSystem->CaptureRenderToImage( "_fsfx_input" );
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/blend_modulate_2x" ) );
+		} else if( bloomContrast == 2 ) {
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/invert_dst" ) );
+
+			renderSystem->SetColor4( 0.1f, 0.1f, 0.1f, 1.0f);
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/add_color" ) );
+
+			renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f);
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/invert_dst" ) );
+
+			renderSystem->CaptureRenderToImage( "_fsfx_input" );
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/blend_add" ) );
+		}
+	}
+
+	if ( bloomType == 1 && bloomContrast > 0 ) {
+		//Unlike other bloomType, we are using the blurred image for obtaining bloom contrast.
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( blurxMaterial[blurMtrIndex] ) );
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( bluryMaterial[blurMtrIndex] ) );
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );	
+
+		if( !disableShiftSensitivity ) {
+			renderSystem->SetColor4(r_bloom_contrast_mult.GetFloat(), r_bloom_contrast_min.GetFloat(), 1, 1);
+		} else {
+			renderSystem->SetColor4(r_bloom_contrast_mult.GetFloat(), r_bloom_contrast_mult.GetFloat(), 1, 1);
+		}
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/AFX/AFXmodulate" ) );
+	}
+
+	for ( int i=0; i < r_bloom_blurIterations.GetInteger(); i++ ) {
+		// Two pass gaussian filter					
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( blurxMaterial[blurMtrIndex] ) );
+		renderSystem->CaptureRenderToImage( "_fsfx_input" );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( bluryMaterial[blurMtrIndex] ) );
+	}
+
+	if ( bloomType > 2 ) {
+		if ( ( blur_str == 0.0f ) || ( blur_cut > 0.0f ) ) {
+			renderSystem->SetColor4( 0, 0, 0, 1.0f - blur_cut );
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 1, 1, declManager->FindMaterial( "_white" ) );
+			blur_str -= blur_cut;
+		} else {
+			blur_str -= 1.0f;
+		} 
+
+		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+
+		if ( blur_str >= 1.0f ) {									// two new lines, minor fix by Clone JCD	
+			renderSystem->CaptureRenderToImage( "_fsfx_input" );	// Need to capture the current image before drawing blend_add
+			while ( blur_str >= 1.0f ) {
+				renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/blend_add" ) );
+				blur_str -= 1.0f;
+			}
+		}
+	}
+
+	renderSystem->CaptureRenderToImage( "_fsfx_input" );
+
+	renderSystem->UnCrop();
+
+	if ( bloomType <= 2 ) {
+		renderSystem->SetColor4( r_bloom_blur_mult.GetFloat(), r_bloom_src_mult.GetFloat(), 1.0f, 1.0f );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/AFX/AFXadd" ) );
+	} else {
+		if ( ( src_str == 0.0f ) || ( src_cut > 0.0f ) ) {
+			renderSystem->SetColor4( src_cut, src_cut, src_cut, 1.0f);
+			src_str -= src_cut;
+		} else {
+			src_str -= 1.0f;
 		}
 
-		renderSystem->SetColor4( alpha, alpha, alpha, 1 );
-		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, s1, t2, s2, t1, drawMaterial );
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale_y, shiftScale_x, 0, declManager->FindMaterial( "_currentRender" ) );
 
-		shift += currentIntensity;
+		renderSystem->SetColor4( 1.0f, 1.0f, 1.0f, 1.0f );
+		while ( src_str >= 1.0f ) {
+			renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale_y, shiftScale_x, 0, declManager->FindMaterial( "textures/fsfx/current_blend_add" ) );
+			src_str -= 1.0f;
+		}
+		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, declManager->FindMaterial( "textures/fsfx/blend_add" ) );
 	}
 }
 
@@ -1502,8 +1625,6 @@ FullscreenFX_Bloom::Save
 */
 void FullscreenFX_Bloom::Save( idSaveGame *savefile ) {
 	FullscreenFX::Save( savefile );
-	savefile->WriteFloat( currentIntensity );
-	savefile->WriteFloat( targetIntensity );
 }
 
 /*
@@ -1513,14 +1634,7 @@ FullscreenFX_Bloom::Restore
 */
 void FullscreenFX_Bloom::Restore( idRestoreGame *savefile ) {
 	FullscreenFX::Restore( savefile );
-	savefile->ReadFloat( currentIntensity );
-	savefile->ReadFloat( targetIntensity );
 }
-
-
-
-
-
 
 /*
 ==================
@@ -1778,7 +1892,4 @@ void FullscreenFXManager::Process( const renderView_t *view ) {
 		renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 1, 1, 0.f, blendBackMaterial );
 	}
 }
-
-
-
 #endif

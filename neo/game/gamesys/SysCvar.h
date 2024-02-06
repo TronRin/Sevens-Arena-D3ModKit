@@ -306,6 +306,17 @@ extern idCVar g_CTFArrows;
 
 #endif
 
+extern idCVar	r_bloom;
+extern idCVar	r_bloom_blur_mult;
+extern idCVar	r_bloom_src_mult;
+extern idCVar   r_bloom_contrast;
+extern idCVar   r_bloom_contrast_mult;				// clone_jc_denton
+extern idCVar   r_bloom_contrast_min;				// clone_jc_denton
+extern idCVar   r_bloom_shiftSensitivity_delay;		// clone_jc_denton
+extern idCVar   r_bloom_blurIterations;				// clone_jc_denton
+extern idCVar   r_bloom_buffer;						// clone_jc_denton
+extern idCVar   r_bloom_lightRayScale;
+
 extern idCVar	net_clientSelfSmoothing;
 extern idCVar	net_clientLagOMeter;
 

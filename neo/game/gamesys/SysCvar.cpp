@@ -184,10 +184,6 @@ idCVar g_testMultiplayerFX(			"g_testMultiplayerFX",		"-1",			CVAR_GAME | CVAR_I
 idCVar g_lowresFullscreenFX(		"g_lowresFullscreenFX",		"0",			CVAR_GAME | CVAR_BOOL, "enable lores mode for fx" );
 
 idCVar g_moveableDamageScale(		"g_moveableDamageScale",	"0.1",			CVAR_GAME | CVAR_FLOAT, "scales damage wrt mass of object in multiplayer" );
-
-idCVar g_testBloomSpeed(			"g_testBloomSpeed",			"1",			CVAR_GAME | CVAR_FLOAT, "" );
-idCVar g_testBloomIntensity(		"g_testBloomIntensity",		"-0.01",		CVAR_GAME | CVAR_FLOAT, "" );
-idCVar g_testBloomNumPasses(		"g_testBloomNumPasses",		"30",			CVAR_GAME | CVAR_INTEGER, "" );
 #endif
 
 idCVar ai_debugScript(				"ai_debugScript",			"-1",			CVAR_GAME | CVAR_INTEGER, "displays script calls for the specified monster entity number" );
@@ -418,6 +414,17 @@ idCVar g_grabberRandomMotion(		"g_grabberRandomMotion",	"1",			CVAR_GAME | CVAR_
 idCVar g_grabberHardStop(			"g_grabberHardStop",		"1",			CVAR_GAME | CVAR_BOOL | CVAR_CHEAT, "hard stops object if too fast" );
 idCVar g_grabberDamping(			"g_grabberDamping",			"0.5",			CVAR_GAME | CVAR_FLOAT | CVAR_CHEAT, "damping of grabber" );
 #endif
+
+idCVar r_bloom(							"r_bloom",							"1",		CVAR_GAME | CVAR_INTEGER, "activates bloom with gaussian blur ( Requires DX9 compliant Hardware ). \n 1: Bloom with shift sensitivity and variable blurring \n 2: Bloom with shift sensitivity \n 3: Normal Bloom " );
+idCVar r_bloom_blur_mult(				"r_bloom_blur_mult",				"0.5",		CVAR_GAME | CVAR_FLOAT, "blurred image multiplier for bloom" );
+idCVar r_bloom_src_mult(				"r_bloom_src_mult",					"1.0",		CVAR_GAME | CVAR_FLOAT, "source image multiplier for bloom" );
+idCVar r_bloom_contrast(				"r_bloom_contrast",					"1",		CVAR_GAME | CVAR_INTEGER, "contrast type. 0: no contrast  1: modulate 2x  2: minus 0.1" );
+idCVar r_bloom_buffer(					"r_bloom_buffer",					"4",		CVAR_GAME | CVAR_INTEGER, "Bloom buffer image size. \n 1:64x32, 2:128x64, 3:256x128, 4:512x256(default), 5:1024x512" ); // New by Clone JCD
+idCVar r_bloom_contrast_mult(			"r_bloom_contrast_mult",			"1.55",		CVAR_GAME | CVAR_FLOAT, "Contrast multiplier. \nWorks only with bloom type 1 and bloom type 2." );
+idCVar r_bloom_contrast_min(			"r_bloom_contrast_min",				"0.1",		CVAR_GAME | CVAR_FLOAT, "This is the minimum contrast value when (shift sensitivity based)bloom drops; works only for bloom type 1 and bloom type 2. \nWhen shift sensitivty is turned on bloom contrast varies from (constrast_image x r_bloom_contrast_min) to (constrast_image x r_bloom_contrast_mult)." );
+idCVar r_bloom_shiftSensitivity_delay(	"r_bloom_shiftSensitivity_delay",	"130",		CVAR_GAME | CVAR_INTEGER, "Delay in millisecs for shifting the bloom sensitivity. \n0 : No shift sensitivity delay, sensitvity shifts immediately. \n-1 : Disables sensitivity shifting" ); // New by Clone JCD
+idCVar r_bloom_blurIterations(			"r_bloom_blurIterations",			"1",		CVAR_GAME | CVAR_INTEGER, "Blur iterations for bloom" ); // New by Clone JCD
+idCVar r_bloom_lightRayScale(			"r_bloom_lightRayScale",			"1.3",		CVAR_GAME | CVAR_FLOAT | CVAR_ARCHIVE, "Brightness scale of light ray effects when bloom is active" );
 
 idCVar net_serverDownload(			"net_serverDownload",		"0",			CVAR_GAME | CVAR_INTEGER | CVAR_ARCHIVE, "enable server download redirects. 0: off 1: redirect to si_serverURL 2: use builtin download. see net_serverDl cvars for configuration" );
 idCVar net_serverDlBaseURL(			"net_serverDlBaseURL",		"",				CVAR_GAME | CVAR_ARCHIVE, "base URL for the download redirection" );

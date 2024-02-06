@@ -95,8 +95,6 @@ const idEventDef EV_Player_IsPowerupActive( "isPowerupActive", "d", 'd' );
 const idEventDef EV_Player_WeaponAvailable( "weaponAvailable", "s", 'd');
 const idEventDef EV_Player_StartWarp( "startWarp" );
 const idEventDef EV_Player_StopHelltime( "stopHelltime", "d" );
-const idEventDef EV_Player_ToggleBloom( "toggleBloom", "d" );
-const idEventDef EV_Player_SetBloomParms( "setBloomParms", "ff" );
 #endif
 
 CLASS_DECLARATION( idActor, idPlayer )
@@ -123,8 +121,6 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_IsPowerupActive,		idPlayer::Event_IsPowerupActive )
 	EVENT( EV_Player_StartWarp,				idPlayer::Event_StartWarp )
 	EVENT( EV_Player_StopHelltime,			idPlayer::Event_StopHelltime )
-	EVENT( EV_Player_ToggleBloom,			idPlayer::Event_ToggleBloom )
-	EVENT( EV_Player_SetBloomParms,			idPlayer::Event_SetBloomParms )
 #endif
 END_CLASS
 
@@ -1306,9 +1302,6 @@ void idPlayer::Init( void ) {
 	lastHealthRechargeTime	= 0;
 	rechargeSpeed			= 500;
 	new_g_damageScale		= 1.f;
-	bloomEnabled			= false;
-	bloomSpeed				= 1.f;
-	bloomIntensity			= -0.01f;
 	inventory.InitRechargeAmmo(this);
 	hudPowerup				= -1;
 	lastHudPowerup			= -1;
@@ -1698,12 +1691,6 @@ void idPlayer::Spawn( void ) {
 		kv = spawnArgs.MatchPrefix( "weapontoggle", kv );
 	}
 #endif
-
-#ifdef _D3XP
-	bloomEnabled			= false;
-	bloomSpeed				= 1;
-	bloomIntensity			= -0.01f;
-#endif
 }
 
 /*
@@ -1948,10 +1935,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( lastHealthRechargeTime );
 	savefile->WriteInt( rechargeSpeed );
 	savefile->WriteFloat( new_g_damageScale );
-
-	savefile->WriteBool( bloomEnabled );
-	savefile->WriteFloat( bloomSpeed );
-	savefile->WriteFloat( bloomIntensity );
 #endif
 }
 
@@ -2225,10 +2208,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( lastHealthRechargeTime );
 	savefile->ReadInt( rechargeSpeed );
 	savefile->ReadFloat( new_g_damageScale );
-
-	savefile->ReadBool( bloomEnabled );
-	savefile->ReadFloat( bloomSpeed );
-	savefile->ReadFloat( bloomIntensity );
 #endif
 
 	// DG: workaround for lingering messages that are shown forever after loading a savegame
@@ -6691,30 +6670,6 @@ void idPlayer::StopHelltime( bool quick ) {
 	if ( quick ) {
 		gameLocal.QuickSlowmoReset();
 	}
-}
-
-/*
-=================
-idPlayer::Event_ToggleBloom
-=================
-*/
-void idPlayer::Event_ToggleBloom( int on ) {
-	if ( on ) {
-		bloomEnabled = true;
-	}
-	else {
-		bloomEnabled = false;
-	}
-}
-
-/*
-=================
-idPlayer::Event_SetBloomParms
-=================
-*/
-void idPlayer::Event_SetBloomParms( float speed, float intensity ) {
-	bloomSpeed = speed;
-	bloomIntensity = intensity;
 }
 
 /*

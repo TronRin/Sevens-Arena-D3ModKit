@@ -363,10 +363,6 @@ public:
 	int						rechargeSpeed;
 
 	float					new_g_damageScale;
-
-	bool					bloomEnabled;
-	float					bloomSpeed;
-	float					bloomIntensity;
 #endif
 
 public:
@@ -754,8 +750,6 @@ private:
 	void					Event_IsPowerupActive( int powerup );
 	void					Event_StartWarp();
 	void					Event_StopHelltime( int mode );
-	void					Event_ToggleBloom( int on );
-	void					Event_SetBloomParms( float speed, float intensity );
 #endif
 };
 

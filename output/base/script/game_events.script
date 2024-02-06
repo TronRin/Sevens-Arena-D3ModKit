@@ -417,8 +417,6 @@ scriptEvent float	isPowerupActive( float powerup );
 scriptEvent float	weaponAvailable( string name );
 scriptEvent void	startWarp();
 scriptEvent void	stopHelltime( float mode );
-scriptEvent void	toggleBloom( float on );
-scriptEvent void	setBloomParms( float speed, float intensity );
 scriptEvent void	startWeaponSmoke();
 scriptEvent void	stopWeaponSmoke();
 scriptEvent void	startWeaponParticle( string name );

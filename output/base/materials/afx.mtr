@@ -1,0 +1,68 @@
+//################ Maha_x's materials ##########################
+//	Modified by Clone JCDenton to work with Use_less bloom 
+//##############################################################
+
+textures/AFX/AFXweight 
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		vertexProgram 	afxweight.vfp
+		fragmentProgram	afxweight.vfp
+
+		fragmentMap 0 _currentRender
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXmodulate
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		rgba 1
+		vertexProgram 	afxmodulate.vfp
+		vertexParm		0 parm0
+		vertexParm		1 parm1
+		fragmentProgram	afxmodulate.vfp
+
+		fragmentMap 0 _fsfx_input
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXmodulate2
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		rgba 1
+		vertexProgram 	afxmodulate2.vfp
+		fragmentProgram	afxmodulate2.vfp
+
+		fragmentMap 0 _fsfx_input
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXadd
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	
+	{	
+		rgba 1
+		vertexProgram 	afxadd.vfp
+		vertexParm		0 parm0
+		vertexParm		1 parm1
+		fragmentProgram	afxadd.vfp
+
+		fragmentMap 0 _currentRender 
+		fragmentMap 1 _fsfx_input
+	}
+
+}
