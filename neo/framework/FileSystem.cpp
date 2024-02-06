@@ -70,12 +70,6 @@ to the base path, but can be overridden with a "+set fs_savepath c:\doom" on the
 command line. Any files that are created during the game (demos, screenshots, etc.) will
 be created reletive to the save path.
 
-The "cd path" is the path to an alternate hierarchy that will be searched if a file
-is not located in the base path. A user can do a partial install that copies some
-data to a base path created on their hard drive and leave the rest on the cd. It defaults
-to the current directory, but it can be overridden with "+set fs_cdpath g:\doom" on the
-command line.
-
 The "dev path" is the path to an alternate hierarchy where the editors and tools used
 during development (AF editor, dmap, runAAS) will write files to. It defaults to
 the cd path, but can be overridden with a "+set fs_devpath c:\doom" on the command line.
@@ -100,37 +94,6 @@ but otherwise they are simply normal zip files. A game directory can have multip
 files of the form "pak0.pk4", "pak1.pk4", etc. Zip files are searched in decending order
 from the highest number to the lowest, and will always take precedence over the filesystem.
 This allows a pk4 distributed as a patch to override all existing data.
-
-Because we will have updated executables freely available online, there is no point to
-trying to restrict demo / oem versions of the game with code changes. Demo / oem versions
-should be exactly the same executables as release versions, but with different data that
-automatically restricts where game media can come from to prevent add-ons from working.
-
-After the paths are initialized, Doom will look for the product.txt file. If not found
-and verified, the game will run in restricted mode. In restricted mode, only files
-contained in demo/pak0.pk4 will be available for loading, and only if the zip header is
-verified to not have been modified. A single exception is made for DoomConfig.cfg. Files
-can still be written out in restricted mode, so screenshots and demos are allowed.
-Restricted mode can be tested by setting "+set fs_restrict 1" on the command line, even
-if there is a valid product.txt under the basepath or cdpath.
-
-If the "fs_copyfiles" cvar is set to 1, then every time a file is sourced from the cd
-path, it will be copied over to the save path. This is a development aid to help build
-test releases and to copy working sets of files.
-
-If the "fs_copyfiles" cvar is set to 2, any file found in fs_cdpath that is newer than
-it's fs_savepath version will be copied to fs_savepath (in addition to the fs_copyfiles 1
-behaviour).
-
-If the "fs_copyfiles" cvar is set to 3, files from both basepath and cdpath will be copied
-over to the save path. This is useful when copying working sets of files mainly from base
-path with an additional cd path (which can be a slower network drive for instance).
-
-If the "fs_copyfiles" cvar is set to 4, files that exist in the cd path but NOT the base path
-will be copied to the save path
-
-NOTE: fs_copyfiles and case sensitivity. On fs_caseSensitiveOS 0 filesystems ( win32 ), the
-copied files may change casing when copied over.
 
 The relative path "sound/newstuff/test.wav" would be searched for in the following places:
 
@@ -289,7 +252,7 @@ typedef struct searchpath_s {
 #define FSFLAG_PURE_NOREF		( 1 << 2 )
 #define FSFLAG_SEARCH_ADDONS	( 1 << 4 )
 
-// 3 search path (fs_savepath fs_basepath fs_cdpath)
+// 2 search path (fs_savepath fs_basepath)
 // + .jpg and .tga
 #define MAX_CACHED_DIRS 6
 
@@ -320,7 +283,6 @@ public:
 	virtual void			Restart( void );
 	virtual void			Shutdown( bool reloading );
 	virtual bool			IsInitialized( void ) const;
-	virtual bool			PerformingCopyFiles( void ) const;
 	virtual idModList *		ListMods( void );
 	virtual void			FreeModList( idModList *modList );
 	virtual idFileList *	ListFiles( const char *relativePath, const char *extension, bool sort = false, bool fullRelativePath = false, const char* gamedir = NULL );
@@ -340,8 +302,8 @@ public:
 	virtual void			FreeFile( void *buffer );
 	virtual int				WriteFile( const char *relativePath, const void *buffer, int size, const char *basePath = "fs_savepath" );
 	virtual void			RemoveFile( const char *relativePath );
-	virtual idFile *		OpenFileReadFlags( const char *relativePath, int searchFlags, pack_t **foundInPak = NULL, bool allowCopyFiles = true, const char* gamedir = NULL );
-	virtual idFile *		OpenFileRead( const char *relativePath, bool allowCopyFiles = true, const char* gamedir = NULL );
+    virtual idFile *		OpenFileReadFlags( const char *relativePath, int searchFlags, pack_t **foundInPak = NULL, const char* gamedir = NULL );
+    virtual idFile *		OpenFileRead( const char *relativePath, const char* gamedir = NULL );
 	virtual idFile *		OpenFileWrite( const char *relativePath, const char *basePath = "fs_savepath" );
 	virtual idFile *		OpenFileAppend( const char *relativePath, bool sync = false, const char *basePath = "fs_basepath"   );
 	virtual idFile *		OpenFileByMode( const char *relativePath, fsMode_t mode );
@@ -385,11 +347,9 @@ private:
 
 	static idCVar			fs_debug;
 	static idCVar			fs_restrict;
-	static idCVar			fs_copyfiles;
 	static idCVar			fs_basepath;
 	static idCVar			fs_configpath;
 	static idCVar			fs_savepath;
-	static idCVar			fs_cdpath;
 	static idCVar			fs_devpath;
 	static idCVar			fs_game;
 	static idCVar			fs_game_base;
@@ -446,11 +406,9 @@ private:
 
 idCVar	idFileSystemLocal::fs_restrict( "fs_restrict", "", CVAR_SYSTEM | CVAR_INIT | CVAR_BOOL, "" );
 idCVar	idFileSystemLocal::fs_debug( "fs_debug", "0", CVAR_SYSTEM | CVAR_INTEGER, "", 0, 2, idCmdSystem::ArgCompletion_Integer<0,2> );
-idCVar	idFileSystemLocal::fs_copyfiles( "fs_copyfiles", "0", CVAR_SYSTEM | CVAR_INIT | CVAR_INTEGER, "", 0, 4, idCmdSystem::ArgCompletion_Integer<0,3> );
 idCVar	idFileSystemLocal::fs_basepath( "fs_basepath", "", CVAR_SYSTEM | CVAR_INIT, "" );
 idCVar	idFileSystemLocal::fs_configpath( "fs_configpath", "", CVAR_SYSTEM | CVAR_INIT, "" );
 idCVar	idFileSystemLocal::fs_savepath( "fs_savepath", "", CVAR_SYSTEM | CVAR_INIT, "" );
-idCVar	idFileSystemLocal::fs_cdpath( "fs_cdpath", "", CVAR_SYSTEM | CVAR_INIT, "" );
 idCVar	idFileSystemLocal::fs_devpath( "fs_devpath", "", CVAR_SYSTEM | CVAR_INIT, "" );
 idCVar	idFileSystemLocal::fs_game( "fs_game", "", CVAR_SYSTEM | CVAR_INIT | CVAR_SERVERINFO, "mod path" );
 idCVar  idFileSystemLocal::fs_game_base( "fs_game_base", "", CVAR_SYSTEM | CVAR_INIT | CVAR_SERVERINFO, "alternate mod path, searched after the main fs_game path, before the basedir" );
@@ -1059,7 +1017,7 @@ int idFileSystemLocal::ReadFile( const char *relativePath, void **buffer, ID_TIM
 	}
 
 	// look for it in the filesystem or pack files
-	f = OpenFileRead( relativePath, ( buffer != NULL ) );
+	f = OpenFileRead( relativePath );
 	if ( f == NULL ) {
 		if ( buffer ) {
 			*buffer = NULL;
@@ -1689,15 +1647,14 @@ idModList *idFileSystemLocal::ListMods( void ) {
 
 	idModList	*list = new idModList;
 
-	const char	*search[ 4 ];
+	const char	*search[ 3 ];
 	int			isearch;
 
 	search[0] = fs_savepath.GetString();
 	search[1] = fs_devpath.GetString();
 	search[2] = fs_basepath.GetString();
-	search[3] = fs_cdpath.GetString();
 
-	for ( isearch = 0; isearch < 4; isearch++ ) {
+	for ( isearch = 0; isearch < 3; isearch++ ) {
 		// skip empty cdpath or such, so we don't search C:\ or / -_-
 		if ( search[ isearch ][ 0 ] == '\0' ) {
 			continue;
@@ -1730,7 +1687,7 @@ idModList *idFileSystemLocal::ListMods( void ) {
 	// read the descriptions for each mod - search all paths
 	for ( i = 0; i < list->mods.Num(); i++ ) {
 
-		for ( isearch = 0; isearch < 4; isearch++ ) {
+		for ( isearch = 0; isearch < 3; isearch++ ) {
 
 			idStr descfile = BuildOSPath( search[ isearch ], list->mods[ i ], "description.txt" );
 			FILE *f = OpenOSFile( descfile, "r" );
@@ -1747,7 +1704,7 @@ idModList *idFileSystemLocal::ListMods( void ) {
 			}
 		}
 
-		if ( isearch == 4 ) {
+		if ( isearch == 3 ) {
 			list->descriptions.Append( list->mods[ i ] );
 		}
 	}
@@ -2117,11 +2074,6 @@ idFileSystemLocal::SetupGameDirectories
 ================
 */
 void idFileSystemLocal::SetupGameDirectories( const char *gameName ) {
-	// setup cdpath
-	if ( fs_cdpath.GetString()[0] ) {
-		AddGameDirectory( fs_cdpath.GetString(), gameName );
-	}
-
 	// setup basepath
 	if ( fs_basepath.GetString()[0] ) {
 		AddGameDirectory( fs_basepath.GetString(), gameName );
@@ -2442,7 +2394,7 @@ int idFileSystemLocal::ValidateDownloadPakForChecksum( int checksum, char path[ 
 	testList.Append( fs_savepath.GetString() );
 	testList.Append( fs_devpath.GetString() );
 	testList.Append( fs_basepath.GetString() );
-	testList.Append( fs_cdpath.GetString() );
+
 	for ( i = 0; i < testList.Num(); i ++ ) {
 		if ( testList[ i ].Length() && !testList[ i ].Icmpn( pak->pakFilename, testList[ i ].Length() ) ) {
 			relativePath = pak->pakFilename.c_str() + testList[ i ].Length() + 1;
@@ -2633,11 +2585,9 @@ void idFileSystemLocal::Init( void ) {
 	common->StartupVariable( "fs_basepath", false );
 	common->StartupVariable( "fs_configpath", false );
 	common->StartupVariable( "fs_savepath", false );
-	common->StartupVariable( "fs_cdpath", false );
 	common->StartupVariable( "fs_devpath", false );
 	common->StartupVariable( "fs_game", false );
 	common->StartupVariable( "fs_game_base", false );
-	common->StartupVariable( "fs_copyfiles", false );
 	common->StartupVariable( "fs_restrict", false );
 	common->StartupVariable( "fs_searchAddons", false );
 
@@ -2653,7 +2603,7 @@ void idFileSystemLocal::Init( void ) {
 
 	if ( fs_devpath.GetString()[0] == '\0' ) {
 #ifdef WIN32
-		fs_devpath.SetString( fs_cdpath.GetString()[0] ? fs_cdpath.GetString() : fs_basepath.GetString() );
+		fs_devpath.SetString( fs_basepath.GetString() );
 #else
 		fs_devpath.SetString( fs_savepath.GetString() );
 #endif
@@ -2923,7 +2873,7 @@ Used for streaming data out of either a
 separate file or a ZIP file.
 ===========
 */
-idFile *idFileSystemLocal::OpenFileReadFlags( const char *relativePath, int searchFlags, pack_t **foundInPak, bool allowCopyFiles, const char* gamedir ) {
+idFile *idFileSystemLocal::OpenFileReadFlags( const char *relativePath, int searchFlags, pack_t **foundInPak, const char* gamedir ) {
 	searchpath_t *	search;
 	idStr			netpath;
 	pack_t *		pak;
@@ -3011,63 +2961,6 @@ idFile *idFileSystemLocal::OpenFileReadFlags( const char *relativePath, int sear
 				loadedFileFromDir = true;
 			}
 
-			// if fs_copyfiles is set
-			if ( allowCopyFiles && fs_copyfiles.GetInteger() ) {
-
-				idStr copypath;
-				idStr name;
-				copypath = BuildOSPath( fs_savepath.GetString(), dir->gamedir, relativePath );
-				netpath.ExtractFileName( name );
-				copypath.StripFilename( );
-				copypath += PATHSEPERATOR_STR;
-				copypath += name;
-
-				bool isFromCDPath = !dir->path.Cmp( fs_cdpath.GetString() );
-				bool isFromSavePath = !dir->path.Cmp( fs_savepath.GetString() );
-				bool isFromBasePath = !dir->path.Cmp( fs_basepath.GetString() );
-
-				switch ( fs_copyfiles.GetInteger() ) {
-					case 1:
-						// copy from cd path only
-						if ( isFromCDPath ) {
-							CopyFile( netpath, copypath );
-						}
-						break;
-					case 2:
-						// from cd path + timestamps
-						if ( isFromCDPath ) {
-							CopyFile( netpath, copypath );
-						} else if ( isFromSavePath || isFromBasePath ) {
-							idStr sourcepath;
-							sourcepath = BuildOSPath( fs_cdpath.GetString(), dir->gamedir, relativePath );
-							FILE *f1 = OpenOSFile( sourcepath, "r" );
-							if ( f1 ) {
-								ID_TIME_T t1 = Sys_FileTimeStamp( f1 );
-								fclose( f1 );
-								FILE *f2 = OpenOSFile( copypath, "r" );
-								if ( f2 ) {
-									ID_TIME_T t2 = Sys_FileTimeStamp( f2 );
-									fclose( f2 );
-									if ( t1 > t2 ) {
-										CopyFile( sourcepath, copypath );
-									}
-								}
-							}
-						}
-						break;
-					case 3:
-						if ( isFromCDPath || isFromBasePath ) {
-							CopyFile( netpath, copypath );
-						}
-						break;
-					case 4:
-						if ( isFromCDPath && !isFromBasePath ) {
-							CopyFile( netpath, copypath );
-						}
-						break;
-				}
-			}
-
 			return file;
 		} else if ( search->pack && ( searchFlags & FSFLAG_SEARCH_PAKS ) ) {
 
@@ -3144,8 +3037,8 @@ idFile *idFileSystemLocal::OpenFileReadFlags( const char *relativePath, int sear
 idFileSystemLocal::OpenFileRead
 ===========
 */
-idFile *idFileSystemLocal::OpenFileRead( const char *relativePath, bool allowCopyFiles, const char* gamedir ) {
-	return OpenFileReadFlags( relativePath, FSFLAG_SEARCH_DIRS | FSFLAG_SEARCH_PAKS, NULL, allowCopyFiles, gamedir );
+idFile *idFileSystemLocal::OpenFileRead( const char *relativePath, const char* gamedir ) {
+	return OpenFileReadFlags( relativePath, FSFLAG_SEARCH_DIRS | FSFLAG_SEARCH_PAKS, NULL, gamedir );
 }
 
 /*
@@ -3540,15 +3433,6 @@ void idFileSystemLocal::BackgroundDownload( backgroundDownload_t *bgl ) {
 		Sys_TriggerEvent();
 		Sys_LeaveCriticalSection();
 	}
-}
-
-/*
-=================
-idFileSystemLocal::PerformingCopyFiles
-=================
-*/
-bool idFileSystemLocal::PerformingCopyFiles( void ) const {
-	return fs_copyfiles.GetInteger() > 0;
 }
 
 /*

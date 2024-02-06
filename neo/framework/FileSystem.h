@@ -49,7 +49,6 @@ If you have questions concerning this license or the applicable additional terms
 
 	"fs_basepath"		path to local install, read-only
 	"fs_savepath"		path to config, save game, etc. files, read & write
-	"fs_cdpath"			path to cd, read-only
 	"fs_devpath"		path to files created during development, read & write
 
 	The base path for file saving can be set to "fs_savepath" or "fs_devpath".
@@ -165,8 +164,6 @@ public:
 	virtual void			Shutdown( bool reloading ) = 0;
 							// Returns true if the file system is initialized.
 	virtual bool			IsInitialized( void ) const = 0;
-							// Returns true if we are doing an fs_copyfiles.
-	virtual bool			PerformingCopyFiles( void ) const = 0;
 							// Returns a list of mods found along with descriptions
 							// 'mods' contains the directory names to be passed to fs_game
 							// 'descriptions' contains a free form string to be used in the UI
@@ -231,7 +228,7 @@ public:
 							// Removes the given file.
 	virtual void			RemoveFile( const char *relativePath ) = 0;
 							// Opens a file for reading.
-	virtual idFile *		OpenFileRead( const char *relativePath, bool allowCopyFiles = true, const char* gamedir = NULL ) = 0;
+	virtual idFile *		OpenFileRead( const char *relativePath, const char* gamedir = NULL ) = 0;
 							// Opens a file for writing, will create any needed subdirectories.
 	virtual idFile *		OpenFileWrite( const char *relativePath, const char *basePath = "fs_savepath" ) = 0;
 							// Opens a file for writing at the end.

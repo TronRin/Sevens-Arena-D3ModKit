@@ -1903,7 +1903,7 @@ bool idSessionLocal::LoadGame( const char *saveName ) {
 	// Open savegame file
 	// only allow loads from the game directory because we don't want a base game to load
 	idStr game = cvarSystem->GetCVarString( "fs_game" );
-	savegameFile = fileSystem->OpenFileRead( in, true, game.Length() ? game : NULL );
+	savegameFile = fileSystem->OpenFileRead( in, game.Length() ? game : NULL );
 
 	if ( savegameFile == NULL ) {
 		common->Warning( "Couldn't open savegame file %s", in.c_str() );
@@ -2009,7 +2009,7 @@ bool idSessionLocal::QuickSave()
 		}
 		saveFilePath.SetFileExtension( ".save" );
 
-		idFile *f = fileSystem->OpenFileRead( saveFilePath, true, game );
+		idFile *f = fileSystem->OpenFileRead( saveFilePath, game );
 		if ( f == NULL ) {
 			// this savegame doesn't exist yet => we can use this index for the name
 			indexToUse = i;
@@ -2063,7 +2063,7 @@ bool idSessionLocal::QuickLoad()
 		}
 		saveFilePath.SetFileExtension( ".save" );
 
-		idFile *f = fileSystem->OpenFileRead( saveFilePath, true, game );
+		idFile *f = fileSystem->OpenFileRead( saveFilePath, game );
 		if ( f != NULL ) {
 			ID_TIME_T ts = f->Timestamp();
 			assert( ts != 0 );
