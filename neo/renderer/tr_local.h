@@ -33,7 +33,6 @@ class idScreenRect; // yay for include recursion
 
 #include "renderer/Image.h"
 #include "renderer/Interaction.h"
-#include "renderer/MegaTexture.h"
 #include "renderer/ModelDecal.h"
 #include "renderer/ModelOverlay.h"
 #include "renderer/RenderSystem.h"
