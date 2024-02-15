@@ -468,12 +468,16 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 			s = path;
 			s.AppendPath(BASE_GAMEDIR);
 			if (_stat(s.c_str(), &st) != -1 && (st.st_mode & _S_IFDIR)) {
-				common->Warning("using path of executable: %s", path.c_str());
+#ifdef _DEBUG
+				common->Warning( "using path of executable: %s", path.c_str() );
+#endif // _DEBUG
 				return true;
 			} else {
 				s = path + "/demo/demo00.pk4";
 				if (_stat(s.c_str(), &st) != -1 && (st.st_mode & _S_IFREG)) {
+#ifdef _DEBUG
 					common->Warning("using path of executable (seems to contain demo game data): %s ", path.c_str());
+#endif // _DEBUG
 					return true;
 				}
 			}
@@ -1058,7 +1062,7 @@ int main(int argc, char *argv[]) {
 	// no abort/retry/fail errors
 	SetErrorMode( SEM_FAILCRITICALERRORS );
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	// disable the painfully slow MS heap check every 1024 allocs
 	_CrtSetDbgFlag( 0 );
 #endif

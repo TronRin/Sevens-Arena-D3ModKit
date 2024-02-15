@@ -4535,13 +4535,13 @@ surfTypes_t idGameLocal::GetMaterialType( const idEntity *ent, const idMaterial 
 		type = SURFTYPE_STONE;
 	}
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	Printf( "%s: [%s] ent=[%s] mat=[%s]\n",
 		descriptor,
 		MaterialTypeToName( type ),
 		ent ? ent->GetName() : "none",
 		material ? material->GetName() : "none" );
-#endif // DEBUG
+#endif // _DEBUG
 
 	return type;
 }
