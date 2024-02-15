@@ -3183,7 +3183,7 @@ void idCommonLocal::ShutdownGame( bool reloading ) {
 	UnloadGameDLL();
 
 	// dump warnings to "warnings.txt"
-#ifdef DEBUG
+#ifdef _DEBUG
 	DumpWarnings();
 #endif
 
