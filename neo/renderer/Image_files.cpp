@@ -59,7 +59,7 @@ void R_LoadImage( const char *name, byte **pic, int *width, int *height, bool ma
 R_WriteTGA
 ================
 */
-void R_WriteTGA( const char *filename, const byte *data, int width, int height, bool flipVertical ) {
+void R_WriteTGA( const char *filename, const byte *data, int width, int height, bool flipVertical, const char* basePath ) {
 	byte	*buffer;
 	int		i;
 	int		bufferSize = width*height*4 + 18;
@@ -85,7 +85,7 @@ void R_WriteTGA( const char *filename, const byte *data, int width, int height, 
 		buffer[i+3] = data[i-imgStart+3];		// alpha
 	}
 
-	fileSystem->WriteFile( filename, buffer, bufferSize );
+	fileSystem->WriteFile( filename, buffer, bufferSize, basePath );
 
 	Mem_Free (buffer);
 }

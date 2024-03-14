@@ -54,11 +54,10 @@ bool rvGEWorkspace::SaveFile ( const char* filename )
 	idStr ospath;
 
 	tempfile = "guis/temp.guied";
-	//ospath = fileSystem->RelativePathToOSPath ( tempfile, "fs_basepath" ); DG: change from SteelStorm2
-	ospath = fileSystem->RelativePathToOSPath ( tempfile, "fs_savepath" );
+	ospath = fileSystem->RelativePathToOSPath ( tempfile, tempfile ? "fs_savepath" : "fs_basepath" );
 
 	// Open the output file for write
-	file = fileSystem->OpenFileWrite(tempfile);
+	file = fileSystem->OpenFileWrite( tempfile, tempfile ? "fs_savepath" : "fs_basepath" );
 	if ( !file )
 	{
 		SetCursor ( LoadCursor ( NULL, IDC_ARROW ) );

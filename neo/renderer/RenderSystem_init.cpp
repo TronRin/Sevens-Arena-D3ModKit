@@ -1855,7 +1855,7 @@ void R_MakeAmbientMap_f( const idCmdArgs &args ) {
 			}
 			common->Printf( "writing %s\n", fullname.c_str() );
 			session->UpdateScreen();
-			R_WriteTGA( fullname, outBuffer, outSize, outSize );
+			R_WriteTGA( fullname, outBuffer, outSize, outSize, "fs_basepath" );
 		}
 	}
 
