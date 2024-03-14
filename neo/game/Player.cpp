@@ -1520,11 +1520,12 @@ void idPlayer::Spawn( void ) {
 	if ( !gameLocal.isMultiplayer || entityNumber == gameLocal.localClientNum ) {
 
 		// load HUD
-		if ( gameLocal.isMultiplayer ) {
-			hud = uiManager->FindGui( "guis/mphud.gui", true, false, true );
-		} else if ( spawnArgs.GetString( "hud", "", temp ) ) {
+		if ( spawnArgs.GetString( "hud", "", temp ) && !gameLocal.isMultiplayer ) {
+			hud = uiManager->FindGui( temp, true, false, true );
+		} else if ( spawnArgs.GetString( "mphud", "", temp ) ) {
 			hud = uiManager->FindGui( temp, true, false, true );
 		}
+
 		if ( hud ) {
 			hud->Activate( true, gameLocal.time );
 #ifdef CTF
