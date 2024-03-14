@@ -113,7 +113,7 @@ bool rvGEApp::Initialize ( void )
 
 	// Create the main window
 	mMDIFrame = CreateWindow ( "QUAKE4_GUIEDITOR_CLASS",
-							  "Quake IV GUI Editor",
+							  "UserInterface Development Environment",
 							  WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS,
 							  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 							  NULL, NULL, mInstance, (LPVOID)this );
@@ -324,6 +324,7 @@ LRESULT CALLBACK rvGEApp::FrameWndProc ( HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		case WM_DESTROY:
 			app->mOptions.SetWindowPlacement ( "mdiframe", hWnd );
 			app->mOptions.Save ( );
+			GUIEditorShutdown();
 			ExitProcess(0);
 			break;
 
