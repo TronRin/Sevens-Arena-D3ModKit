@@ -1082,5 +1082,9 @@ pak000
 pak000.pk4
 pak001.pk4
 
+# Generated stuffs
+fontImage_*.tga
+fontImage_*.dat
+
 # Radiant Editor
 *_autosave.project
