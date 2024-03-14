@@ -26,7 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#pragma once
+
 #include "ui/UserInterface.h"
+#include "ui/Window.h"
 
 class idWindow;
 
@@ -77,7 +80,7 @@ public:
 	idDict *					GetStateDict() { return &state; }
 
 	const char *				GetSourceFile( void ) const { return source; }
-	ID_TIME_T						GetTimeStamp( void ) const { return timeStamp; }
+	ID_TIME_T					GetTimeStamp( void ) const { return timeStamp; }
 
 	idWindow *					GetDesktop() const { return desktop; }
 	void						SetBindHandler( idWindow *win ) { bindHandler = win; }
@@ -92,6 +95,8 @@ public:
 	void						RecurseSetKeyBindingNames( idWindow *window );
 	idStr						&GetPendingCmd() { return pendingCmd; };
 	idStr						&GetReturnCmd() { return returnCmd; };
+
+	virtual idRectangle			GetScreenRect( void ) { return desktop->drawRect; }
 
 private:
 	bool						active;

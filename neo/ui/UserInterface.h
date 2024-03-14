@@ -32,6 +32,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "idlib/Dict.h"
 #include "ui/ListGUI.h"
 
+class idRectangle;
+
 /*
 ===============================================================================
 
@@ -114,6 +116,8 @@ public:
 	virtual void				SetCursor( float x, float y ) = 0;
 	virtual float				CursorX() = 0;
 	virtual float				CursorY() = 0;
+
+	virtual idRectangle			GetScreenRect( void ) = 0;
 };
 
 
