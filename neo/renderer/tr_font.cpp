@@ -316,7 +316,7 @@ SaveFontInfo
 ============
 */
 static bool SaveFontInfo( const char *name, const fontInfo_t *outFont ) {
-	idFile *file = fileSystem->OpenFileWrite( name );
+	idFile *file = fileSystem->OpenFileWrite( name, "fs_basepath" );
 
 	if (file == NULL) {
 		return false;
@@ -528,10 +528,10 @@ bool idRenderSystemLocal::RegisterFont( const char *fontName, fontInfoEx_t &font
 
 #ifdef ID_FREETYPE_PNG
 				sprintf( name, "%s/fontImage_%i_%i.png", fontName, imageNumber, pointSize );
-				R_WritePNG( name.c_str(), imageBuff, 4, FONT_SIZE, FONT_SIZE, true );
+				R_WritePNG( name.c_str(), imageBuff, 4, FONT_SIZE, FONT_SIZE, true, "fs_basepath" );
 #else
 				sprintf( name, "%s/fontImage_%i_%i.tga", fontName, imageNumber, pointSize );
-				R_WriteTGA( name.c_str(), imageBuff, FONT_SIZE, FONT_SIZE, false );
+				R_WriteTGA( name.c_str(), imageBuff, FONT_SIZE, FONT_SIZE, false, "fs_basepath" );
 #endif // ID_BUILD_FREETYPE
 
 				h = declManager->FindMaterial( name );
