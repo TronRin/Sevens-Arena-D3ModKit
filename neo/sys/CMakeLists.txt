@@ -120,6 +120,18 @@ add_globbed_headers( src_mikktspace "mikktspace" )
 
 # ...RBMIKKT_TANGENT
 
+set( src_imgui
+	${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl2.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_opengl2.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+)
+
+add_globbed_headers( src_imgui "libs/imgui" )
+
 set( src_sound
 	${CMAKE_SOURCE_DIR}/sound/snd_cache.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_decoder.cpp
@@ -413,6 +425,7 @@ if( ENGINE )
 		${src_core}
 		${src_sys_base}
 		${src_sys_core}
+		${src_imgui}
 		${src_editor_tools}
 	)
 	
@@ -420,6 +433,7 @@ if( ENGINE )
 		${src_core}
 		${src_sys_base}
 		${src_sys_core}
+		${src_imgui}
 		${src_editor_tools}
 	)
 
@@ -430,6 +444,8 @@ if( ENGINE )
 		
 		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools} )
 	endif()
+	
+	target_include_directories( ${ENGINE_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/libs/imgui" )
 
 	if( HARDLINK_GAME )
 		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}" )
@@ -497,14 +513,14 @@ if( DEDICATED )
 	endif()
 
 	if( HARDLINK_GAME )
-		set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED" )
+		set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "IMGUI_DISABLE;ID_DEDICATED" )
 		
 		# Hack to get .natvis added
 		if ( MSVC )
 			target_sources( ${DEDICATED_EXECUTABLE} PRIVATE "win32/natvis/game.natvis" )
 		endif()
 	else()
-		set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__" )
+		set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "IMGUI_DISABLE;ID_DEDICATED;__DOOM_DLL__" )
 	endif()
 
 	set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES LINK_FLAGS "${ldflags}" )
