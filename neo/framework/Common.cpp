@@ -48,6 +48,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "libs/aasfile/AASFileManager.h"
 #include "tools/edit_public.h"
 
+#include "sys/sys_imgui.h"
+
 #include "framework/Common.h"
 
 #include "GameCallbacks_local.h"
@@ -2449,6 +2451,9 @@ void idCommonLocal::Frame( void ) {
 		} else {
 			gameFrame++;
 		}
+
+		// DG: prepare new ImGui frame - I guess this is a good place, as all new events should be available?
+		D3::ImGuiHooks::NewFrame();
 
 		com_frameTime = Sys_Milliseconds();
 

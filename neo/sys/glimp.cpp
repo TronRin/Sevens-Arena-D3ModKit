@@ -32,6 +32,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "renderer/tr_local.h"
 
+#include "sys/sys_imgui.h"
+
 #if defined(_WIN32) && defined(ID_ALLOW_TOOLS)
 #include "sys/win32/win_local.h"
 #include <SDL_syswm.h>
@@ -574,6 +576,8 @@ try_again:
 		return false;
 	}
 
+	D3::ImGuiHooks::Init(window, context);
+
 	return true;
 }
 
@@ -593,6 +597,9 @@ GLimp_Shutdown
 ===================
 */
 void GLimp_Shutdown() {
+
+	D3::ImGuiHooks::Shutdown();
+
 	common->Printf("Shutting down OpenGL subsystem\n");
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)

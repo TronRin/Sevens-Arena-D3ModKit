@@ -123,14 +123,15 @@ add_globbed_headers( src_mikktspace "mikktspace" )
 set( src_imgui
 	${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl2.cpp
 	${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_opengl2.cpp
+	${CMAKE_SOURCE_DIR}/libs/imgui/imgui.h
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui.cpp
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+	sys_imgui.h
+	sys_imgui.cpp
 )
-
-add_globbed_headers( src_imgui "libs/imgui" )
 
 set( src_sound
 	${CMAKE_SOURCE_DIR}/sound/snd_cache.cpp
