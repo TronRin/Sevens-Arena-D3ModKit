@@ -25,6 +25,7 @@ set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/DeclParticle.cpp
 	${CMAKE_SOURCE_DIR}/framework/DeclSkin.cpp
 	${CMAKE_SOURCE_DIR}/framework/DeclTable.cpp
+	${CMAKE_SOURCE_DIR}/framework/Dhewm3SettingsMenu.cpp
 	${CMAKE_SOURCE_DIR}/framework/EditField.cpp
 	${CMAKE_SOURCE_DIR}/framework/EventLoop.cpp
 	${CMAKE_SOURCE_DIR}/framework/File.cpp
