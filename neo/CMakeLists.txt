@@ -177,6 +177,17 @@ if( NOT MSVC )
 		endif()
 	#endif() # NOT WIN32
 
+	# check if our SDL2 supports X11 in SDL_syswm so we can use it for DPI scaling ImGui
+	set( CMAKE_REQUIRED_LIBRARIES SDL2 )
+	check_c_source_compiles( "#include <SDL_syswm.h>
+		int main() { SDL_SysWMinfo wmInfo = {}; wmInfo.info.x11.display = NULL; return 0; }" HAVE_SDL_X11)
+	unset( CMAKE_REQUIRED_LIBRARIES )
+		
+	if( HAVE_SDL_X11 )
+		message( STATUS "This SDL2 has X11 support" )
+		add_definitions( -DD3_SDL_X11 )
+	endif()
+
 	# check if this is some kind of clang (Clang, AppleClang, whatever)
 	# (convert compiler ID to lowercase so we match Clang, clang, AppleClang etc, regardless of case)
 	string( TOLOWER ${CMAKE_CXX_COMPILER_ID} compiler_id_lower )
