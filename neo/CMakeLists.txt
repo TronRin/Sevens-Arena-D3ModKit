@@ -195,7 +195,10 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 
 	# dear idiot compilers, don't fuck up math code with useless FMA "optimizations"
 	# (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=100839)
-	add_compile_options( -ffp-contract=off )
+	CHECK_CXX_COMPILER_FLAG("-ffp-contract=off" cxx_has_fp-contract)
+	if(cxx_has_fp-contract)
+		add_compile_options(-ffp-contract=off)
+	endif()
 	
 	if( ASAN )
 		# if this doesn't work, ASan might not be available on your platform, don't set ASAN then..
@@ -232,11 +235,18 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		add_compile_options( -Wno-class-memaccess )
 	endif()
 
-	if( AROS )
-		set( CMAKE_SHARED_LIBRARY_SUFFIX ".aros-${cpu}" )
-		add_definitions( -DIOAPI_NO_64 )
-	elseif( APPLE )
-		add_definitions( -DMACOS_X=1 )
+	# ignore warnings about variables named "requires" for now (in C++20 it's a keyword,
+	#  but currently we don't even use C++11 features)
+	CHECK_CXX_COMPILER_FLAG("-Wno-c++20-compat" cxx_has_Wno-cpp20-compat)
+	if(cxx_has_Wno-cpp20-compat)
+		add_compile_options(-Wno-c++20-compat)
+	endif()
+
+	if(AROS)
+		set(CMAKE_SHARED_LIBRARY_SUFFIX ".aros-${cpu}")
+		add_definitions(-DIOAPI_NO_64)
+	elseif(APPLE)
+		add_definitions(-DMACOS_X=1)
 
 		if( cpu STREQUAL "x86_64" )
 			add_compile_options( -arch x86_64 -mmacosx-version-min=10.9 )
