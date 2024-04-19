@@ -78,6 +78,10 @@ endif()
 # Set these if we found either MFC or any UI toolkit, turn off TOOLS if we didn't found neither of theses
 set( MFC_TOOLS OFF ) # (Visual Studio + SDL2 only)
 
+# we need C++11 for ImGui
+# TODO: if we allow disabling ImGui, we could disable setting the c++ standard - or maybe just embrace C++11?
+set ( CMAKE_CXX_STANDARD 11 )
+
 # Define our cpu variable
 include( CPUDefine )
 
