@@ -212,13 +212,11 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		set( sys_libs ${sys_libs} -fsanitize=undefined )
 	endif()
 
-	if( NOT AROS )
-		CHECK_CXX_COMPILER_FLAG( "-fvisibility=hidden" cxx_has_fvisibility )
-		if( NOT cxx_has_fvisibility )
-			message( FATAL_ERROR "Compiler does not support -fvisibility" )
-		endif()
-		add_compile_options( -fvisibility=hidden )
+	CHECK_CXX_COMPILER_FLAG( "-fvisibility=hidden" cxx_has_fvisibility )
+	if( NOT cxx_has_fvisibility )
+		message( FATAL_ERROR "Compiler does not support -fvisibility" )
 	endif()
+	add_compile_options( -fvisibility=hidden )
 
 	# TODO fix these warnings
 	add_compile_options( -Wno-sign-compare )
@@ -242,10 +240,7 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		add_compile_options(-Wno-c++20-compat)
 	endif()
 
-	if(AROS)
-		set(CMAKE_SHARED_LIBRARY_SUFFIX ".aros-${cpu}")
-		add_definitions(-DIOAPI_NO_64)
-	elseif(APPLE)
+	if(APPLE)
 		add_definitions(-DMACOS_X=1)
 
 		if( cpu STREQUAL "x86_64" )
@@ -819,30 +814,7 @@ if (TYPEINFOGEN)
 	)
 endif()
 
-if(AROS)
-	set(sys_libs ${sys_libs} dll)
-
-	set(src_arosdll
-		sys/aros/dll/dllstartup.c
-		sys/aros/dll/dll.c
-		sys/aros/dll/dllimport.c
-	)
-
-	set(src_sys_base
-		sys/cpu.cpp
-		sys/threads.cpp
-		sys/events.cpp
-		sys/sys_local.cpp
-		sys/aros/aros_net.cpp
-		sys/aros/aros_signal.cpp
-		sys/aros/aros_main.cpp
-		sys/aros/aros_dos.cpp
-	)
-
-	set(src_sys_core
-		sys/glimp.cpp
-	)
-elseif(APPLE)
+if(APPLE)
 	set(OSX_RESOURCE_FILES
 		"${CMAKE_SOURCE_DIR}/sys/osx/Doom3.icns"
 		"${CMAKE_SOURCE_DIR}/sys/osx/Doom 3.rsrc"
@@ -922,17 +894,8 @@ include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_library(idlib STATIC ${src_idlib})
-if (AROS)
-	add_library(dll STATIC ${src_arosdll})
-		if(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
-		set(AROS_ARCH "x86")
-		else()
-		set(AROS_ARCH ${CMAKE_SYSTEM_PROCESSOR})
-	endif()
-else()
-	if(D3_COMPILER_IS_GCC_OR_CLANG AND NOT MINGW)
-		set_target_properties(idlib PROPERTIES COMPILE_FLAGS "-fPIC")
-	endif()
+if(D3_COMPILER_IS_GCC_OR_CLANG AND NOT MINGW)
+	set_target_properties(idlib PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
 if (MSVC)
@@ -1093,12 +1056,7 @@ endif()
 endif()
 
 if(GAME_CODE AND NOT HARDLINK_GAME)
-	if (AROS)
-		add_executable(base sys/aros/dll/dllglue.c ${src_game})
-		set_target_properties(base PROPERTIES OUTPUT_NAME "base.aros-${AROS_ARCH}")
-	else()
-		add_library(base SHARED ${src_game})
-	endif()
+	add_library(base SHARED ${src_game})
 	
 	if (MSVC)
 		target_sources(base PRIVATE "sys/win32/natvis/game.natvis")
@@ -1111,11 +1069,7 @@ if(GAME_CODE AND NOT HARDLINK_GAME)
 	target_include_directories(base PRIVATE "${CMAKE_SOURCE_DIR}/game")
 	set_target_properties(base PROPERTIES LINK_FLAGS "${ldflags}")
 	set_target_properties(base PROPERTIES INSTALL_NAME_DIR "@executable_path")
-	if (AROS)
-		target_link_libraries(base idlib dll)
-	else()
-		target_link_libraries(base idlib)
-	endif()
+	target_link_libraries(base idlib)
 	set_target_properties(base PROPERTIES FOLDER "dlls")
 
 	if(NOT APPLE AND NOT WIN32)

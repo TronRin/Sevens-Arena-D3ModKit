@@ -685,7 +685,7 @@ static bool my_localtime(const time_t* t, struct tm* ts)
 		*ts = *tmp;
 		return true;
 	}
-#else // localtime_r() assumed available, use it (all Unix-likes incl. macOS support it, AROS as well)
+#else // localtime_r() assumed available, use it (all Unix-likes incl. macOS support it.)
 	if(localtime_r(t, ts) != NULL)
 		return true;
 #endif
