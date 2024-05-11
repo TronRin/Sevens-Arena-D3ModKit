@@ -1811,6 +1811,55 @@ bool idStr::StartsWith( const char *prefix ) const {
 	return idStr::Cmpn( c_str(), prefix, prefixLength ) == 0;
 }
 
+/*
+=================
+idStr::Format
+=================
+*/
+idStr idStr::Format( const char *format, ... ) {
+	va_list argptr;
+	va_start( argptr, format );
+	idStr ret = VFormat( format, argptr );
+	va_end( argptr );
+	return ret;
+}
+
+/*
+=================
+idStr::VFormat
+=================
+*/
+idStr idStr::VFormat( const char *format, va_list argptr ) {
+	idStr ret;
+	int len;
+	va_list argptrcopy;
+	char buffer[16000];
+
+	// make a copy of argptr in case we need to call D3_vsnprintf() again after truncation
+#ifdef va_copy // IIRC older VS versions didn't have this?
+	va_copy( argptrcopy, argptr );
+#else
+	argptrcopy = argptr;
+#endif
+
+	len = D3_vsnprintfC99( buffer, sizeof(buffer), format, argptr );
+
+	ret.EnsureAlloced( len + 1 );
+	if ( len < sizeof( buffer ) ) {
+		strcpy( ret.data, buffer );
+		ret.len = len;
+	} else {
+		// string was truncated, because buffer wasn't big enough.
+		// ret.EnsureAlloced( len + 1 ) already made sure that ret
+		// has a big enough buffer, so print into that directly
+		D3_vsnprintfC99( ret.data, len+1, format, argptrcopy );
+		ret.len = len;
+	}
+	va_end( argptrcopy );
+
+	return ret;
+}
+
 // behaves like C99's vsnprintf() by returning the amount of bytes that
 // *would* have been written into a big enough buffer, even if that's > size
 // unlike idStr::vsnPrintf() which returns -1 in that case
