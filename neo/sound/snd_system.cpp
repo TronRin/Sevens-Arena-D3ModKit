@@ -508,6 +508,9 @@ void idSoundSystemLocal::Shutdown() {
 	// EFX or not, the list needs to be cleared
 	EFXDatabase.Clear();
 
+	// Clear our reverb
+	reverb.Clear();
+
 	efxloaded = false;
 
 	// adjust source count back up to allow for freeing of all resources
@@ -605,8 +608,8 @@ bool idSoundSystemLocal::ShutdownHW() {
 idSoundSystemLocal::CheckDeviceAndRecoverIfNeeded
 
  DG: returns true if openalDevice is still available,
-     otherwise it will try to recover the device and return false while it's gone
-     (display audio sound devices sometimes disappear for a few seconds when switching resolution)
+	 otherwise it will try to recover the device and return false while it's gone
+	 (display audio sound devices sometimes disappear for a few seconds when switching resolution)
 ===============
 */
 bool idSoundSystemLocal::CheckDeviceAndRecoverIfNeeded()
@@ -702,8 +705,8 @@ int idSoundSystemLocal::AsyncMix( int soundTime, float *mixBuffer ) {
 idSoundSystemLocal::AsyncUpdate
 called from async sound thread when com_asyncSound == 2
 DG: using this for the "traditional" sound updates that
-    only happen about every 100ms (and lead to delays between 1 and 110ms between
-    starting a sound in gamecode and it being played), for people who like that..
+	only happen about every 100ms (and lead to delays between 1 and 110ms between
+	starting a sound in gamecode and it being played), for people who like that..
 ===================
 */
 int idSoundSystemLocal::AsyncUpdate( int inTime ) {
@@ -1133,6 +1136,8 @@ void idSoundSystemLocal::BeginLevelLoad() {
 		EFXDatabase.Clear();
 		efxloaded = false;
 	}
+
+	reverb.UnloadFile();
 }
 
 /*
@@ -1161,7 +1166,23 @@ void idSoundSystemLocal::EndLevelLoad( const char *mapstring ) {
 	if ( efxloaded ) {
 		common->Printf("sound: found %s\n", efxname.c_str() );
 	} else {
-		common->Printf("sound: missing %s\n", efxname.c_str() );
+		// we have "efxs/default.efx"
+		efxloaded = EFXDatabase.LoadFile( "efxs/default.efx" );
+		if ( efxloaded ) {
+			common->Printf( "sound: found %s\n", efxname.c_str() );
+		} else {
+			common->Printf( "sound: missing %s\n", efxname.c_str() );
+		}
+	}
+
+	// load <map>.reverb
+	if ( efxloaded ) {
+		int num = reverb.LoadMap( mapstring );
+		if ( num >= 0 ) {
+			common->Printf( "Loaded reverb file '%s', total %d\n", (const char*)idMapReverb::GetMapFileName( mapstring ), num );
+		} else {
+			common->Warning( "Unable load reverb file '%s'!", (const char*)idMapReverb::GetMapFileName( mapstring ) );
+		}
 	}
 }
 
@@ -1443,4 +1464,47 @@ int idSoundSystemLocal::IsEFXAvailable( void ) {
 #else
 	return EFXAvailable;
 #endif
+}
+
+/*
+===============
+idSoundSystemLocal::GetReverbName
+ Get reverb efx name by index
+===============
+*/
+const char *idSoundSystemLocal::GetReverbName( int reverb ) {
+	return reverb >= 0 && reverb < this->reverb.Num() ? this->reverb[reverb].efxName.c_str() : "";
+}
+
+/*
+===============
+idSoundSystemLocal::GetNumAreas
+ Get num of areas
+===============
+*/
+int idSoundSystemLocal::GetNumAreas( void ) {
+	return this->reverb.Num();
+}
+
+/*
+===============
+idSoundSystemLocal::GetReverb
+ Get index of area
+===============
+*/
+int idSoundSystemLocal::GetReverb( int area ) {
+	return this->reverb.GetAreaIndex( area );
+}
+
+/*
+===============
+idSoundSystemLocal::SetReverb
+===============
+*/
+bool idSoundSystemLocal::SetReverb( int area, const char *reverbName, const char *fileName ) {
+	if ( idStr::Icmp( this->reverb.GetName(), fileName ) ) {
+		return false;
+	}
+
+	return this->reverb.Append( area, reverbName );
 }

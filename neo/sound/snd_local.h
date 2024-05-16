@@ -49,8 +49,9 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/UsercmdGen.h"
 #include "sound/efxlib.h"
 #include "sound/sound.h"
+#include "sound/snd_reverb.h"
 
-// demo sound commands
+  // demo sound commands
 typedef enum {
 	SCMD_STATE,				// followed by a load game state
 	SCMD_PLACE_LISTENER,
@@ -78,7 +79,6 @@ class idSoundCache;
 class idSoundSample;
 class idSampleDecoder;
 class idSoundWorldLocal;
-
 
 /*
 ===================================================================================
@@ -692,6 +692,16 @@ public:
 	virtual void			PrintMemInfo( MemInfo_t *mi );
 
 	virtual int				IsEFXAvailable( void );
+
+	virtual	const char		*GetReverbName( int reverb );
+	virtual	int				GetNumAreas( void );
+	virtual	int				GetReverb( int area );
+	virtual	bool			SetReverb( int area, const char *reverbName, const char *fileName );
+
+private:
+	idMapReverb reverb;
+
+public:
 
 	//-------------------------
 

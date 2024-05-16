@@ -534,6 +534,7 @@ set(src_snd
 	sound/snd_decoder.cpp
 	sound/snd_efxfile.cpp
 	sound/snd_emitter.cpp
+	sound/snd_reverb.cpp
 	sound/snd_shader.cpp
 	sound/snd_system.cpp
 	sound/snd_wavefile.cpp

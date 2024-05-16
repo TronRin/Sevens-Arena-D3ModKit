@@ -546,6 +546,18 @@ void idSoundWorldLocal::MixLoop( int current44kHz, int numSpeakers, float *final
 			found = soundSystemLocal.EFXDatabase.FindEffect(s, &effect);
 		}
 
+		// reverb area config in `maps/<map>.reverb` file.
+		if ( !found ) {
+			int reverbIndex = soundSystemLocal.GetReverb( listenerArea );
+			if ( reverbIndex >= 0 ) {
+				s = soundSystemLocal.GetReverbName( reverbIndex );
+				EFXprintf( "Map EFX: area %d -> '%s'\n", reverbIndex, s.c_str() );
+				if ( s && s[0] ) {
+					found = soundSystemLocal.EFXDatabase.FindEffect( s, &effect );
+				}
+			}
+		}
+
 		// only update if change in settings
 		if (found && listenerEffect != effect) {
 			EFXprintf("Switching to EFX '%s' (#%u)\n", s.c_str(), effect);
