@@ -2449,18 +2449,6 @@ void idGameLocal::RunTimeGroup2() {
 
 /*
 ================
-idGameLocal::RunSharedThink
-================
-*/
-void idGameLocal::RunSharedThink( void ) {
-	idEntity *ent;
-	for ( ent = activeEntities.Next(); ent != NULL; ent = ent->activeNode.Next() ) {
-		ent->SharedThink();
-	}
-}
-
-/*
-================
 idGameLocal::RunFrame
 ================
 */
@@ -2601,8 +2589,6 @@ gameReturn_t idGameLocal::RunFrame(const usercmd_t* clientCmds) {
 #ifdef _D3XP
 		RunTimeGroup2();
 #endif
-
-		RunSharedThink();
 
 		// remove any entities that have stopped thinking
 		if ( numEntitiesToDeactivate ) {

@@ -524,8 +524,6 @@ private:
 	void					ShowTargets( void );
 	void					RunDebugInfo( void );
 
-	void					RunSharedThink();
-
 	void					InitScriptForMap( void );
 
 	void					InitConsoleCommands( void );

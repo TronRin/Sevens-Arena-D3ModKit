@@ -200,8 +200,6 @@ public:
 	const char *				GetSuperclass( void ) const;
 	void						FindUninitializedMemory( void );
 
-	virtual void				SharedThink() { }
-
 	void						Save( idSaveGame *savefile ) const {};
 	void						Restore( idRestoreGame *savefile ) {};
 
