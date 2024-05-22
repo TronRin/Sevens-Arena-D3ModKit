@@ -1645,6 +1645,7 @@
 #define IDC_RBF_FILENAME                45013
 #define IDC_GOTOLINE_STATIC             45014
 #define IDC_GOTOLINE_EDIT               45015
+#define IDD_WAITDLG_PROGRESS            45016
 
 // Next default values for new objects
 // 

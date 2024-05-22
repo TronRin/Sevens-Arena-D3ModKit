@@ -76,6 +76,7 @@ const float	HUGE_DISTANCE = 100000;
 #include "InspectorDialog.h"
 #include "undo.h"
 #include "PMESH.H"
+#include "SplashScreen.h"
 
 void	Error (char *error, ...);
 void	Warning (char *error, ...);

@@ -792,6 +792,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 		return -1;
 	}
 
+	// Load the icon
+	HICON hIcon = AfxGetApp()->LoadIconA( IDI_MAINFRAME_RADIANT );
+	if ( hIcon ) {
+		SetIcon( hIcon, TRUE );
+		SetIcon( hIcon, FALSE );
+	}
+
+	SetWindowTheme( GetSafeHwnd(), L"EXPLORER", NULL );
+
 	if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP
 		| CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) || !m_wndToolBar.LoadToolBar(IDR_TOOLBAR)) {
 		TRACE0("Failed to create toolbar\n");
@@ -879,15 +888,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	}
 
 	Sys_UpdateWindows ( W_ALL );
-
-	// Load the icon
-	HICON hIcon = AfxGetApp()->LoadIconA( IDI_MAINFRAME_RADIANT );
-	if ( hIcon ) {
-		SetIcon( hIcon, TRUE );
-		SetIcon( hIcon, FALSE );
-	}
-
-	SetWindowTheme(GetSafeHwnd(), L"EXPLORER", NULL);
 	return 0;
 }
 
