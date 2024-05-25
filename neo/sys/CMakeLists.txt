@@ -132,6 +132,7 @@ set( src_imgui
 	${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
 	sys_imgui.h
 	sys_imgui.cpp
+	imgui_savestyle.cpp
 )
 
 set( src_sound
