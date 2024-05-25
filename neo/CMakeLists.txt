@@ -1102,7 +1102,6 @@ endif()
 
 	target_link_libraries(${DHEWM3BINARY}
 		idlib
-		mikktspace # RBMIKKT_TANGENT
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${OPENAL_LIBRARY}
 		${CURL_LIBRARY}
@@ -1152,7 +1151,6 @@ endif()
 
 	target_link_libraries(${DHEWM3BINARY}ded
 		idlib
-		mikktspace # RBMIKKT_TANGENT
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${CURL_LIBRARY}
 		${ZLIB_LIBRARY}
