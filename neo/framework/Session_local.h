@@ -255,7 +255,6 @@ public:
 	idUserInterface *	guiLoading;
 	idUserInterface *	guiIntro;
 	idUserInterface *	guiTest;
-	idUserInterface *	guiTakeNotes;
 
 	idUserInterface *	guiMsg;
 	idUserInterface *	guiMsgRestore;				// store the calling GUI for restore
@@ -336,9 +335,7 @@ public:
 	void				HandleIntroMenuCommands( const char *menuCommand );
 	void				HandleRestartMenuCommands( const char *menuCommand );
 	void				HandleMsgCommands( const char *menuCommand );
-	void				HandleNoteCommands( const char *menuCommand );
 	void				GetSaveGameList( idStrList &fileList, idList<fileTIME_T> &fileTimes );
-	void				TakeNotes( const char * p, bool extended = false );
 	void				UpdateMPLevelShot( void );
 
 	void				SetSaveGameGuiVars( void );
