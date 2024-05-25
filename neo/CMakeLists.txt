@@ -620,15 +620,12 @@ set(src_idlib
 
 add_globbed_headers(src_idlib "idlib")
 
-# RBMIKKT_TANGENT...
 
 set(src_mikktspace
 	libs/mikktspace/mikktspace.c
 )
 
 add_globbed_headers(src_mikktspace "mikktspace")
-
-# ...RBMIKKT_TANGENT
 
 set(src_game
 	game/AF.cpp
@@ -795,6 +792,7 @@ set(src_debuggerServer
 
 set(src_core
 	${src_renderer}
+	${src_mikktspace}
 	${src_framework}
 	${src_cm}
 	${src_dmap}
@@ -1053,16 +1051,6 @@ endif()
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_idlib})
 
 set_target_properties(idlib PROPERTIES FOLDER "libs")
-
-# RBMIKKT_TANGENT...
-
-add_library(mikktspace STATIC ${src_mikktspace})
-
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_mikktspace})
-
-set_target_properties(mikktspace PROPERTIES FOLDER "libs")
-
-# ...RBMIKKT_TANGENT
 
 if(HARDLINK_GAME)
 	if(BASE)
