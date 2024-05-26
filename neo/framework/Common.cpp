@@ -233,6 +233,7 @@ private:
 	bool						com_fullyInitialized;
 	bool						com_refreshOnPrint;		// update the screen every print for dmap
 	int							com_errorEntered;		// 0, ERP_DROP, etc
+	bool						com_shuttingDown;
 
 	char						errorMessage[MAX_PRINT_MSG_SIZE];
 
@@ -268,6 +269,7 @@ idCommonLocal::idCommonLocal( void ) {
 	com_fullyInitialized = false;
 	com_refreshOnPrint = false;
 	com_errorEntered = 0;
+	com_shuttingDown = false;
 	com_debuggerSupported = false;
 
 	strcpy( errorMessage, "" );
@@ -3079,6 +3081,8 @@ idCommonLocal::Shutdown
 =================
 */
 void idCommonLocal::Shutdown( void ) {
+	com_shuttingDown = true;
+
 	idAsyncNetwork::server.Kill();
 	idAsyncNetwork::client.Shutdown();
 
