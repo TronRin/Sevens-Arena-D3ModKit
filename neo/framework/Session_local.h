@@ -169,6 +169,8 @@ public:
 	bool				QuickSave();
 	bool				QuickLoad();
 
+	void				RunSessionTic( void );
+
 	const char			*GetAuthMsg( void );
 
 	//=====================================
@@ -373,6 +375,8 @@ private:
 	bool				authWaitBox;
 
 	idStr				authMsg;
+
+	int					lastTicMsec;
 
 	bool				demoversion; // DG: true if running the Demo version of Doom3, for FT_IsDemo (see Common.h)
 };

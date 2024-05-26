@@ -297,7 +297,6 @@ public:
 	virtual bool			IsInitialized( void ) const { return true; }
 	virtual void			Frame( void ) {}
 	virtual void			GUIFrame( bool execCmd, bool network  ) {}
-	virtual void			Async( void ) {}
 	virtual void			StartupVariable( const char *match, bool once ) {}
 	virtual void			InitTool( const toolFlag_t tool, const idDict *dict ) {}
 	virtual void			ActivateTool( bool active ) {}
@@ -322,6 +321,9 @@ public:
 	virtual int				KeyState( int key ) { return 0; }
 	virtual bool			SetCallback( idCommon::CallbackType cbt, idCommon::FunctionPointer cb, void* userArg ) { return true; }
 	virtual bool			GetAdditionalFunction( idCommon::FunctionType ft, idCommon::FunctionPointer* out_fnptr, void** out_userArg ) { return true; }
+	virtual float			Get_com_engineHz_latched( void ) { return 1.0f; }
+	virtual int64_t			Get_com_engineHz_numerator( void ) { return NULL; }
+	virtual int64_t			Get_com_engineHz_denominator( void ) { return NULL; }
 };
 
 idCVar com_developer( "developer", "0", CVAR_BOOL|CVAR_SYSTEM, "developer mode" );

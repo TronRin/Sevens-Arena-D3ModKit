@@ -377,6 +377,8 @@ idSessionLocal::idSessionLocal() {
 
 	menuSoundWorld = NULL;
 
+	lastTicMsec = 0;
+
 	demoversion=false;
 
 	Clear();
@@ -517,9 +519,7 @@ void idSessionLocal::CompleteWipe() {
 		return;
 	}
 	while ( com_ticNumber < wipeStopTic ) {
-#if ID_CONSOLE_LOCK
-		emptyDrawCount = 0;
-#endif
+		com_ticNumber++;
 		UpdateScreen( true );
 	}
 }
@@ -2555,6 +2555,83 @@ void idSessionLocal::UpdateScreen( bool outOfSequence ) {
 
 /*
 ===============
+idSessionLocal::RunSessionTic
+===============
+*/
+void idSessionLocal::RunSessionTic( void ) {
+	// at startup, we may be backwards
+	if ( latchedTicNumber > com_ticNumber ) {
+		latchedTicNumber = com_ticNumber;
+	}
+
+	// se how many tics we should have before continuing
+	int	minTic = latchedTicNumber + 1;
+	if ( com_minTics.GetInteger() > 1 ) {
+		minTic = lastGameTic + com_minTics.GetInteger();
+	}
+
+	if ( readDemo ) {
+		if ( !timeDemo && numDemoFrames != 1 ) {
+			minTic = lastDemoTic + USERCMD_PER_DEMO_FRAME;
+		} else {
+			// timedemos and demoshots will run as fast as they can, other demos
+			// will not run more than 30 hz
+			minTic = latchedTicNumber;
+		}
+	} else if ( writeDemo ) {
+		minTic = lastGameTic + USERCMD_PER_DEMO_FRAME;		// demos are recorded at 30 hz
+	}
+
+	// fixedTic lets us run a forced number of usercmd each frame without timing
+	if ( com_fixedTic.GetInteger() ) {
+		minTic = latchedTicNumber;
+	}
+
+	// Spin in place if needed.  The game should yield the cpu if
+	// it is running over 60 hz, because there is fundamentally
+	// nothing useful for it to do.
+	while ( 1 ) {
+		// jmarshall - remove async thread.
+		extern idCVar com_timescale;
+		int	msec = Sys_Milliseconds();
+		if ( !lastTicMsec ) {
+			lastTicMsec = msec - USERCMD_MSEC;
+		}
+
+		int ticMsec = USERCMD_MSEC;
+
+		// the number of msec per tic can be varies with the timescale cvar
+		float _timescale = com_timescale.GetFloat();
+		if ( _timescale != 1.0f ) {
+			ticMsec /= _timescale;
+			if ( ticMsec < 1 ) {
+				ticMsec = 1;
+			}
+		}
+
+		// don't skip too many
+		if ( _timescale == 1.0f ) {
+			if ( lastTicMsec + 10 * USERCMD_MSEC < msec ) {
+				lastTicMsec = msec - 10 * USERCMD_MSEC;
+			}
+		}
+
+		while ( lastTicMsec + ticMsec <= msec ) {
+			com_ticNumber++;
+			lastTicMsec += ticMsec;
+		}
+		// jmarshall end
+		
+		latchedTicNumber = com_ticNumber;
+		if ( latchedTicNumber >= minTic ) {
+			break;
+		}
+		Sys_Sleep( 1 );
+	}
+}
+
+/*
+===============
 idSessionLocal::Frame
 ===============
 */
@@ -2562,9 +2639,7 @@ extern bool CheckOpenALDeviceAndRecoverIfNeeded();
 extern int g_screenshotFormat;
 void idSessionLocal::Frame() {
 
-	if ( com_asyncSound.GetInteger() == 0 ) {
-		soundSystem->AsyncUpdateWrite( Sys_Milliseconds() );
-	}
+	soundSystem->AsyncUpdate( Sys_Milliseconds() );
 
 	// DG: periodically check if sound device is still there and try to reset it if not
 	//     (calling this from idSoundSystem::AsyncUpdate(), which runs in a separate thread
@@ -2613,41 +2688,7 @@ void idSessionLocal::Frame() {
 		renderSystem->TakeScreenshot( com_aviDemoWidth.GetInteger(), com_aviDemoHeight.GetInteger(), name, com_aviDemoSamples.GetInteger(), NULL );
 	}
 
-	// at startup, we may be backwards
-	if ( latchedTicNumber > com_ticNumber ) {
-		latchedTicNumber = com_ticNumber;
-	}
-
-	// se how many tics we should have before continuing
-	int	minTic = latchedTicNumber + 1;
-	if ( com_minTics.GetInteger() > 1 ) {
-		minTic = lastGameTic + com_minTics.GetInteger();
-	}
-
-	if ( readDemo ) {
-		if ( !timeDemo && numDemoFrames != 1 ) {
-			minTic = lastDemoTic + USERCMD_PER_DEMO_FRAME;
-		} else {
-			// timedemos and demoshots will run as fast as they can, other demos
-			// will not run more than 30 hz
-			minTic = latchedTicNumber;
-		}
-	} else if ( writeDemo ) {
-		minTic = lastGameTic + USERCMD_PER_DEMO_FRAME;		// demos are recorded at 30 hz
-	}
-
-	// fixedTic lets us run a forced number of usercmd each frame without timing
-	if ( com_fixedTic.GetInteger() ) {
-		minTic = latchedTicNumber;
-	}
-
-	while( 1 ) {
-		latchedTicNumber = com_ticNumber;
-		if ( latchedTicNumber >= minTic ) {
-			break;
-		}
-		Sys_WaitForEvent( TRIGGER_EVENT_ONE );
-	}
+	RunSessionTic();
 
 	if ( authEmitTimeout ) {
 		// waiting for a game auth
