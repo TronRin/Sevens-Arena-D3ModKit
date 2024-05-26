@@ -31,7 +31,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "qe3.h"
 #include "Radiant.h"
-#include "autocaulk.h"
+#include "AutoCaulk.h"
 
 // Note: the code in here looks pretty goofy in places, and probably doesn't use the new Q4 class stuff fully,
 //   but I just got it in and compiling from the JK2/SOF2 Radiants via some ugly code replaces, and it works, so there.

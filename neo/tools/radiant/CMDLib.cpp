@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 
 
 #include "qe3.h"
-#include "cmdlib.h"
+#include "CMDLib.h"
 
 #define PATHSEPERATOR   '/'
 
