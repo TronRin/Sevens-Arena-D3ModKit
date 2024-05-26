@@ -134,8 +134,8 @@
 #include "cm/CollisionModel.h"
 
 // AAS files and manager
-#include "tools/compilers/aas/AASFile.h"
-#include "tools/compilers/aas/AASFileManager.h"
+#include "libs/aasfile/AASFile.h"
+#include "libs/aasfile/AASFileManager.h"
 
 // game interface
 #include "framework/Game.h"

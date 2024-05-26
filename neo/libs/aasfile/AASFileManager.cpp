@@ -27,9 +27,9 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include "sys/platform.h"
-#include "tools/compilers/aas/AASFileManager.h"
+#include "libs/aasfile/AASFileManager.h"
 
-#include "tools/compilers/aas/AASFile_local.h"
+#include "libs/aasfile/AASFile_local.h"
 
 /*
 ===============================================================================

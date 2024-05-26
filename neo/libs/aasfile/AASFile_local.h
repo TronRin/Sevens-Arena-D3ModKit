@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __AASFILELOCAL_H__
 #define __AASFILELOCAL_H__
 
-#include "tools/compilers/aas/AASFile.h"
+#include "libs/aasfile/AASFile.h"
 
 /*
 ===============================================================================

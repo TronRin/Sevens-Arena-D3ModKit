@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/FileSystem.h"
 #include "framework/DeclEntityDef.h"
 
-#include "tools/compilers/aas/AASFile_local.h"
+#include "libs/aasfile/AASFile_local.h"
 
 /*
 ===============================================================================

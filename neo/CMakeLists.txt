@@ -370,6 +370,15 @@ if( NOT APPLE AND NOT WIN32 )
 	message( STATUS "  Data directory:    ${datadir}" )
 endif()
 
+set(src_aas_file
+	libs/aasfile/AASFile.cpp
+	libs/aasfile/AASFile_optimize.cpp
+	libs/aasfile/AASFile_sample.cpp
+	libs/aasfile/AASFileManager.cpp
+)
+
+add_globbed_headers(src_aas_file "libs/aasfile")
+
 set(src_renderer
 	renderer/Cinematic.cpp
 	renderer/GuiModel.cpp
@@ -498,11 +507,7 @@ set(src_aas
 	tools/compilers/aas/AASBuild_ledge.cpp
 	tools/compilers/aas/AASBuild_merge.cpp
 	tools/compilers/aas/AASCluster.cpp
-	tools/compilers/aas/AASFile.cpp
-	tools/compilers/aas/AASFile_optimize.cpp
-	tools/compilers/aas/AASFile_sample.cpp
 	tools/compilers/aas/AASReach.cpp
-	tools/compilers/aas/AASFileManager.cpp
 	tools/compilers/aas/Brush.cpp
 	tools/compilers/aas/BrushBSP.cpp
 )
@@ -792,6 +797,7 @@ set(src_debuggerServer
 )
 
 set(src_core
+	${src_aas_file}
 	${src_renderer}
 	${src_mikktspace}
 	${src_framework}
