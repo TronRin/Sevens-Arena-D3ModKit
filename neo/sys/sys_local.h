@@ -64,6 +64,8 @@ public:
 
 	virtual void			OpenURL( const char *url, bool quit );
 	virtual void			StartProcess( const char *exeName, bool quit );
+
+	virtual bool			IsGameWindowVisible( void );
 };
 
 #endif /* !__SYS_LOCAL__ */

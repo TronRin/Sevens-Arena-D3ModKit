@@ -360,5 +360,7 @@ sysEvent_t		idSysLocal::GenerateMouseMoveEvent( int deltax, int deltay ) { sysEv
 void			idSysLocal::OpenURL( const char *url, bool quit ) { }
 void			idSysLocal::StartProcess( const char *exeName, bool quit ) { }
 
+bool			idSysLocal::IsGameWindowVisible( void ) { return false; }
+
 idSysLocal		sysLocal;
 idSys *			sys = &sysLocal;
