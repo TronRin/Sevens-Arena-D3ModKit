@@ -32,7 +32,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Player.h"
 #include "Game_local.h"
 
-#include "ai/AAS_local.h"
+#include "aas/AAS_local.h"
 
 /*
 ============

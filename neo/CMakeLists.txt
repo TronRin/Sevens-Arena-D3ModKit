@@ -663,10 +663,10 @@ set(src_game
 	game/Trigger.cpp
 	game/Weapon.cpp
 	game/WorldSpawn.cpp
-	game/ai/AAS.cpp
-	game/ai/AAS_debug.cpp
-	game/ai/AAS_pathing.cpp
-	game/ai/AAS_routing.cpp
+	game/aas/AAS.cpp
+	game/aas/AAS_debug.cpp
+	game/aas/AAS_pathing.cpp
+	game/aas/AAS_routing.cpp
 	game/ai/AI.cpp
 	game/ai/AI_events.cpp
 	game/ai/AI_pathing.cpp
@@ -738,10 +738,10 @@ set(src_d3xp
 	d3xp/Trigger.cpp
 	d3xp/Weapon.cpp
 	d3xp/WorldSpawn.cpp
-	d3xp/ai/AAS.cpp
-	d3xp/ai/AAS_debug.cpp
-	d3xp/ai/AAS_pathing.cpp
-	d3xp/ai/AAS_routing.cpp
+	d3xp/aas/AAS.cpp
+	d3xp/aas/AAS_debug.cpp
+	d3xp/aas/AAS_pathing.cpp
+	d3xp/aas/AAS_routing.cpp
 	d3xp/ai/AI.cpp
 	d3xp/ai/AI_events.cpp
 	d3xp/ai/AI_pathing.cpp

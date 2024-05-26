@@ -40,7 +40,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "physics/Clip.h"
 #include "physics/Push.h"
 #include "script/Script_Program.h"
-#include "ai/AAS.h"
+#include "aas/AAS.h"
 #include "anim/Anim.h"
 #include "Pvs.h"
 #include "MultiplayerGame.h"

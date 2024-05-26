@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "sys/platform.h"
 #include "Game_local.h"
 
-#include "ai/AAS_local.h"
+#include "aas/AAS_local.h"
 
 #define CACHETYPE_AREA				1
 #define CACHETYPE_PORTAL			2

@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Common.h"
 #include "libs/aasfile/AASFileManager.h"
 
-#include "ai/AAS_local.h"
+#include "aas/AAS_local.h"
 
 /*
 ============
