@@ -826,11 +826,7 @@ void CDialogTextures::addStrList( const char *root, const idStrList &list, int i
  */
 void CDialogTextures::addModels(bool rootItems) {
 	idFileList *files;
-#if USE_COLLADA
-	files = fileSystem->ListFilesTree( "models", ".ase|.lwo|.ma|.dae", true );
-#else
-	files = fileSystem->ListFilesTree("models", ".ase|.lwo|.ma", true);
-#endif
+	files = fileSystem->ListFilesTree("models", ".ase|.lwo|.ma|.obj", true);
 	if ( files->GetNumFiles() ) {
 		addStrList( TypeNames[MODELS], files->GetList(), MODELS );
 	}

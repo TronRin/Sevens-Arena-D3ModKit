@@ -34,6 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "renderer/Model_ase.h"
 #include "renderer/Model_lwo.h"
 #include "renderer/Model_ma.h"
+#include "renderer/Model_obj.h"
 #include "renderer/VertexCache.h"
 
 #include "renderer/Model.h"
@@ -299,6 +300,9 @@ void idRenderModelStatic::InitFromFile( const char *fileName ) {
 	} else if ( extension.Icmp( "ma" ) == 0 ) {
 		loaded		= LoadMA( name );
 		reloadable	= true;
+	} else if ( extension.Icmp( "obj" ) == 0 ) {
+		loaded		= LoadOBJ( name );
+		reloadable = true;
 	} else {
 		common->Warning( "idRenderModelStatic::InitFromFile: unknown type for model: \'%s\'", name.c_str() );
 		loaded		= false;
@@ -1877,6 +1881,51 @@ bool idRenderModelStatic::ConvertMAToModelSurfaces (const struct maModel_s *ma )
 
 /*
 =================
+idRenderModelStatic::ConvertOBJToModelSurfaces
+=================
+*/
+bool idRenderModelStatic::ConvertOBJToModelSurfaces( const char *filename ) {
+	idList<idDrawVert> vertices;
+	idList<int> indices;
+
+	if ( !OBJ_LoadOBJ( filename, vertices, indices ) ) {
+		common->Warning( "Failed to load OBJ model: %s", filename );
+		return false;
+	}
+
+	modelSurface_t surf;
+	memset( &surf, 0, sizeof( surf ) );
+
+	idStr materialName = filename;
+	materialName.StripFileExtension();
+	const idMaterial *shader = declManager->FindMaterial( materialName );
+	surf.shader = shader;
+	surf.id = NumSurfaces();
+
+	srfTriangles_t *tri = R_AllocStaticTriSurf();
+	tri->numVerts = vertices.Num();
+	tri->numIndexes = indices.Num();
+	R_AllocStaticTriSurfVerts( tri, tri->numVerts );
+	R_AllocStaticTriSurfIndexes( tri, tri->numIndexes );
+
+	for ( int i = 0; i < tri->numVerts; i++ ) {
+		tri->verts[i] = vertices[i];
+	}
+
+	for ( int i = 0; i < tri->numIndexes; i++ ) {
+		tri->indexes[i] = indices[i];
+	}
+
+	tri->generateNormals = true;
+
+	surf.geometry = tri;
+	AddSurface( surf );
+
+	return true;
+}
+
+/*
+=================
 idRenderModelStatic::LoadASE
 =================
 */
@@ -2099,6 +2148,14 @@ bool idRenderModelStatic::LoadFLT( const char *fileName ) {
 	return true;
 }
 
+/*
+=================
+idRenderModelStatic::LoadOBJ
+=================
+*/
+bool idRenderModelStatic::LoadOBJ( const char *fileName ) {
+	return ConvertOBJToModelSurfaces( fileName );
+}
 
 //=============================================================================
 

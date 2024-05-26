@@ -325,6 +325,9 @@ public:
 	int					DynamicMemoryUsed() const;
 	static idStr		FormatNumber( int number );
 
+	void				StripLeadingWhitespace( void );
+	bool				StartsWith( const char *prefix ) const;
+
 protected:
 	int					len;
 	char *				data;

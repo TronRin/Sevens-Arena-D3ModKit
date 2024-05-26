@@ -598,13 +598,7 @@ void	FixGlobalTjunctions( uEntity_t *e ) {
 			if ( !modelName ) {
 				continue;
 			}
-			if ( !strstr( modelName, ".lwo" ) 
-				&& !strstr( modelName, ".ase" ) 
-				&& !strstr( modelName, ".ma" ) 
-#if USE_COLLADA
-				&& !strstr(modelName, ".dea")
-#endif
-				) {
+			if ( !strstr( modelName, ".lwo" ) && !strstr( modelName, ".ase" ) && !strstr( modelName, ".ma" ) && !strstr( modelName, ".obj" ) ) {
 				continue;
 			}
 

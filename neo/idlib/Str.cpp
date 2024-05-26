@@ -1785,6 +1785,36 @@ idStr idStr::FormatNumber( int number ) {
 	return string;
 }
 
+/*
+=================
+idStr::StripLeadingWhitespace
+=================
+*/
+void idStr::StripLeadingWhitespace( void ) {
+	int start = 0;
+	while ( start < Length() && isspace( (*this)[start]) ) {
+		start++;
+	}
+
+	if ( start > 0 ) {
+		*this = Right( Length() - start );
+	}
+}
+
+/*
+=================
+idStr::StartsWith
+=================
+*/
+bool idStr::StartsWith( const char *prefix ) const {
+	int prefixLength = strlen( prefix );
+	if ( prefixLength > Length() ) {
+		return false;
+	}
+
+	return idStr::Cmpn( c_str(), prefix, prefixLength ) == 0;
+}
+
 // behaves like C99's vsnprintf() by returning the amount of bytes that
 // *would* have been written into a big enough buffer, even if that's > size
 // unlike idStr::vsnPrintf() which returns -1 in that case

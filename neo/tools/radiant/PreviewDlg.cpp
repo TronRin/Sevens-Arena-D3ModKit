@@ -121,11 +121,9 @@ void CPreviewDlg::BuildTree() {
 		files = fileSystem->ListFilesTree( "models", ".ma" );
 		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
 		fileSystem->FreeFileList( files );
-#if USE_COLLADA
-		files = fileSystem->ListFilesTree( "models", ".dae" );
+		files = fileSystem->ListFilesTree( "models", ".obj" );
 		AddStrList( BASE_GAMEDIR, files->GetList(), MODELS );
-		fileSystem->FreeFileList(files);
-#endif
+		fileSystem->FreeFileList( files );
 	} else if ( currentMode == SOUNDS ) {
 		AddSounds( true );
 	} else if ( currentMode == MATERIALS ) {
@@ -350,12 +348,6 @@ void CPreviewDlg::OnTvnSelchangedTreeMedia(NMHDR *pNMHDR, LRESULT *pResult)
 				}
 				else {
 					lsize = 768 * 1024;
-				}
-				if ( size > lsize ) {
-					if ( MessageBox("Model appears to be quite large, are you sure you want to preview it?", "High Poly Model?", MB_YESNO ) == IDNO ) {
-						*pResult = 0;
-						return;
-					}
 				}
 				m_drawModel.setMedia( modelMedia );
 				if ( currentMode == SKINS ) {

@@ -2049,11 +2049,7 @@ Select_ToCM
 ==================
 */
 void Select_ToCM() {
-#if USE_COLLADA
-	CFileDialog dlgFile( FALSE, "lwo, ase, dae", NULL, 0, "(*.lwo)|*.lwo|(*.ase)|*.ase|(*.ma)|*.ma|(*.dae)|*.dae||", g_pParentWnd );
-#else
-	CFileDialog dlgFile(FALSE, "lwo, ase", NULL, 0, "(*.lwo)|*.lwo|(*.ase)|*.ase|(*.ma)|*.ma||", g_pParentWnd);
-#endif
+	CFileDialog dlgFile( FALSE, "lwo, ase, obj", NULL, 0, "(*.obj)|*.obj|(*.lwo)|*.lwo|(*.ase)|*.ase|(*.ma)|*.ma||", g_pParentWnd );
 
 	if ( dlgFile.DoModal() == IDOK ) {
 		idMapEntity *mapEnt;

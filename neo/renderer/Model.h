@@ -143,9 +143,9 @@ It should be possible to mix conventional and binarised mesh blocks in the same 
 order of the binarised blocks is significant when the binary data is read back (must be retained).
 MD5_BINARY_MESH > 0 Enable reading of a binarised MD5 model.
 MD5_BINARY_MESH > 1 Enable writing of a binarised MD5 model. If the 'commandline' key/pair value
-                    starts with "binary-export" the remainder is expected to specify a DOS path to a
+					starts with "binary-export" the remainder is expected to specify a DOS path to a
 					target file for the binarised mesh data. For example;
-                    commandline "binary-export E:\DOOM3\OUT\pak452\models\md5\chars\marine.md5data"
+					commandline "binary-export E:\DOOM3\OUT\pak452\models\md5\chars\marine.md5data"
 MD5_BINARY_MESH > 2 As above but will also write the simplified md5mesh file alongside the data file.
 MD5_BINARY_MESH > 3 As above but will also write the original md5mesh with an 'md5save' extension.
 =================================================================================================== */
