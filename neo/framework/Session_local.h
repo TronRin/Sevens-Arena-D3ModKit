@@ -169,8 +169,6 @@ public:
 	bool				QuickSave();
 	bool				QuickLoad();
 
-	void				RunSessionTic( void );
-
 	const char			*GetAuthMsg( void );
 
 	//=====================================

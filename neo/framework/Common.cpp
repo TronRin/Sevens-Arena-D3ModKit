@@ -2533,8 +2533,10 @@ void idCommonLocal::Frame( void ) {
 					gameTimeResidual -= frameDelay;
 					gameFrame++;
 					numGameFrames++;
-					// if there is enough residual left, we may run additional frames
+					com_ticNumber++;
 				}
+
+				sessLocal.latchedTicNumber = com_ticNumber;
 
 				if ( numGameFrames > 0 ) {
 					// ready to actually run them
@@ -2562,7 +2564,7 @@ void idCommonLocal::Frame( void ) {
 			gameFrame++;
 		}
 
-		com_frameTime = com_ticNumber * USERCMD_MSEC;
+		com_frameTime = Sys_Milliseconds();
 
 		idAsyncNetwork::RunFrame();
 
