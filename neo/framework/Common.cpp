@@ -27,6 +27,7 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include <SDL.h>
+#include <thread>
 
 #include "sys/platform.h"
 #include "idlib/containers/HashTable.h"
@@ -212,6 +213,8 @@ public:
 	void						LocalizeSpecificMapData( const char *fileName, idLangDict &langDict, const idLangDict &replaceArgs );
 
 	void						SetMachineSpec( void );
+
+	bool						IsShuttingDown( void ) { return com_shuttingDown; }
 
 private:
 	void						InitCommands( void );
@@ -2905,6 +2908,20 @@ static bool checkForHelp(int argc, char **argv)
 
 /*
 =================
+idSoundThread
+=================
+*/
+void idSoundThread( void ) {
+	while ( !commonLocal.IsShuttingDown() ) {
+		// Call the AsyncUpdate method with the current milliseconds
+		soundSystem->AsyncUpdate( Sys_Milliseconds() );
+		Sleep( 0 );
+	}
+}
+
+
+/*
+=================
 idCommonLocal::Init
 =================
 */
@@ -3062,6 +3079,9 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		console->ClearNotifyLines();
 
 		ClearCommandLine();
+
+		// Initialize our sound thread.
+		static std::thread updateThread( idSoundThread );
 
 		// load the persistent console history
 		console->LoadHistory();

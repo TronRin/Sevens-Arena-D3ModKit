@@ -2562,8 +2562,6 @@ extern bool CheckOpenALDeviceAndRecoverIfNeeded();
 extern int g_screenshotFormat;
 void idSessionLocal::Frame() {
 
-	soundSystem->AsyncUpdate( Sys_Milliseconds() );
-
 	// DG: periodically check if sound device is still there and try to reset it if not
 	//     (calling this from idSoundSystem::AsyncUpdate(), which runs in a separate thread
 	//      by default, causes a deadlock when calling idCommon->Warning())
