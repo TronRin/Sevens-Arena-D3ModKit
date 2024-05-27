@@ -52,7 +52,6 @@ typedef struct
 
 	idVec3		forward, right, up;	// move matrix
 	idVec3		vup, vpn, vright;	// view matrix
-	float		viewDist;
 } camera_t;
 
 
@@ -86,8 +85,7 @@ public:
 	void ShiftTexture_BrushPrimit(face_t *f, int x, int y);
 	void SetXYFriend(CXYWnd* pWnd);
 	camera_t& Camera(){return m_Camera;};
-	void Cam_MouseControl();
-	void Cam_KeyControl(float dtime);
+	void Cam_MouseControl(float dtime);
 	void Cam_ChangeFloor(bool up);
 	void BuildRendererState();
 	void ToggleRenderMode();
@@ -129,29 +127,20 @@ public:
 	}
 
 	void Cam_BuildMatrix();
-	void PositionView();
-	brush_t* CreateDropBrush();
 
 	CXYWnd* m_pXYFriend;
 
 protected:
 	void Cam_Init();
 	void Cam_PositionDrag();
-	void Cam_PositionRotate();
-	void Cam_Rotate(int x, int y, idVec3 org);
 	void Cam_MouseLook();
 	void Cam_MouseDown(int x, int y, int buttons);
 	void Cam_MouseUp (int x, int y, int buttons);
 	void Cam_MouseMoved (int x, int y, int buttons);
-	void NewBrushDrag(int x, int y);
 	void InitCull();
 	bool CullBrush (brush_t *b, bool cubicOnly);
 	void Cam_Draw();
 	void Cam_Render();
-	void Cam_DrawMapBounds();
-	void Cam_DrawWorldAxis();
-	void Cam_DrawCameraAxis();
-	void Cam_DrawClipPoints();
 
 	// game renderer interaction
 	void	FreeRendererState();
@@ -175,8 +164,6 @@ protected:
 	CPoint m_ptButton;
 	CPoint m_ptCursor;
 	CPoint m_ptLastCursor;
-	CPoint m_ptDown;
-	CPoint m_ptLBDown;
 	face_t* m_pSide_select;
 	idVec3 m_vCull1;
 	idVec3 m_vCull2;
@@ -186,7 +173,6 @@ protected:
 	idVec3 saveOrg;
 	idAngles saveAng;
 	bool saveValid;
-	bool m_bCanCreateBrush;
 	idVec3 m_vPressdelta;
 
 	// Generated message map functions
@@ -207,11 +193,8 @@ protected:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
-	afx_msg void OnMoving(UINT nSide, LPRECT lpRect);
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

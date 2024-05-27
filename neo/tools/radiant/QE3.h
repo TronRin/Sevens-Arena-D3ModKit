@@ -40,16 +40,16 @@ If you have questions concerning this license or the applicable additional terms
 #include <uxtheme.h> 
 #pragma comment(lib, "UxTheme")
 
-#include "qertypes.h"
-#include "cmdlib.h"
-#include "parse.h"
+#include "QerTypes.h"
+#include "CMDLib.h"
+#include "Parse.h"
 
 #include <commctrl.h>
 #include "afxres.h"
 #include "../../sys/win32/rc/resource.h"       // main symbols
 #include "../../sys/win32/win_local.h"
 
-#include "qedefs.h"
+#include "QeDefs.h"
 
 // stuff from old qfiles.h
 const int MAX_MAP_ENTITIES = 2048;

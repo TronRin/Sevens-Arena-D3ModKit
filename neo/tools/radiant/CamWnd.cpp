@@ -90,7 +90,6 @@ CCamWnd::CCamWnd() {
 	selectMode = false;
 	soundMode = false;
 	saveValid = false;
-	m_bCanCreateBrush = false;
 	Cam_Init();
 }
 
@@ -116,14 +115,11 @@ BEGIN_MESSAGE_MAP(CCamWnd, CWnd)
 	ON_WM_RBUTTONUP()
 	ON_WM_CREATE()
 	ON_WM_SIZE()
-	ON_WM_SIZING()
-	ON_WM_MOVING()
 	ON_WM_KEYUP()
 	ON_WM_NCCALCSIZE()
 	ON_WM_KILLFOCUS()
 	ON_WM_SETFOCUS()
 	ON_WM_TIMER()
-	ON_WM_MOUSEWHEEL()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 /*
@@ -224,177 +220,25 @@ void CCamWnd::OnClose() {
 extern void Select_RotateTexture(float amt, bool absolute);
 
 /*
-================
-AxializeVector
-================
-*/
-static void AxializeVector( idVec3& v ) {
-	idVec3	a;
-	float	o;
-	int		i;
-
-	if ( !v[0] && !v[1] ) {
-		return;
-	}
-
-	if ( !v[1] && !v[2] ) {
-		return;
-	}
-
-	if ( !v[0] && !v[2] ) {
-		return;
-	}
-
-	for ( i = 0; i < 3; i++ ) {
-		a[i] = idMath::Fabs( v[i] );
-	}
-
-	if ( a[0] > a[1] && a[0] > a[2] ) {
-		i = 0;
-	} else if( a[1] > a[0] && a[1] > a[2] ) {
-		i = 1;
-	} else {
-		i = 2;
-	}
-
-	o = v[i];
-	VectorCopy( vec3_origin, v );
-	if ( o < 0 ) {
-		v[i] = -1;
-	} else {
-		v[i] = 1;
-	}
-}
-
-/*
  =======================================================================================================================
  =======================================================================================================================
  */
 void CCamWnd::OnMouseMove(UINT nFlags, CPoint point) {
 	CRect	r;
 	GetClientRect(r);
-
-	m_ptDown.x = 0;
-	m_ptDown.y = 0;
-
-	// TODO: Fix this so mouse texture maniipulation is useable
-	if ( GetCapture() == this && ( GetAsyncKeyState( VK_MENU ) & 0x8000 ) ) {
-		/*
-		if ( GetAsyncKeyState( VK_CONTROL ) & 0x8000 ) {
-			Select_RotateTexture( (float)point.y - m_ptLastCursor.y );
-		} else if ( GetAsyncKeyState( VK_SHIFT ) & 0x8000) {
-			Select_ScaleTexture( ( (float)point.x / m_ptLastCursor.x ), (float)m_ptLastCursor.y / point.y );
-		} else {
-			Select_ShiftTexture( ( (float)point.x - m_ptLastCursor.x ) * 0.1f, ( (float)m_ptLastCursor.y - point.y ) * 0.1f );
+	if	(GetCapture() == this && (GetAsyncKeyState(VK_MENU) & 0x8000) && !((GetAsyncKeyState(VK_SHIFT) & 0x8000) || (GetAsyncKeyState(VK_CONTROL) & 0x8000))) {
+		if ( GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+			Select_RotateTexture((float)point.y - m_ptLastCursor.y);
 		}
-		*/
-	} else {
-		bool bCrossHair = false;
-		if ( m_pXYFriend->ClipMode() && !( m_nCambuttonstate & MK_RBUTTON ) ) {
-			//const char* status;
-			float pressx = m_ptLBDown.x;
-			float pressy = r.bottom - 1 - m_ptLBDown.y;
-			float x = point.x;
-			float y = r.bottom - 1 - point.y;
-
-			if ( g_pMovingClip && GetCapture() == this ) {
-				idVec3 xAxis, yAxis, move, delta;
-				float scale = idVec3( g_pMovingClip->m_ptClip - m_Camera.origin ).LengthFast() / 768;
-
-				// clear along one axis
-				if ( m_nCambuttonstate == ( MK_LBUTTON | MK_SHIFT ) ) {
-					if ( abs( x - pressx ) > abs( y - pressy ) ) {
-						y = pressy;
-					} else {
-						x = pressx;
-					}
-				}
-
-				VectorCopy( m_Camera.vright, xAxis );
-				VectorCopy( m_Camera.vup, yAxis );
-				
-				AxializeVector( xAxis );
-				AxializeVector( yAxis );
-				
-				for ( int i = 0; i < 3; i++ ) {
-					move[i] = ( xAxis[i] * ( x - pressx ) + yAxis[i] * ( y - pressy ) ) * scale;
-					move[i] = floor( move[i] / g_qeglobals.d_gridsize + 0.5 ) * g_qeglobals.d_gridsize;
-				}
-
-				VectorSubtract( move, m_vPressdelta, delta );
-				VectorCopy( move, m_vPressdelta );
-				VectorAdd( g_pMovingClip->m_ptClip, delta, g_pMovingClip->m_ptClip );
-
-				m_bCanCreateBrush = false;	// sikk -
-				bCrossHair = true;
-				
-				//printf( status, "x:: %.1f  y:: %.1f  z:: %.1f", g_pMovingClip->m_ptClip.x, g_pMovingClip->m_ptClip.x, g_pMovingClip->m_ptClip.x );
-				//g_pParentWnd->SetStatusText( 1, status );
-				
-				Sys_UpdateWindows( W_ALL );
-			} else {
-				VectorCopy( vec3_origin, m_vPressdelta );
-				g_pMovingClip = NULL;
-
-				// calc ray direction
-				idVec3	dir, temp;
-				float up = ( float )( y - m_Camera.height / 2 ) / ( m_Camera.width / 2 );
-				float right = ( float )( x - m_Camera.width / 2 ) / ( m_Camera.width / 2 );
-				
-				for ( int i = 0; i < 3; i++ ) {
-					dir[i] = m_Camera.vpn[i] + m_Camera.vright[i] * right + m_Camera.vup[i] * up;
-				}
-
-				dir.Normalize();
-
-				// find the clip point closest to the ray
-				float d, bestd;
-				bestd = 8;
-
-				if ( g_Clip1.Set() ) {
-					temp = g_Clip1.m_ptClip - ( m_Camera.origin + ( g_Clip1.m_ptClip - m_Camera.origin ) * dir * dir );
-					d = temp.Length();
-					if ( d <= bestd ) {
-						bestd = d;
-						bCrossHair = true;
-						g_pMovingClip = &g_Clip1;
-					}
-				}
-
-				if ( g_Clip2.Set() ) {
-					temp = g_Clip2.m_ptClip - ( m_Camera.origin + ( g_Clip2.m_ptClip - m_Camera.origin ) * dir * dir );
-					d = temp.Length();
-					if ( d <= bestd ) {
-						bestd = d;
-						bCrossHair = true;
-						g_pMovingClip = &g_Clip2;
-					}
-				}
-
-				if ( g_Clip3.Set() ) {
-					temp = g_Clip3.m_ptClip - ( m_Camera.origin + ( g_Clip3.m_ptClip - m_Camera.origin ) * dir * dir );
-					d = temp.Length();
-					if ( d <= bestd ) {
-						bCrossHair = true;
-						g_pMovingClip = &g_Clip3;
-					}
-				}
-			}
-
-			if ( bCrossHair == false ) {
-				Cam_MouseMoved( point.x, r.bottom - 1 - point.y, nFlags );
-			}
-		} else {
-			Cam_MouseMoved( point.x, r.bottom - 1 - point.y, nFlags );
+		else if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+			Select_ScaleTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
 		}
-
-		if ( bCrossHair ) {
-			SetCursor( ::LoadCursor( NULL, IDC_CROSS ) );
-		} else {
-			SetCursor( ::LoadCursor( NULL, IDC_ARROW ) );
+		else {
+			Select_ShiftTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
 		}
-
-		//Cam_MouseMoved( point.x, r.bottom - 1 - point.y, nFlags );
+	}
+	else {
+		Cam_MouseMoved(point.x, r.bottom - 1 - point.y, nFlags);
 	}
 
 	m_ptLastCursor = point;
@@ -671,118 +515,6 @@ void CCamWnd::Cam_PositionDrag() {
 
 /*
 ================
-Cam_Rotate
-================
-*/
-void CCamWnd::Cam_Rotate( int x, int y, idVec3 org ) {
-	float	dist;
-	idVec3	work, forward, dir, vecdist;
-
-	for ( int i = 0; i < 3; i++ ) {
-		vecdist[i] = fabs( ( m_Camera.origin[i] - org[i] ) );
-		vecdist[i] *= vecdist[i];
-	}
-
-	m_Camera.viewDist = dist = sqrt( vecdist[0] + vecdist[1] + vecdist[2] );
-
-	VectorSubtract( m_Camera.origin, org, work );
-	//VectorToAngles( work, m_Camera.angles );
-
-	m_Camera.angles = work.ToAngles();
-	m_Camera.angles[PITCH] = -m_Camera.angles[PITCH];
-
-	if ( m_Camera.angles[PITCH] > 100 ) {
-		m_Camera.angles[PITCH] -= 360;
-	}
-
-	m_Camera.angles[PITCH] += ( float )y * 0.25f;
-	m_Camera.angles[PITCH] = idMath::ClampFloat( -89, 89, m_Camera.angles[PITCH] );
-	m_Camera.angles[PITCH] = -m_Camera.angles[PITCH];
-
-	m_Camera.angles[YAW] -= ( float )x * 0.25f;
-
-	forward = m_Camera.angles.ToForward();
-//	forward[2] = -forward[2];
-	VectorMA( org, dist, forward, m_Camera.origin );
-
-	dir = org - m_Camera.origin;
-	dir.Normalize();
-	m_Camera.angles[1] = RAD2DEG( atan2( dir[1], dir[0] ) );
-	m_Camera.angles[0] = RAD2DEG( asin( dir[2] ) );
-
-	Cam_BuildMatrix();
-
-	Sys_SetCursorPos( m_ptCursor.x, m_ptCursor.y );
-	Sys_UpdateWindows( W_ALL );
-}
-
-/*
-==================
-Cam_PositionRotate
-==================
-*/
-void CCamWnd::Cam_PositionRotate() {
-	int		/*x, y,*/ i;
-	idVec3	mins, maxs, forward;
-	idVec3	org;
-	brush_t*	b;
-	face_t*	f;
-
-	SetCursor( NULL );
-	//Sys_GetCursorPos( &x, &y );
-	CPoint current;
-	GetCursorPos( &current );
-
-	if ( current.x != m_ptCursor.x || current.y != m_ptCursor.y ) {
-		current.x -= m_ptCursor.x;
-		current.y -= m_ptCursor.y;
-
-		if ( selected_brushes.next != &selected_brushes ) {
-			mins[0] = mins[1] = mins[2] = 99999;
-			maxs[0] = maxs[1] = maxs[2] = -99999;
-			for( b = selected_brushes.next; b != &selected_brushes; b = b->next )
-			{
-				for( i = 0; i < 3; i++ )
-				{
-					mins[i] = min( mins[i], b->mins[i] );
-					maxs[i] = max( maxs[i], b->maxs[i] );
-				}
-			}
-			org = ( mins + maxs ) * 0.5f;
-		} else if( g_ptrSelectedFaces.GetCount() > 0 ) {
-			mins[0] = mins[1] = mins[2] = 99999;
-			maxs[0] = maxs[1] = maxs[2] = -99999;
-
-			//		f = g_pfaceSelectedFace;
-			// rotate around last selected face
-			f = reinterpret_cast<face_t*>( g_ptrSelectedFaces.GetAt( g_ptrSelectedFaces.GetSize() - 1 ) );
-			//for ( j = 0; j < f->face_winding->numpoints; j++ ) {
-			//	for ( i = 0; i < 3; i++ ) {
-			//		if ( f->face_winding->points[j][i] > maxs[i] ) {
-			//			maxs[i] = f->face_winding->points[j][i];
-			//		}
-			//		if ( f->face_winding->points[j][i] < mins[i] ) {
-			//			mins[i] = f->face_winding->points[j][i];
-			//		}
-			//	}
-			//}
-
-			org = f->face_winding->GetCenter();
-		} else {
-			//AngleVectors(g_qeglobals.d_camera.angles, forward, NULL, NULL);
-			forward = m_Camera.angles.ToForward();
-			forward[2] = -forward[2];
-			VectorMA( m_Camera.origin, m_Camera.viewDist, forward, org );
-
-			//	org = m_Camera.origin += -m_Camera.viewDist * m_Camera.vpn;
-		}
-
-		Cam_Rotate( current.x, current.y, org );
-	}
-}
-
-/*
-================
 Cam_MouseLook
 ================
 */
@@ -791,17 +523,16 @@ void CCamWnd::Cam_MouseLook() {
 
 	GetCursorPos(&current);
 	if (current.x != m_ptCursor.x || current.y != m_ptCursor.y) {
-		SetCursor( NULL );
+
 		current.x -= m_ptCursor.x;
 		current.y -= m_ptCursor.y;
 
-		m_Camera.angles[PITCH] -= ( float )current.y * 0.25f;
-		m_Camera.angles[PITCH] = idMath::ClampFloat( -89, 89, m_Camera.angles[PITCH] );
-		m_Camera.angles[YAW] -= ( float )current.x * 0.25f;
+		m_Camera.angles[PITCH] -= (float)((float)current.y * 0.25f);
+		m_Camera.angles[YAW] -= (float)((float)current.x * 0.25f);
 
 		SetCursorPos(m_ptCursor.x, m_ptCursor.y);
 
-		//Cam_BuildMatrix();
+		Cam_BuildMatrix();
 	}
 }
 
@@ -810,58 +541,60 @@ void CCamWnd::Cam_MouseLook() {
 Cam_MouseControl
 ==================
 */
-void CCamWnd::Cam_MouseControl() {
-	CPoint current;
-
-	GetCursorPos( &current );
-	if ( current.x != m_ptCursor.x || current.y != m_ptCursor.y ) {
-		SetCursor( NULL );
-
-		current.x -= m_ptCursor.x;
-		current.y -= m_ptCursor.y;
-
-		m_Camera.origin += ( float )current.y * 2.0f * -m_Camera.vpn;
-		m_Camera.angles[YAW] += ( float )current.x * -0.0625f;
-
-		SetCursorPos( m_ptCursor.x, m_ptCursor.y );
+void CCamWnd::Cam_MouseControl(float dtime) {
+	int		xl, xh;
+	int		yl, yh;
+	float	xf, yf;
+	if (g_PrefsDlg.m_nMouseButtons == 2) {
+		if (m_nCambuttonstate != (MK_RBUTTON | MK_SHIFT)) {
+			return;
+		}
+	}
+	else {
+		if (m_nCambuttonstate != MK_RBUTTON) {
+			return;
+		}
 	}
 
-	// Cam_BuildMatrix();
+	xf = (float)(m_ptButton.x - m_Camera.width / 2) / (m_Camera.width / 2);
+	yf = (float)(m_ptButton.y - m_Camera.height / 2) / (m_Camera.height / 2);
+
+	xl = m_Camera.width / 3;
+	xh = xl * 2;
+	yl = m_Camera.height / 3;
+	yh = yl * 2;
+
+	// common->Printf("xf-%f yf-%f xl-%i xh-i% yl-i% yh-i%\n",xf,yf,xl,xh,yl,yh);
+#if 0
+
+	// strafe
+	if (buttony < yl && (buttonx < xl || buttonx > xh)) {
+		VectorMA(camera.origin, xf * dtime * g_nMoveSpeed, camera.right, camera.origin);
+	}
+	else
+#endif
+	{
+		xf *= 1.0f - idMath::Fabs(yf);
+		if ( xf < 0.0f ) {
+			xf += 0.1f;
+			if ( xf > 0.0f ) {
+				xf = 0.0f;
+			}
+		}
+		else {
+			xf -= 0.1f;
+			if ( xf < 0.0f ) {
+				xf = 0.0f;
+			}
+		}
+
+		VectorMA(m_Camera.origin, yf * dtime * g_PrefsDlg.m_nMoveSpeed, m_Camera.forward, m_Camera.origin);
+		m_Camera.angles[YAW] += xf * -dtime * g_PrefsDlg.m_nAngleSpeed;
+	}
+
+	Cam_BuildMatrix();
 	Sys_UpdateWindows(W_CAMERA | W_XY);
-}
-
-/*
-==================
-Cam_KeyControl
-==================
-*/
-void CCamWnd::Cam_KeyControl( float dtime ) {
-	if ( ( ::GetAsyncKeyState( VK_CONTROL ) || ::GetAsyncKeyState( VK_MENU ) || ::GetAsyncKeyState( VK_SHIFT ) ) ||
-			g_pParentWnd->GetFocus() != g_pParentWnd->GetCamera() &&
-			g_pParentWnd->GetFocus() != g_pParentWnd->GetXYWnd() &&
-			g_pParentWnd->GetFocus() != g_pParentWnd->GetXZWnd() &&
-			g_pParentWnd->GetFocus() != g_pParentWnd->GetYZWnd() &&
-			g_pParentWnd->GetFocus() != g_pParentWnd->GetZWnd() ) {
-		return;
-	}
-
-	int forward	= ::GetAsyncKeyState( 'W' );
-	int back	= ::GetAsyncKeyState( 'S' );
-	int left	= ::GetAsyncKeyState( 'A' );
-	int right	= ::GetAsyncKeyState( 'D' );
-
-	if ( forward || back || left || right ) {
-		SetCursor( NULL );
-
-		m_Camera.origin += -m_Camera.vpn * dtime * forward * 0.0625f;
-		m_Camera.origin += m_Camera.vpn * dtime * back * 0.0625f;
-		m_Camera.origin += m_Camera.vright * dtime * left * 0.0625f;
-		m_Camera.origin += -m_Camera.vright * dtime * right * 0.0625f;
-
-		// Cam_BuildMatrix();
-		Sys_UpdateWindows( W_CAMERA | W_XY );
-		g_pParentWnd->PostMessage( WM_TIMER, 0, 0 );
-	}
+	g_pParentWnd->PostMessage(WM_TIMER, 0, 0);
 }
 
 /*
@@ -909,29 +642,9 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons) {
 		(buttons == (nMouseButton | MK_SHIFT | MK_CONTROL))
 	) {
 		if (g_PrefsDlg.m_nMouseButtons == 2 && (buttons == (MK_RBUTTON | MK_SHIFT))) {
-			Cam_MouseControl();
+			Cam_MouseControl( 0.1f );
 		}
-		
-		if ( buttons == MK_LBUTTON && selected_brushes.next == &selected_brushes ) {
-			m_bCanCreateBrush = true;
-		} else {
-			if ( selected_brushes.next != &selected_brushes ) {
-				brush_t* b;
-				idVec3 selectedMins, selectedMaxs, dist;
-				selectedMins = selected_brushes.next->mins;
-				selectedMaxs = selected_brushes.next->maxs;
-				for( b = selected_brushes.next; b != &selected_brushes; b = b->next )
-				{
-					for( i = 0; i < 3; i++ )
-					{
-						selectedMins[i] = min( selectedMins[i], b->mins[i] );
-						selectedMaxs[i] = max( selectedMaxs[i], b->maxs[i] );
-					}
-				}
-				dist = g_pParentWnd->GetCamera()->Camera().origin - idBounds( selectedMins, selectedMaxs ).GetCenter();
-				m_Camera.viewDist = dist.LengthFast();
-			}
-
+		else {
 			// something global needs to track which window is responsible for stuff
 			Patch_SetView(W_CAMERA);
 			Drag_Begin(x, y, buttons, m_Camera.vright, m_Camera.vup, m_Camera.origin, dir);
@@ -940,12 +653,10 @@ void CCamWnd::Cam_MouseDown(int x, int y, int buttons) {
 		return;
 	}
 
-	/*
 	if ( buttons == MK_RBUTTON ) {
 		Cam_MouseControl( 0.1f );
 		return;
 	}
-	*/
 }
 
 /*
@@ -954,16 +665,6 @@ Cam_MouseUp
 ==================
 */
 void CCamWnd::Cam_MouseUp(int x, int y, int buttons) {
-#if 0
-// ---> sikk -
-	bool bPress_selection = ( selected_brushes.next != &selected_brushes );
-	if ( m_bCanCreateBrush && m_nCambuttonstate == MK_LBUTTON && !bPress_selection && g_qeglobals.d_select_mode == sel_brush ) {
-		NewBrushDrag( x, y );
-		m_bCanCreateBrush = false;
-//		return;
-	}
-#endif
-
 	m_nCambuttonstate = 0;
 	Drag_MouseUp(buttons);
 }
@@ -975,7 +676,6 @@ Cam_MouseMoved
 */
 void CCamWnd::Cam_MouseMoved(int x, int y, int buttons) {
 	m_nCambuttonstate = buttons;
-	m_bCanCreateBrush = false;
 
 	if (!buttons) {
 		return;
@@ -984,22 +684,12 @@ void CCamWnd::Cam_MouseMoved(int x, int y, int buttons) {
 	m_ptButton.x = x;
 	m_ptButton.y = y;
 
-	if ( buttons == ( MK_RBUTTON | MK_LBUTTON ) ) {
+	if ( buttons == ( MK_RBUTTON | MK_CONTROL ) ) {
 		Cam_PositionDrag();
 		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
 		return;
-	} else if ( ( buttons == ( MK_RBUTTON | MK_CONTROL ) ) ||
-			  ( buttons == MK_LBUTTON && selected_brushes.next == &selected_brushes ) )  { // | MK_SHIFT) ) {
-		// lbutton without selection = drag new brush if (m_nButtonstate == MK_LBUTTON &&
-		// !m_bPress_selection && g_qeglobals.d_select_mode != sel_curvepoint &&
-		// g_qeglobals.d_select_mode != sel_splineedit)
-		//
-		Cam_MouseControl();
-	} else if( buttons == ( MK_RBUTTON | MK_SHIFT ) ) {
-		Cam_PositionRotate();
-		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
-		return;
-	} else if( buttons == MK_RBUTTON ) {
+	}
+	else if ( buttons == (MK_RBUTTON | MK_CONTROL | MK_SHIFT) ) {
 		Cam_MouseLook();
 		Sys_UpdateWindows( W_XY | W_CAMERA | W_Z );
 		return;
@@ -1261,14 +951,6 @@ void CCamWnd::Cam_Draw() {
 	brush_t *brush;
 	face_t	*face;
 
-#if 0
-	// Added - Translucent Brushes
-	brush_t* transBrushes[ 65536 ];
-	brush_t* transBrushesSel[ 65536 ];
-	int		numTransBrushes = 0;
-	int		numTransBrushesSel = 0;
-#endif
-
 	// float yfov;
 	int		i;
 
@@ -1305,13 +987,6 @@ void CCamWnd::Cam_Draw() {
 	qglTranslatef(-m_Camera.origin[0], -m_Camera.origin[1], -m_Camera.origin[2]);
 
 	Cam_BuildMatrix();
-
-#if 0
-	// Show Map Boundry Box
-	if ( !renderMode ) {
-		Cam_DrawMapBounds();
-	}
-#endif
 
 	// Draw Normal Opaque Brushes
 	for (brush = active_brushes.next; brush != &active_brushes; brush = brush->next) {
@@ -1392,13 +1067,6 @@ void CCamWnd::Cam_Draw() {
 			DrawAxial(selFace);
 		}
 	}
-
-#if 0
-	// Camera Axis
-	if ( !renderMode ) {
-		Cam_DrawWorldAxis();
-	}
-#endif
 
 	// non-zbuffered outline
 	qglDisable(GL_BLEND);
@@ -1491,26 +1159,6 @@ void CCamWnd::OnSize(UINT nType, int cx, int cy) {
 	m_Camera.width = rect.right;
 	m_Camera.height = rect.bottom;
 	InvalidateRect(NULL, false);
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CCamWnd::OnSizing( UINT nSide, LPRECT lpRect ) {
-	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) ) {
-		return;
-	}
-}
-
-/*
- =======================================================================================================================
- =======================================================================================================================
- */
-void CCamWnd::OnMoving( UINT nSide, LPRECT lpRect ) {
-	if ( TryDocking( GetSafeHwnd(), nSide, lpRect, 0 ) ) {
-		return;
-	}
 }
 
 /*
@@ -2545,25 +2193,4 @@ void CCamWnd::UpdateCameraView() {
 		Sys_UpdateWindows(W_CAMERA);
 		saveValid = false;
 	}
-}
-
-/*
-==================
-OnMouseWheel
-==================
-*/
-BOOL CCamWnd::OnMouseWheel( UINT nFlags, short zDelta, CPoint pt ) {
-	if ( zDelta > 0 ) {
-		// g_pParentWnd->OnCameraForward();
-		m_Camera.origin += 32.0f * m_Camera.vpn;
-
-		Sys_UpdateWindows( W_CAMERA | W_XY );
-	} else {
-		// g_pParentWnd->OnCameraBack();
-		m_Camera.origin += -32.0f * m_Camera.vpn;
-
-		Sys_UpdateWindows( W_CAMERA | W_XY );
-	}
-
-	return TRUE;
 }

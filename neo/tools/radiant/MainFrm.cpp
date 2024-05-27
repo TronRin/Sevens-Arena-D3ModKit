@@ -1039,7 +1039,7 @@ void CMainFrame::RoutineProcessing() {
 
 		// run time dependant behavior
 		if (m_pCamWnd) {
-			m_pCamWnd->Cam_KeyControl(delta);
+			m_pCamWnd->Cam_MouseControl(delta);
 		}
 	}
 }
