@@ -348,7 +348,9 @@ void RadiantInit( void ) {
 
 		InitAfx();
 
+#ifndef _DEBUG
 		CSplashScreen::ShowSplashScreen( NULL );
+#endif // !_DEBUG
 
 		CWinApp* pApp = AfxGetApp();
 		CWinThread *pThread = AfxGetThread();
@@ -366,7 +368,9 @@ void RadiantInit( void ) {
 		// hide the doom window by default
 		::ShowWindow( win32.hWnd, SW_HIDE );
 
+#ifndef _DEBUG
 		CSplashScreen::HideSplashScreen();
+#endif // !_DEBUG
 	}
 }
 
