@@ -1,7 +1,7 @@
 // PropTreeItemFileEdit.cpp : implementation file
 
 
-//#include "stdafx.h"
+//#include "pch.h"
 #include "tools/edit_gui_common.h"
 
 

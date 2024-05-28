@@ -30,8 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __WIN_LOCAL_H__
 
 #if defined(_MFC_VER) && !defined(_D3SDK) && !defined(GAME_DLL)
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// prevent auto literal to string conversion
-#include "tools/comafx/StdAfx.h"
+#include "tools/comafx/pch.h"
 #endif
 
 #define WIN32_LEAN_AND_MEAN

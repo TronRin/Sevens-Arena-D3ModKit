@@ -26,39 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#ifndef __AFX_STDAFX_H__
-#define __AFX_STDAFX_H__
+#ifndef __PCH_H__
+#define __PCH_H__
 
-//  include file for standard system include files,
-//  or project specific include files that are used frequently, but
-//  are changed infrequently
-
-//#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
-
-#include <afxwin.h>         // MFC core and standard components
-#include <afxext.h>         // MFC extensions
-#include <afxcview.h>
-#include <afxdisp.h>			// MFC Automation classes
-#ifndef _AFX_NO_OLE_SUPPORT
-	#include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
-#endif
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	#include <afxcmn.h>			// MFC support for Windows Common Controls
-	#include <afxcmn.h>			// MFC support for Windows Common Controls
-#endif // _AFX_NO_AFXCMN_SUPPORT
-
-#include <afxcontrolbars.h>     // MFC support for ribbons and control bars
-
-// Ensure Common-Controls is configured to use version 6.0
-#if defined _M_IX86
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#elif defined _M_IA64
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='ia64' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#elif defined _M_X64
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#else
-#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#endif
+#include "framework.h"
 
 void InitAfx( void );
 
@@ -81,4 +52,4 @@ int SetSafeComboBoxSelection( CComboBox *combo, const char *string, int skip );
 int GetSafeComboBoxSelection( CComboBox *combo, CString &string, int skip );
 int UnsetSafeComboBoxSelection( CComboBox *combo, CString &string );
 
-#endif /* !__AFX_STDAFX_H__ */
+#endif /* !__PCH_H__ */
