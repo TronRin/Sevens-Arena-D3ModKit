@@ -243,6 +243,12 @@ If you have questions concerning this license or the applicable additional terms
 #include <typeinfo>
 #include <errno.h>
 #include <math.h>
+//#define FLT_EPSILON 1.19209290E-07F
+#include <cfloat>
+#include <limits>
+#include <chrono>
+#include <thread>
+#include <algorithm>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN

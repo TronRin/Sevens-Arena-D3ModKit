@@ -27,7 +27,6 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include <SDL.h>
-#include <thread>
 
 #include "sys/platform.h"
 #include "idlib/containers/HashTable.h"

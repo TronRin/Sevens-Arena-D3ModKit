@@ -225,23 +225,32 @@ extern void Select_RotateTexture(float amt, bool absolute);
  */
 void CCamWnd::OnMouseMove(UINT nFlags, CPoint point) {
 	CRect	r;
-	GetClientRect(r);
-	if	(GetCapture() == this && (GetAsyncKeyState(VK_MENU) & 0x8000) && !((GetAsyncKeyState(VK_SHIFT) & 0x8000) || (GetAsyncKeyState(VK_CONTROL) & 0x8000))) {
-		if ( GetAsyncKeyState(VK_CONTROL) & 0x8000) {
-			Select_RotateTexture((float)point.y - m_ptLastCursor.y);
-		}
-		else if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
-			Select_ScaleTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
+	if (m_bMouseLook) {
+		CPoint currentPos;
+		GetCursorPos(&currentPos);
+		float dx = (float)(currentPos.x - m_LastMousePos.x);
+		float dy = (float)(currentPos.y - m_LastMousePos.y);
+		UpdateCameraOrientation(dx, dy);
+		SetCursorPos(m_LastMousePos.x, m_LastMousePos.y); // Reset cursor position
+	} else {
+		GetClientRect(r);
+		if	(GetCapture() == this && (GetAsyncKeyState(VK_MENU) & 0x8000) && !((GetAsyncKeyState(VK_SHIFT) & 0x8000) || (GetAsyncKeyState(VK_CONTROL) & 0x8000))) {
+			if ( GetAsyncKeyState(VK_CONTROL) & 0x8000) {
+				Select_RotateTexture((float)point.y - m_ptLastCursor.y);
+			}
+			else if (GetAsyncKeyState(VK_SHIFT) & 0x8000) {
+				Select_ScaleTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
+			}
+			else {
+				Select_ShiftTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
+			}
 		}
 		else {
-			Select_ShiftTexture((float)point.x - m_ptLastCursor.x, (float)m_ptLastCursor.y - point.y);
+			Cam_MouseMoved(point.x, r.bottom - 1 - point.y, nFlags);
 		}
-	}
-	else {
-		Cam_MouseMoved(point.x, r.bottom - 1 - point.y, nFlags);
-	}
 
-	m_ptLastCursor = point;
+		m_ptLastCursor = point;
+	}
 }
 
 /*
@@ -282,7 +291,8 @@ void CCamWnd::OnMButtonUp(UINT nFlags, CPoint point) {
  =======================================================================================================================
  */
 void CCamWnd::OnRButtonDown(UINT nFlags, CPoint point) {
-	OriginalMouseDown(nFlags, point);
+	EnableMouseLook( true );
+	CWnd::OnRButtonDown( nFlags, point );
 }
 
 /*
@@ -290,7 +300,8 @@ void CCamWnd::OnRButtonDown(UINT nFlags, CPoint point) {
  =======================================================================================================================
  */
 void CCamWnd::OnRButtonUp(UINT nFlags, CPoint point) {
-	OriginalMouseUp(nFlags, point);
+	EnableMouseLook( false );
+	CWnd::OnRButtonUp( nFlags, point );
 }
 
 /*
@@ -425,20 +436,28 @@ void CCamWnd::Cam_Init() {
 void CCamWnd::Cam_BuildMatrix() {
 	float	xa, ya;
 	float	matrix[4][4];
-	int		i;
 
-	xa = ((renderMode) ? -m_Camera.angles[PITCH] : m_Camera.angles[PITCH]) * idMath::M_DEG2RAD;
+	xa = m_Camera.angles[PITCH] * idMath::M_DEG2RAD;
 	ya = m_Camera.angles[YAW] * idMath::M_DEG2RAD;
 
-	// the movement matrix is kept 2d
-	m_Camera.forward[0] = cos(ya);
-	m_Camera.forward[1] = sin(ya);
-	m_Camera.right[0] = m_Camera.forward[1];
-	m_Camera.right[1] = -m_Camera.forward[0];
+	// Calculate forward vector
+	m_Camera.forward[0] = cos(xa) * cos(ya);
+	m_Camera.forward[1] = cos(xa) * sin(ya);
+	m_Camera.forward[2] = sin(xa);
 
-	qglGetFloatv(GL_PROJECTION_MATRIX, &matrix[0][0]);
+	// Calculate right vector
+	m_Camera.right[0] = -sin(ya);
+	m_Camera.right[1] = cos(ya);
+	m_Camera.right[2] = 0;
 
-	for (i = 0; i < 3; i++) {
+	// Calculate up vector
+	m_Camera.up = m_Camera.right.Cross( m_Camera.forward );
+	m_Camera.up.Normalize();
+
+	// This is used for selection.
+	qglGetFloatv( GL_PROJECTION_MATRIX, &matrix[0][0] );
+
+	for ( int i = 0; i < 3; i++ ) {
 		m_Camera.vright[i] = matrix[i][0];
 		m_Camera.vup[i] = matrix[i][1];
 		m_Camera.vpn[i] = matrix[i][2];
@@ -447,6 +466,7 @@ void CCamWnd::Cam_BuildMatrix() {
 	m_Camera.vright.Normalize();
 	m_Camera.vup.Normalize();
 	m_Camera.vpn.Normalize();
+
 	InitCull();
 }
 
@@ -943,6 +963,49 @@ void CCamWnd::SetProjectionMatrix() {
 }
 
 /*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+void CCamWnd::DrawGrid() {
+	const float GRID_SPACING = 64.0f;
+	const int GRID_LINES = 100;
+	const float GRID_COLOR[4] = { 0.0f, 0.0f, 0.5f, 1.0f }; // Blue color for regular lines
+	const float DARKER_LINE_COLOR[4] = { 0.0f, 0.0f, 0.25f, 1.0f }; // Darker blue color for center lines
+
+	// Calculate the grid bounds based on the camera position
+	float startX = floor(m_Camera.origin.x / GRID_SPACING) * GRID_SPACING - GRID_LINES * GRID_SPACING;
+	float endX = startX + 2 * GRID_LINES * GRID_SPACING;
+	float startY = floor(m_Camera.origin.y / GRID_SPACING) * GRID_SPACING - GRID_LINES * GRID_SPACING;
+	float endY = startY + 2 * GRID_LINES * GRID_SPACING;
+
+	// Draw vertical grid lines
+	qglBegin(GL_LINES);
+	for (float x = startX; x <= endX; x += GRID_SPACING) {
+		if (fabs(x) < 0.01f) {
+			qglColor4fv(GRID_COLOR); // Center line color
+		}
+		else {
+			qglColor4fv(DARKER_LINE_COLOR); // Regular grid line color
+		}
+		qglVertex3f(x, startY, 0);
+		qglVertex3f(x, endY, 0);
+	}
+	// Draw horizontal grid lines
+	for (float y = startY; y <= endY; y += GRID_SPACING) {
+		if (fabs(y) < 0.01f) {
+			qglColor4fv(GRID_COLOR); // Center line color
+		}
+		else {
+			qglColor4fv(DARKER_LINE_COLOR); // Regular grid line color
+		}
+		qglVertex3f(startX, y, 0);
+		qglVertex3f(endX, y, 0);
+	}
+	qglEnd();
+}
+
+
+/*
 ==================
 Cam_Draw
 ==================
@@ -987,6 +1050,10 @@ void CCamWnd::Cam_Draw() {
 	qglTranslatef(-m_Camera.origin[0], -m_Camera.origin[1], -m_Camera.origin[2]);
 
 	Cam_BuildMatrix();
+
+	if (!renderMode) {
+		DrawGrid();
+	}
 
 	// Draw Normal Opaque Brushes
 	for (brush = active_brushes.next; brush != &active_brushes; brush = brush->next) {
@@ -1245,10 +1312,6 @@ Creates or updates modelDef and lightDef for an entity
 ================
 */
 void CCamWnd::BuildEntityRenderState( idEditorEntity *ent, bool update) {
-	if ( !rebuildMode ) {
-		return;
-	}
-
 	ent->BuildEntityRenderState( ent, update );
 }
 
@@ -1681,10 +1744,6 @@ void CCamWnd::BuildRendererState() {
 				continue;
 			}
 
-			if (CullBrush(brush, true)) {
-				continue;
-			}
-
 			idTriList tris(1024);
 			idMatList mats(1024);
 
@@ -2063,7 +2122,7 @@ void CCamWnd::OnTimer(UINT_PTR nIDEvent)
 
 /*
 ==================
-UpdateCameraView
+CCamWnd::UpdateCameraView
 ==================
 */
 void CCamWnd::UpdateCameraView() {
@@ -2097,4 +2156,48 @@ void CCamWnd::UpdateCameraView() {
 		Sys_UpdateWindows(W_CAMERA);
 		saveValid = false;
 	}
+}
+
+/*
+==================
+CCamWnd::EnableMouseLook
+==================
+*/
+void CCamWnd::EnableMouseLook(bool enable) {
+	m_bMouseLook = enable;
+	if (enable) {
+		GetCursorPos(&m_LastMousePos);
+		ShowCursor(FALSE); // Hide the cursor for mouse look
+	}
+	else {
+		ShowCursor(TRUE); // Show the cursor again
+	}
+}
+
+/*
+==================
+CCamWnd::UpdateCameraOrientation
+==================
+*/
+void CCamWnd::UpdateCameraOrientation(float dx, float dy) {
+	m_Camera.angles[YAW] += dx * -m_MouseSensitivity;
+	m_Camera.angles[PITCH] += dy * m_MouseSensitivity;
+	if (m_Camera.angles[PITCH] > 89.0f) m_Camera.angles[PITCH] = 89.0f;
+	if (m_Camera.angles[PITCH] < -89.0f) m_Camera.angles[PITCH] = -89.0f;
+	Cam_BuildMatrix();
+	Sys_UpdateWindows(W_CAMERA);
+}
+
+/*
+==================
+CCamWnd::UpdateCameraPosition
+==================
+*/
+void CCamWnd::UpdateCameraPosition(float dx, float dy, float dz) {
+	idVec3 forward = m_Camera.forward;
+	idVec3 right = m_Camera.right;
+	idVec3 up = idVec3(0, 0, 1);
+
+	m_Camera.origin += forward * dx + right * dy + up * dz;
+	Sys_UpdateWindows(W_CAMERA);
 }
