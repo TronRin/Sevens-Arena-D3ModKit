@@ -97,7 +97,7 @@ public:
 	void SetProjectionMatrix();
 	void UpdateCameraView();
 
-	void BuildEntityRenderState( entity_t *ent, bool update );
+	void BuildEntityRenderState( idEditorEntity *ent, bool update );
 	bool GetRenderMode() {
 		return renderMode;
 	}
@@ -138,14 +138,14 @@ protected:
 	void Cam_MouseUp (int x, int y, int buttons);
 	void Cam_MouseMoved (int x, int y, int buttons);
 	void InitCull();
-	bool CullBrush (brush_t *b, bool cubicOnly);
+	bool CullBrush (idEditorBrush *b, bool cubicOnly);
 	void Cam_Draw();
 	void Cam_Render();
 
 	// game renderer interaction
 	void	FreeRendererState();
 	void	UpdateCaption();
-	bool	BuildBrushRenderData(brush_t *brush);
+	bool	BuildBrushRenderData(idEditorBrush *brush);
 	void	DrawEntityData();
 
 	qhandle_t	worldModelDef;

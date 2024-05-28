@@ -83,7 +83,7 @@ static int FindEdge(int p1, int p2, face_t* f) {
 	return g_qeglobals.d_numedges - 1;
 }
 
-static void MakeFace (brush_t * b, face_t * f) {
+static void MakeFace (idEditorBrush * b, face_t * f) {
 	idWinding	*w;
 	int			i;
 	int			pnum[128];
@@ -107,7 +107,7 @@ static void MakeFace (brush_t * b, face_t * f) {
  */
 void SetupVertexSelection(void) {
 	face_t	*f;
-	brush_t *b;
+	idEditorBrush *b;
 
 	g_qeglobals.d_numpoints = 0;
 	g_qeglobals.d_numedges = 0;
@@ -119,7 +119,7 @@ void SetupVertexSelection(void) {
 	}
 }
 
-static void SelectFaceEdge (brush_t * b, face_t * f, int p1, int p2) {
+static void SelectFaceEdge (idEditorBrush * b, face_t * f, int p1, int p2) {
 	idWinding	*w;
 	int			i, j, k;
 	int			pnum[128];
@@ -197,7 +197,7 @@ void SelectEdgeByRay(idVec3 org, idVec3 dir) {
 	g_qeglobals.d_num_move_points = 0;
 	e = &g_qeglobals.d_edges[besti];
 
-	for (brush_t * b = selected_brushes.next; b != &selected_brushes; b = b->next) {
+	for (idEditorBrush * b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 		SelectFaceEdge(b, e->f1, e->p1, e->p2);
 		SelectFaceEdge(b, e->f2, e->p2, e->p1);
 	}

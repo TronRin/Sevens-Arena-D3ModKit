@@ -133,7 +133,7 @@ typedef struct
 
 	int      d_num_entities;
 
-	idVec3	d_new_brush_bottom, d_new_brush_top;
+	idVec3	d_new_brush_bottom, d_new_idEditorBrushop;
 
 	HINSTANCE d_hInstance;
 
@@ -156,7 +156,7 @@ typedef struct
 
 	// connect entities uses the last two brushes selected
 	int			 d_select_count;
-	brush_t		*d_select_order[MAX_MAP_ENTITIES];
+	idEditorBrush		*d_select_order[MAX_MAP_ENTITIES];
 	idVec3       d_select_translate;    // for dragging w/o making new display lists
 	select_t     d_select_mode;
 	idPointListInterface *selectObject;	//
@@ -279,7 +279,7 @@ extern int g_axialAnchor;
 extern int g_axialDest;
 
 extern void Face_FlipTexture_BrushPrimit(face_t *face, bool y);
-extern void Brush_FlipTexture_BrushPrimit(brush_t *b, bool y);
+extern void Brush_FlipTexture_BrushPrimit(idEditorBrush *b, bool y);
 
 //========================
 // new brush primitive stuff
@@ -290,7 +290,7 @@ void FaceToBrushPrimitFace(face_t *f);
 void EmitBrushPrimitTextureCoordinates(face_t *, idWinding *, patchMesh_t *patch = NULL);
 // EmitTextureCoordinates, is old code used for brush to brush primitive conversion
 void EmitTextureCoordinates ( idVec5 &xyzst, const idMaterial *q, face_t *f, bool force = false);
-void BrushPrimit_Parse(brush_t *, bool newFormat, const idVec3 origin);
+void BrushPrimit_Parse(idEditorBrush *, bool newFormat, const idVec3 origin);
 // compute a fake shift scale rot representation from the texture matrix
 void TexMatToFakeTexCoords( float texMat[2][3], float shift[2], float *rot, float scale[2] );
 void FakeTexCoordsToTexMat( float shift[2], float rot, float scale[2], float texMat[2][3] );
@@ -348,13 +348,13 @@ extern bool region_active;
 extern void Map_ImportFile (char *filename);
 extern void Map_SaveSelected(char* pFilename);
 extern bool g_bSwitch;
-extern brush_t g_brFrontSplits;
-extern brush_t g_brBackSplits;
+extern idEditorBrush g_brFrontSplits;
+extern idEditorBrush g_brBackSplits;
 extern CClipPoint g_Clip1;
 extern CClipPoint g_Clip2;
 extern CClipPoint g_Clip3;
 extern CClipPoint* g_pMovingClip;
-extern brush_t* g_pSplitList;
+extern idEditorBrush* g_pSplitList;
 extern CClipPoint g_PathPoints[256];
 extern void AcquirePath(int nCount, PFNPathCallback* pFunc);
 extern bool g_bScreenUpdates;
@@ -376,7 +376,7 @@ extern void DoPatchInspector();
 void UpdatePatchInspector();
 extern int g_nSmartX;
 extern int g_nSmartY;
-extern brush_t* CreateEntityBrush(int x, int y, CXYWnd* pWnd);
+extern idEditorBrush* CreateEntityBrush(int x, int y, CXYWnd* pWnd);
 int PointInMoveList( idVec3 *pf );
 
 extern bool ByeByeSurfaceDialog();

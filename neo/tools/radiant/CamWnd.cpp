@@ -164,7 +164,7 @@ void CCamWnd::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) {
 	g_pParentWnd->HandleKey(nChar, nRepCnt, nFlags);
 }
 
-brush_t *g_pSplitList = NULL;
+idEditorBrush *g_pSplitList = NULL;
 
 /*
  =======================================================================================================================
@@ -456,7 +456,7 @@ void CCamWnd::Cam_BuildMatrix() {
  */
 
 void CCamWnd::Cam_ChangeFloor(bool up) {
-	brush_t *b;
+	idEditorBrush *b;
 	float	d, bestd, current;
 	idVec3	start, dir;
 
@@ -734,7 +734,7 @@ void CCamWnd::InitCull() {
 CullBrush
 ==================
 */
-bool CCamWnd::CullBrush(brush_t *b, bool cubicOnly) {
+bool CCamWnd::CullBrush(idEditorBrush *b, bool cubicOnly) {
 	int		i;
 	idVec3	point;
 	float	d;
@@ -791,7 +791,7 @@ bool CCamWnd::CullBrush(brush_t *b, bool cubicOnly) {
 DrawLightRadius
 ==================
 */
-void CCamWnd::DrawLightRadius(brush_t *pBrush) {
+void CCamWnd::DrawLightRadius(idEditorBrush *pBrush) {
 	// if lighting
 	int nRadius = Brush_LightRadius(pBrush);
 	if (nRadius > 0) {
@@ -948,7 +948,7 @@ Cam_Draw
 ==================
 */
 void CCamWnd::Cam_Draw() {
-	brush_t *brush;
+	idEditorBrush *brush;
 	face_t	*face;
 
 	// float yfov;
@@ -1015,7 +1015,7 @@ void CCamWnd::Cam_Draw() {
 
 	qglTranslatef(g_qeglobals.d_select_translate[0],g_qeglobals.d_select_translate[1],g_qeglobals.d_select_translate[2]);
 
-	brush_t *pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
+	idEditorBrush *pList = (g_bClipMode && g_pSplitList) ? g_pSplitList : &selected_brushes;
 
 	if (!renderMode) {
 		// draw normally
@@ -1228,7 +1228,7 @@ void CCamWnd::ShiftTexture_BrushPrimit(face_t *f, int x, int y) {
 IsBModel
 ==================
 */
-bool IsBModel(brush_t *b) {
+bool IsBModel(idEditorBrush *b) {
 	const char *v = b->owner->ValueForKey( "model" );
 	if (v && *v) {
 		const char *n = b->owner->ValueForKey("name");
@@ -1244,146 +1244,12 @@ BuildEntityRenderState
 Creates or updates modelDef and lightDef for an entity
 ================
 */
-int Brush_ToTris(brush_t *brush, idTriList *tris, idMatList *mats, bool models, bool bmodel);
-
-void CCamWnd::BuildEntityRenderState( entity_t *ent, bool update) {
-	const char	*v;
-	idDict		spawnArgs;
-	const char	*name = NULL;
-
-	ent->UpdateSoundEmitter();
-
-	// delete the existing def if we aren't creating a brand new world
-	if ( !update ) {
-		if ( ent->lightDef >= 0 ) {
-			g_qeglobals.rw->FreeLightDef( ent->lightDef );
-			ent->lightDef = -1;
-		}
-
-		if ( ent->modelDef >= 0 ) {
-			g_qeglobals.rw->FreeEntityDef( ent->modelDef );
-			ent->modelDef = -1;
-		}
-	}
-
-	// if an entity doesn't have any brushes at all, don't do anything
-	if ( ent->brushes.onext == &ent->brushes ) {
+void CCamWnd::BuildEntityRenderState( idEditorEntity *ent, bool update) {
+	if ( !rebuildMode ) {
 		return;
 	}
 
-	// if the brush isn't displayed (filtered or culled), don't do anything
-	if (FilterBrush(ent->brushes.onext)) {
-		return;
-	}
-
-	spawnArgs = ent->epairs;
-	if (ent->eclass->defArgs.FindKey("model")) {
-		spawnArgs.Set("model", ent->eclass->defArgs.GetString("model"));
-	}
-
-	// any entity can have a model
-	name = ent->ValueForKey("name");
-	v = spawnArgs.GetString("model");
-	if ( v && *v ) {
-		renderEntity_t	refent;
-
-		refent.referenceSound = ent->soundEmitter;
-
-		if ( !stricmp( name, v ) ) {
-			// build the model from brushes
-			idTriList tris(1024);
-			idMatList mats(1024);
-
-			for (brush_t *b = ent->brushes.onext; b != &ent->brushes; b = b->onext) {
-				Brush_ToTris( b, &tris, &mats, false, true);
-			}
-
-			if ( ent->modelDef >= 0 ) {
-				g_qeglobals.rw->FreeEntityDef( ent->modelDef );
-				ent->modelDef = -1;
-			}
-
-			idRenderModel *bmodel = renderModelManager->FindModel( name );
-
-			if ( bmodel ) {
-				renderModelManager->RemoveModel( bmodel );
-				renderModelManager->FreeModel( bmodel );
-			}
-
-			bmodel = renderModelManager->AllocModel();
-
-			bmodel->InitEmpty( name );
-
-			// add the surfaces to the renderModel
-			modelSurface_t	surf;
-			for ( int i = 0 ; i < tris.Num() ; i++ ) {
-				surf.geometry = tris[i];
-				surf.shader = mats[i];
-				bmodel->AddSurface( surf );
-			}
-
-			bmodel->FinishSurfaces();
-
-			renderModelManager->AddModel( bmodel );
-
-			// FIXME: brush entities
-			gameEdit->ParseSpawnArgsToRenderEntity( &spawnArgs, &refent );
-
-			ent->modelDef = g_qeglobals.rw->AddEntityDef( &refent );
-
-		} else {
-			// use the game's epair parsing code so
-			// we can use the same renderEntity generation
-			gameEdit->ParseSpawnArgsToRenderEntity( &spawnArgs, &refent );
-			idRenderModelMD5 *md5 = dynamic_cast<idRenderModelMD5 *>( refent.hModel );
-			if (md5) {
-				idStr str;
-				spawnArgs.GetString("anim", "idle", str);
-				refent.numJoints = md5->NumJoints();
-				if ( update && refent.joints ) {
-					Mem_Free16( refent.joints );
-				}
-				refent.joints = ( idJointMat * )Mem_Alloc16( refent.numJoints * sizeof( *refent.joints ) );
-				const idMD5Anim *anim = gameEdit->ANIM_GetAnimFromEntityDef(spawnArgs.GetString("classname"), str);
-				int frame = spawnArgs.GetInt("frame") + 1;
-				if ( frame < 1 ) {
-					frame = 1;
-				}
-				const idVec3 &offset = gameEdit->ANIM_GetModelOffsetFromEntityDef( spawnArgs.GetString("classname") );
-				gameEdit->ANIM_CreateAnimFrame( md5, anim, refent.numJoints, refent.joints, ( frame * 1000 ) / 24, offset, false );
-			}
-			if (ent->modelDef >= 0) {
-				g_qeglobals.rw->FreeEntityDef( ent->modelDef );
-			}
-			ent->modelDef = g_qeglobals.rw->AddEntityDef( &refent );
-		}
-	}
-
-	// check for lightdefs
-	if (!(ent->eclass->nShowFlags & ECLASS_LIGHT)) {
-		return;
-	}
-
-	if ( spawnArgs.GetBool( "start_off" ) ) {
-		return;
-	}
-	// use the game's epair parsing code so
-	// we can use the same renderLight generation
-
-	renderLight_t	lightParms;
-
-	gameEdit->ParseSpawnArgsToRenderLight( &spawnArgs, &lightParms );
-	lightParms.referenceSound = ent->soundEmitter;
-
-	if (update && ent->lightDef >= 0) {
-		g_qeglobals.rw->UpdateLightDef( ent->lightDef, &lightParms );
-	} else {
-		if (ent->lightDef >= 0) {
-			g_qeglobals.rw->FreeLightDef(ent->lightDef);
-		}
-		ent->lightDef = g_qeglobals.rw->AddLightDef( &lightParms );
-	}
-
+	ent->BuildEntityRenderState( ent, update );
 }
 
 /*
@@ -1464,10 +1330,10 @@ void Tris_ToOBJ(const char *outFile, idTriList *tris, idMatList *mats) {
 
 /*
 ==================
-Brush_TransformModel
+idEditorBrushransformModel
 ==================
 */
-int Brush_TransformModel(brush_t *brush, idTriList *tris, idMatList *mats) {
+int idEditorBrushransformModel(idEditorBrush *brush, idTriList *tris, idMatList *mats) {
 	int ret = 0;
 	if (brush->modelHandle > 0 ) {
 		idRenderModel *model = brush->modelHandle;
@@ -1524,10 +1390,10 @@ int Brush_TransformModel(brush_t *brush, idTriList *tris, idMatList *mats) {
 
 /*
 ==================
-Brush_ToTris
+idEditorBrushoTris
 ==================
 */
-int Brush_ToTris(brush_t *brush, idTriList *tris, idMatList *mats, bool models, bool bmodel) {
+int idEditorBrushoTris(idEditorBrush *brush, idTriList *tris, idMatList *mats, bool models, bool bmodel) {
 	int i, j;
 	srfTriangles_t	*tri;
 	//
@@ -1537,7 +1403,7 @@ int Brush_ToTris(brush_t *brush, idTriList *tris, idMatList *mats, bool models, 
 		if (!models) {
 			return 0;
 		} else {
-			return Brush_TransformModel(brush, tris, mats);
+			return idEditorBrushransformModel(brush, tris, mats);
 		}
 	}
 
@@ -1669,7 +1535,7 @@ void Select_ToOBJ() {
 		idTriList tris(1024);
 		idMatList mats(1024);
 
-		for (brush_t *b = selected_brushes.next; b != &selected_brushes; b = b->next) {
+		for (idEditorBrush *b = selected_brushes.next; b != &selected_brushes; b = b->next) {
 
 			if ( b->hiddenBrush ) {
 				continue;
@@ -1679,7 +1545,7 @@ void Select_ToOBJ() {
 				continue;
 			}
 
-			Brush_ToTris(b, &tris, &mats, true, false);
+			idEditorBrushoTris(b, &tris, &mats, true, false);
 		}
 
 		Tris_ToOBJ(dlgFile.GetPathName().GetBuffer(0), &tris, &mats);
@@ -1710,7 +1576,7 @@ void Select_ToCM() {
 		mapEnt = new idMapEntity();
 		mapEnt->epairs.Set( "name", name.c_str() );
 
-		for ( brush_t *b = selected_brushes.next; b != &selected_brushes; b = b->next ) {
+		for ( idEditorBrush *b = selected_brushes.next; b != &selected_brushes; b = b->next ) {
 
 			if ( b->hiddenBrush ) {
 				continue;
@@ -1743,8 +1609,8 @@ so it can be rendered by the game renderSystem
 */
 void CCamWnd::BuildRendererState() {
 	renderEntity_t	worldEntity;
-	entity_t	*ent;
-	brush_t		*brush;
+	idEditorEntity	*ent;
+	idEditorBrush		*brush;
 
 	FreeRendererState();
 
@@ -1759,7 +1625,7 @@ void CCamWnd::BuildRendererState() {
 	worldModel = renderModelManager->AllocModel();
 	worldModel->InitEmpty( "EditorWorldModel" );
 
-	for ( brush_t *brushList = &active_brushes ; brushList ;
+	for ( idEditorBrush *brushList = &active_brushes ; brushList ;
 		brushList = (brushList == &active_brushes) ? &selected_brushes : NULL ) {
 
 		for (brush = brushList->next; brush != brushList; brush = brush->next) {
@@ -1780,7 +1646,7 @@ void CCamWnd::BuildRendererState() {
 			idMatList mats(1024);
 
 			if (!IsBModel(brush)) {
-				numSurfaces += Brush_ToTris( brush, &tris, &mats, false, false );
+				numSurfaces += idEditorBrushoTris( brush, &tris, &mats, false, false );
 			}
 
 			// add the surfaces to the renderModel
@@ -1840,13 +1706,8 @@ UpdateRenderEntities
 ==================
 */
 bool CCamWnd::UpdateRenderEntities() {
-
-	if (rebuildMode) {
-		return false;
-	}
-
 	bool ret = false;
-	for ( entity_t *ent = entities.next ; ent != &entities ; ent = ent->next ) {
+	for ( idEditorEntity *ent = entities.next ; ent != &entities ; ent = ent->next ) {
 		BuildEntityRenderState( ent, (ent->lightDef != -1 || ent->modelDef != -1 || ent->soundEmitter ) ? true : false );
 		if (ret == false && ent->modelDef || ent->lightDef) {
 			ret = true;
@@ -1864,7 +1725,7 @@ FreeRendererState
 */
 void CCamWnd::FreeRendererState() {
 
-	for ( entity_t *ent = entities.next ; ent != &entities ; ent = ent->next ) {
+	for ( idEditorEntity *ent = entities.next ; ent != &entities ; ent = ent->next ) {
 		if (ent->lightDef >= 0) {
 			g_qeglobals.rw->FreeLightDef( ent->lightDef );
 			ent->lightDef = -1;
@@ -1977,7 +1838,7 @@ void CCamWnd::ToggleSoundMode() {
 
 	UpdateCaption();
 
-	for ( entity_t *ent = entities.next ; ent != &entities ; ent = ent->next ) {
+	for ( idEditorEntity *ent = entities.next ; ent != &entities ; ent = ent->next ) {
 		ent->UpdateSoundEmitter();
 	}
 }
@@ -2039,10 +1900,10 @@ void CCamWnd::DrawEntityData() {
 	idVec3 color(0, 1, 0);
 	qglColor3fv( color.ToFloatPtr() );
 
-	brush_t *brushList = &active_brushes;
+	idEditorBrush *brushList = &active_brushes;
 	int pass = 0;
 	while (brushList) {
-		for (brush_t *brush = brushList->next; brush != brushList; brush = brush->next) {
+		for (idEditorBrush *brush = brushList->next; brush != brushList; brush = brush->next) {
 
 			if (CullBrush(brush, true)) {
 				continue;
@@ -2164,11 +2025,11 @@ UpdateCameraView
 */
 void CCamWnd::UpdateCameraView() {
 	if (QE_SingleBrush(true, true)) {
-		brush_t *b = selected_brushes.next;
+		idEditorBrush *b = selected_brushes.next;
 		if (b->owner->eclass->nShowFlags & ECLASS_CAMERAVIEW) {
 			// find the entity that targets this
 			const char *name = b->owner->ValueForKey("name");
-			entity_t *ent = FindEntity("target", name);
+			idEditorEntity *ent = FindEntity("target", name);
 			if (ent) {
 				if (!saveValid) {
 					saveOrg = m_Camera.origin;

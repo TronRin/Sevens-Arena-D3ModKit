@@ -29,9 +29,9 @@ If you have questions concerning this license or the applicable additional terms
 void		Eclass_InitForSourceDirectory();
 eclass_t *	Eclass_ForName( const char *name, bool has_brushes );
 
-struct entity_t {
-	entity_t* prev, * next;
-	brush_t		brushes;					// head/tail of list
+struct idEditorEntity {
+	idEditorEntity* prev, * next;
+	idEditorBrush		brushes;					// head/tail of list
 	int			undoId, redoId, entityId;	// used for undo/redo
 	idVec3		origin;
 	qhandle_t	lightDef;
@@ -44,9 +44,12 @@ struct entity_t {
 	idMat3		lightRotation;		// ''
 	bool		trackLightOrigin;
 	idCurve<idVec3> *curve;
+	renderEntity_t	refent;
 
-	entity_t();
-	~entity_t();
+	idEditorEntity();
+	~idEditorEntity();
+
+	void		BuildEntityRenderState( idEditorEntity *ent, bool update );
 
 	const char *ValueForKey( const char *key ) const;
 	int			GetNumKeys() const;
@@ -73,12 +76,12 @@ struct entity_t {
 	void		WriteSelected( FILE *f );
 	void		WriteSelected( CMemFile* );
 
-	entity_t *	Clone() const;
-	void		AddToList( entity_t *list );
+	idEditorEntity *	Clone() const;
+	void		AddToList( idEditorEntity *list );
 	void		RemoveFromList();
 	bool		HasModel() const;
 
-	void		PostParse(brush_t *pList);
+	void		PostParse(idEditorBrush *pList);
 
 	void		SetName( const char *name );
 
@@ -88,12 +91,12 @@ struct entity_t {
 
 void		ParseEpair(idDict *dict);
 
-entity_t *	Entity_Parse (bool onlypairs, brush_t* pList = NULL);
-entity_t *	Entity_Create (eclass_t *c, bool forceFixed = false);
+idEditorEntity *	Entity_Parse (bool onlypairs, idEditorBrush* pList = NULL);
+idEditorEntity *	Entity_Create (eclass_t *c, bool forceFixed = false);
 
-void		Entity_LinkBrush (entity_t *e, brush_t *b);
-void		Entity_UnlinkBrush (brush_t *b);
-entity_t *	FindEntity(const char *pszKey, const char *pszValue);
-entity_t *	FindEntityInt(const char *pszKey, int iValue);
+void		Entity_LinkBrush (idEditorEntity *e, idEditorBrush *b);
+void		Entity_UnlinkBrush (idEditorBrush *b);
+idEditorEntity *	FindEntity(const char *pszKey, const char *pszValue);
+idEditorEntity *	FindEntityInt(const char *pszKey, int iValue);
 
-bool		IsBrushSelected(const brush_t* bSel);
+bool		IsBrushSelected(const idEditorBrush* bSel);

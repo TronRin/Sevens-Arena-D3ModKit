@@ -152,7 +152,7 @@ struct sideVertex_t {
 	curveVertex_t	v[2];
 };
 
-struct brush_t;
+struct idEditorBrush;
 
 struct patchMesh_t {
 	int			width, height;		// in control points, not patches
@@ -163,7 +163,7 @@ struct patchMesh_t {
 	const idMaterial *d_texture;
 	idDrawVert *verts;
 	//idDrawVert *ctrl;
-	brush_t *	pSymbiot;
+	idEditorBrush *	pSymbiot;
 	bool		bSelected;
 	bool		bOverlay;
 	int			nListID;

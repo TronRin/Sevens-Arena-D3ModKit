@@ -46,8 +46,8 @@ SelectBrush
 */
 void SelectBrush (int entitynum, int brushnum)
 {
-	entity_t	*e;
-	brush_t		*b;
+	idEditorEntity	*e;
+	idEditorBrush		*b;
 	int			i;
 
 	if (entitynum == 0)
@@ -109,8 +109,8 @@ GetSelectionIndex
 */
 void GetSelectionIndex (int *ent, int *brush)
 {
-	brush_t		*b, *b2;
-	entity_t	*entity;
+	idEditorBrush		*b, *b2;
+	idEditorEntity	*entity;
 
 	*ent = *brush = 0;
 
