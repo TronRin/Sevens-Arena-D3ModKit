@@ -541,14 +541,16 @@ void idSessionLocal::ShowLoadingGui() {
 	int stop = Sys_Milliseconds() + 1000;
 	int force = 10;
 	while ( Sys_Milliseconds() < stop || force-- > 0 ) {
-		com_frameTime = com_ticNumber * USERCMD_MSEC;
+		//com_frameTime = com_ticNumber * USERCMD_MSEC;
+		com_frameTime = Sys_Milliseconds();
 		session->Frame();
 		session->UpdateScreen( false );
 	}
 #else
 	int stop = com_ticNumber + 1000.0f / USERCMD_MSEC * 1.0f;
 	while ( com_ticNumber < stop ) {
-		com_frameTime = com_ticNumber * USERCMD_MSEC;
+		//com_frameTime = com_ticNumber * USERCMD_MSEC;
+		com_frameTime = Sys_Milliseconds();
 		session->Frame();
 		session->UpdateScreen( false );
 	}
