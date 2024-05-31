@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #define __GAME_WEAPON_H__
 
 #include "script/Script_Thread.h"
-#include "Entity.h"
+#include "AnimatedEntity.h"
 #include "Light.h"
 #include "Grabber.h"
 #include "Actor.h"

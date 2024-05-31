@@ -636,6 +636,7 @@ add_globbed_headers(src_mikktspace "mikktspace")
 set(src_game
 	game/AF.cpp
 	game/AFEntity.cpp
+	game/AnimatedEntity.cpp
 	game/Actor.cpp
 	game/Camera.cpp
 	game/Entity.cpp
@@ -713,6 +714,7 @@ add_globbed_headers(src_game "game")
 set(src_d3xp
 	d3xp/AF.cpp
 	d3xp/AFEntity.cpp
+	d3xp/AnimatedEntity.cpp
 	d3xp/Actor.cpp
 	d3xp/Camera.cpp
 	d3xp/Entity.cpp
