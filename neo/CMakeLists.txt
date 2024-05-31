@@ -637,6 +637,7 @@ set(src_game
 	game/AF.cpp
 	game/AFEntity.cpp
 	game/AnimatedEntity.cpp
+	game/AnimState.cpp
 	game/Actor.cpp
 	game/Camera.cpp
 	game/Entity.cpp
@@ -715,6 +716,7 @@ set(src_d3xp
 	d3xp/AF.cpp
 	d3xp/AFEntity.cpp
 	d3xp/AnimatedEntity.cpp
+	d3xp/AnimState.cpp
 	d3xp/Actor.cpp
 	d3xp/Camera.cpp
 	d3xp/Entity.cpp
