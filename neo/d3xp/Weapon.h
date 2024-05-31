@@ -147,8 +147,7 @@ public:
 	void					WeaponStolen( void );
 
 #ifdef _D3XP
-	weaponStatus_t			GetStatus() { return status; };
-
+	weaponStatus_t			GetStatus( void ) { return status; };
 #endif
 
 	// Script state management
@@ -179,8 +178,8 @@ public:
 	int						LowAmmo( void ) const;
 	int						AmmoRequired( void ) const;
 #ifdef _D3XP
-	int						AmmoCount() const;
-	int						GetGrabberState() const;
+	int						AmmoCount( void ) const;
+	int						GetGrabberState( void ) const;
 #endif
 
 	virtual void			WriteToSnapshot( idBitMsgDelta &msg ) const;
@@ -360,63 +359,107 @@ private:
 	void					UpdateNozzleFx( void );
 	void					UpdateFlashPosition( void );
 
-	// script events
-	void					Event_Clear( void );
-	void					Event_GetOwner( void );
-	void					Event_WeaponState( const char *statename, int blendFrames );
-	void					Event_SetWeaponStatus( float newStatus );
-	void					Event_WeaponReady( void );
-	void					Event_WeaponOutOfAmmo( void );
-	void					Event_WeaponReloading( void );
-	void					Event_WeaponHolstered( void );
-	void					Event_WeaponRising( void );
-	void					Event_WeaponLowering( void );
-	void					Event_UseAmmo( int amount );
-	void					Event_AddToClip( int amount );
-	void					Event_AmmoInClip( void );
-	void					Event_AmmoAvailable( void );
-	void					Event_TotalAmmoCount( void );
-	void					Event_ClipSize( void );
-	void					Event_PlayAnim( int channel, const char *animname );
-	void					Event_PlayCycle( int channel, const char *animname );
-	void					Event_AnimDone( int channel, int blendFrames );
-	void					Event_SetBlendFrames( int channel, int blendFrames );
-	void					Event_GetBlendFrames( int channel );
-	void					Event_Next( void );
-	void					Event_SetSkin( const char *skinname );
-	void					Event_Flashlight( int enable );
-	void					Event_GetLightParm( int parmnum );
-	void					Event_SetLightParm( int parmnum, float value );
-	void					Event_SetLightParms( float parm0, float parm1, float parm2, float parm3 );
-	void					Event_LaunchProjectiles( int num_projectiles, float spread, float fuseOffset, float launchPower, float dmgPower );
-	void					Event_CreateProjectile( void );
-	void					Event_EjectBrass( void );
-	void					Event_Melee( void );
-	void					Event_GetWorldModel( void );
-	void					Event_AllowDrop( int allow );
-	void					Event_AutoReload( void );
-	void					Event_NetReload( void );
-	void					Event_IsInvisible( void );
-	void					Event_NetEndReload( void );
-
+	// native events.
+	idEntity *				WeaponGetOwner( void );
+	void					WeaponState( const char *statename, int blendFrames );
+	void					UseAmmo( int amount );
+	void					AddToClip( int amount );
+	int						TotalAmmoCount( void );
+	float					AutoReload( void );
+	void					NetReload( void );
+	void					NetEndReload( void );
+	void					PlayAnim( int channel, const char *animname );
+	void					PlayCycle( int channel, const char *animname );
+	bool					AnimDone( int channel, int blendFrames );
+	void					SetBlendFrames( int blendFrames );
+	int						GetBlendFrames( void );
+	void					Next( void );
+	void					SetSkin( const char *skinname );
+	void					Flashlight( int enable );
+	float					GetLightParm( int parmnum );
+	void					SetLightParm( int parmnum, float value );
+	void					SetLightParms( float parm0, float parm1, float parm2, float parm3 );
+	idEntity *				CreateProjectile( void );
+	void					LaunchProjectiles( int num_projectiles, float spread, float fuseOffset, float launchPower, float dmgPower );
+	bool					Melee( void );
+	idEntity *				GetWorldModel( void );
+	void					AllowDrop( int allow );
+	void					EjectBrass( void );
+	float					IsInvisible( void );
+	void					WeaponReady( void );
+	void					WeaponOutOfAmmo( void );
+	void					WeaponReloading( void );
+	void					WeaponHolstered( void );
+	void					WeaponRising( void );
+	void					WeaponLowering( void );
 #ifdef _D3XP
+	void					SetGrabberState( int enable );
+	int						GrabberHasTarget( void );
+	void					GrabberSetGrabDistance( float dist );
+	void					LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power );
+	void					LaunchPowerup( const char *powerup, float duration, int useAmmo );
+	void					StartWeaponSmoke( void );
+	void					StopWeaponSmoke( void );
+	void					StartWeaponParticle( const char *name );
+	void					StopWeaponParticle( const char *name );
+	void					StartWeaponLight( const char *name );
+	void					StopWeaponLight( const char *name );
+#endif
+
+	// script events
+	void					Script_Clear( void );
+	void					Script_GetOwner( void );
+	void					Script_WeaponState( const char *statename, int blendFrames );
+	void					Script_SetWeaponStatus( float newStatus );
+	void					Script_WeaponReady( void );
+	void					Script_WeaponOutOfAmmo( void );
+	void					Script_WeaponReloading( void );
+	void					Script_WeaponHolstered( void );
+	void					Script_WeaponRising( void );
+	void					Script_WeaponLowering( void );
+	void					Script_UseAmmo( int amount );
+	void					Script_AddToClip( int amount );
+	void					Script_AmmoInClip( void );
+	void					Script_AmmoAvailable( void );
+	void					Script_TotalAmmoCount( void );
+	void					Script_ClipSize( void );
+	void					Script_PlayAnim( int channel, const char *animname );
+	void					Script_PlayCycle( int channel, const char *animname );
+	void					Script_AnimDone( int channel, int blendFrames );
+	void					Script_SetBlendFrames( int channel, int blendFrames );
+	void					Script_GetBlendFrames( int channel );
+	void					Script_Next( void );
+	void					Script_SetSkin( const char *skinname );
+	void					Script_Flashlight( int enable );
+	void					Script_GetLightParm( int parmnum );
+	void					Script_SetLightParm( int parmnum, float value );
+	void					Script_SetLightParms( float parm0, float parm1, float parm2, float parm3 );
+	void					Script_LaunchProjectiles( int num_projectiles, float spread, float fuseOffset, float launchPower, float dmgPower );
+	void					Script_CreateProjectile( void );
+	void					Script_EjectBrass( void );
+	void					Script_Melee( void );
+	void					Script_GetWorldModel( void );
+	void					Script_AllowDrop( int allow );
+	void					Script_AutoReload( void );
+	void					Script_NetReload( void );
+	void					Script_IsInvisible( void );
+	void					Script_NetEndReload( void );
+#ifdef _D3XP
+	void					Script_Grabber( int enable );
+	void					Script_GrabberHasTarget( void );
+	void					Script_GrabberSetGrabDistance( float dist );
+	void					Script_LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power );
+	void					Script_LaunchPowerup( const char *powerup, float duration, int useAmmo );
+	void					Script_StartWeaponSmoke( void );
+	void					Script_StopWeaponSmoke( void );
+	void					Script_StartWeaponParticle( const char *name );
+	void					Script_StopWeaponParticle( const char *name );
+	void					Script_StartWeaponLight( const char *name );
+	void					Script_StopWeaponLight( const char *name );
+
+private:
 	idGrabber				grabber;
 	int						grabberState;
-
-	void					Event_Grabber( int enable );
-	void					Event_GrabberHasTarget( void );
-	void					Event_GrabberSetGrabDistance( float dist );
-	void					Event_LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power );
-	void					Event_LaunchPowerup( const char* powerup, float duration, int useAmmo );
-
-	void					Event_StartWeaponSmoke();
-	void					Event_StopWeaponSmoke();
-
-	void					Event_StartWeaponParticle( const char* name);
-	void					Event_StopWeaponParticle( const char* name);
-
-	void					Event_StartWeaponLight( const char* name);
-	void					Event_StopWeaponLight( const char* name);
 #endif
 };
 
@@ -431,5 +474,8 @@ ID_INLINE bool idWeapon::IsWorldModelReady( void ) {
 ID_INLINE idPlayer* idWeapon::GetOwner( void ) {
 	return owner;
 }
+
+extern const idEventDef EV_Weapon_Clear;
+extern const idEventDef EV_Weapon_EjectBrass;
 
 #endif /* !__GAME_WEAPON_H__ */

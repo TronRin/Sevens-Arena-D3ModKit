@@ -662,6 +662,7 @@ set(src_game
 	game/Target.cpp
 	game/Trigger.cpp
 	game/Weapon.cpp
+	game/Weapon_script.cpp
 	game/WorldSpawn.cpp
 	game/aas/AAS.cpp
 	game/aas/AAS_debug.cpp
@@ -738,6 +739,7 @@ set(src_d3xp
 	d3xp/Target.cpp
 	d3xp/Trigger.cpp
 	d3xp/Weapon.cpp
+	d3xp/Weapon_script.cpp
 	d3xp/WorldSpawn.cpp
 	d3xp/aas/AAS.cpp
 	d3xp/aas/AAS_debug.cpp
