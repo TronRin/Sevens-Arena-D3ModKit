@@ -641,6 +641,7 @@ set(src_game
 	game/Actor.cpp
 	game/Camera.cpp
 	game/Entity.cpp
+	game/Entity_script.cpp
 	game/BrittleFracture.cpp
 	game/Fx.cpp
 	game/GameEdit.cpp
@@ -720,6 +721,7 @@ set(src_d3xp
 	d3xp/Actor.cpp
 	d3xp/Camera.cpp
 	d3xp/Entity.cpp
+	d3xp/Entity_script.cpp
 	d3xp/BrittleFracture.cpp
 	d3xp/Fx.cpp
 	d3xp/GameEdit.cpp
