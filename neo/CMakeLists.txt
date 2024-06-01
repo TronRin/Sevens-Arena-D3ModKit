@@ -639,6 +639,7 @@ set(src_game
 	game/AnimatedEntity.cpp
 	game/AnimState.cpp
 	game/Actor.cpp
+	game/Actor_script.cpp
 	game/Camera.cpp
 	game/Entity.cpp
 	game/Entity_script.cpp
@@ -719,6 +720,7 @@ set(src_d3xp
 	d3xp/AnimatedEntity.cpp
 	d3xp/AnimState.cpp
 	d3xp/Actor.cpp
+	d3xp/Actor_script.cpp
 	d3xp/Camera.cpp
 	d3xp/Entity.cpp
 	d3xp/Entity_script.cpp

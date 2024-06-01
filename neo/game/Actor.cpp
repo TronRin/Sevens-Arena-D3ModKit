@@ -46,91 +46,6 @@ If you have questions concerning this license or the applicable additional terms
 
 ***********************************************************************/
 
-const idEventDef AI_EnableEyeFocus( "enableEyeFocus" );
-const idEventDef AI_DisableEyeFocus( "disableEyeFocus" );
-const idEventDef EV_Footstep( "footstep" );
-const idEventDef EV_FootstepLeft( "leftFoot" );
-const idEventDef EV_FootstepRight( "rightFoot" );
-const idEventDef EV_EnableWalkIK( "EnableWalkIK" );
-const idEventDef EV_DisableWalkIK( "DisableWalkIK" );
-const idEventDef EV_EnableLegIK( "EnableLegIK", "d" );
-const idEventDef EV_DisableLegIK( "DisableLegIK", "d" );
-const idEventDef AI_StopAnim( "stopAnim", "dd" );
-const idEventDef AI_PlayAnim( "playAnim", "ds", 'd' );
-const idEventDef AI_PlayCycle( "playCycle", "ds", 'd' );
-const idEventDef AI_IdleAnim( "idleAnim", "ds", 'd' );
-const idEventDef AI_SetSyncedAnimWeight( "setSyncedAnimWeight", "ddf" );
-const idEventDef AI_SetBlendFrames( "setBlendFrames", "dd" );
-const idEventDef AI_GetBlendFrames( "getBlendFrames", "d", 'd' );
-const idEventDef AI_AnimState( "animState", "dsd" );
-const idEventDef AI_GetAnimState( "getAnimState", "d", 's' );
-const idEventDef AI_InAnimState( "inAnimState", "ds", 'd' );
-const idEventDef AI_FinishAction( "finishAction", "s" );
-const idEventDef AI_AnimDone( "animDone", "dd", 'd' );
-const idEventDef AI_OverrideAnim( "overrideAnim", "d" );
-const idEventDef AI_EnableAnim( "enableAnim", "dd" );
-const idEventDef AI_PreventPain( "preventPain", "f" );
-const idEventDef AI_DisablePain( "disablePain" );
-const idEventDef AI_EnablePain( "enablePain" );
-const idEventDef AI_GetPainAnim( "getPainAnim", NULL, 's' );
-const idEventDef AI_SetAnimPrefix( "setAnimPrefix", "s" );
-const idEventDef AI_HasAnim( "hasAnim", "ds", 'f' );
-const idEventDef AI_CheckAnim( "checkAnim", "ds" );
-const idEventDef AI_ChooseAnim( "chooseAnim", "ds", 's' );
-const idEventDef AI_AnimLength( "animLength", "ds", 'f' );
-const idEventDef AI_AnimDistance( "animDistance", "ds", 'f' );
-const idEventDef AI_HasEnemies( "hasEnemies", NULL, 'd' );
-const idEventDef AI_NextEnemy( "nextEnemy", "E", 'e' );
-const idEventDef AI_ClosestEnemyToPoint( "closestEnemyToPoint", "v", 'e' );
-const idEventDef AI_SetNextState( "setNextState", "s" );
-const idEventDef AI_SetState( "setState", "s" );
-const idEventDef AI_GetState( "getState", NULL, 's' );
-const idEventDef AI_GetHead( "getHead", NULL, 'e' );
-
-CLASS_DECLARATION( idAFEntity_Gibbable, idActor )
-	EVENT( AI_EnableEyeFocus,			idActor::Event_EnableEyeFocus )
-	EVENT( AI_DisableEyeFocus,			idActor::Event_DisableEyeFocus )
-	EVENT( EV_Footstep,					idActor::Event_Footstep )
-	EVENT( EV_FootstepLeft,				idActor::Event_Footstep )
-	EVENT( EV_FootstepRight,			idActor::Event_Footstep )
-	EVENT( EV_EnableWalkIK,				idActor::Event_EnableWalkIK )
-	EVENT( EV_DisableWalkIK,			idActor::Event_DisableWalkIK )
-	EVENT( EV_EnableLegIK,				idActor::Event_EnableLegIK )
-	EVENT( EV_DisableLegIK,				idActor::Event_DisableLegIK )
-	EVENT( AI_PreventPain,				idActor::Event_PreventPain )
-	EVENT( AI_DisablePain,				idActor::Event_DisablePain )
-	EVENT( AI_EnablePain,				idActor::Event_EnablePain )
-	EVENT( AI_GetPainAnim,				idActor::Event_GetPainAnim )
-	EVENT( AI_SetAnimPrefix,			idActor::Event_SetAnimPrefix )
-	EVENT( AI_StopAnim,					idActor::Event_StopAnim )
-	EVENT( AI_PlayAnim,					idActor::Event_PlayAnim )
-	EVENT( AI_PlayCycle,				idActor::Event_PlayCycle )
-	EVENT( AI_IdleAnim,					idActor::Event_IdleAnim )
-	EVENT( AI_SetSyncedAnimWeight,		idActor::Event_SetSyncedAnimWeight )
-	EVENT( AI_SetBlendFrames,			idActor::Event_SetBlendFrames )
-	EVENT( AI_GetBlendFrames,			idActor::Event_GetBlendFrames )
-	EVENT( AI_AnimState,				idActor::Event_AnimState )
-	EVENT( AI_GetAnimState,				idActor::Event_GetAnimState )
-	EVENT( AI_InAnimState,				idActor::Event_InAnimState )
-	EVENT( AI_FinishAction,				idActor::Event_FinishAction )
-	EVENT( AI_AnimDone,					idActor::Event_AnimDone )
-	EVENT( AI_OverrideAnim,				idActor::Event_OverrideAnim )
-	EVENT( AI_EnableAnim,				idActor::Event_EnableAnim )
-	EVENT( AI_HasAnim,					idActor::Event_HasAnim )
-	EVENT( AI_CheckAnim,				idActor::Event_CheckAnim )
-	EVENT( AI_ChooseAnim,				idActor::Event_ChooseAnim )
-	EVENT( AI_AnimLength,				idActor::Event_AnimLength )
-	EVENT( AI_AnimDistance,				idActor::Event_AnimDistance )
-	EVENT( AI_HasEnemies,				idActor::Event_HasEnemies )
-	EVENT( AI_NextEnemy,				idActor::Event_NextEnemy )
-	EVENT( AI_ClosestEnemyToPoint,		idActor::Event_ClosestEnemyToPoint )
-	EVENT( EV_StopSound,				idActor::Event_StopSound )
-	EVENT( AI_SetNextState,				idActor::Event_SetNextState )
-	EVENT( AI_SetState,					idActor::Event_SetState )
-	EVENT( AI_GetState,					idActor::Event_GetState )
-	EVENT( AI_GetHead,					idActor::Event_GetHead )
-END_CLASS
-
 /*
 =====================
 idActor::idActor
@@ -2459,7 +2374,7 @@ const char *idActor::GetDamageGroup( int location ) {
 
 /*
 =====================
-idActor::Event_EnableEyeFocus
+idActor::PlayFootStepSound
 =====================
 */
 void idActor::PlayFootStepSound( void ) {
@@ -2501,7 +2416,7 @@ void idActor::GetFootstepSoundMaterial( const trace_t& trace ) {
 idActor::Event_EnableEyeFocus
 =====================
 */
-void idActor::Event_EnableEyeFocus( void ) {
+void idActor::EnableEyeFocus( void ) {
 	allowEyeFocus = true;
 	blink_time = gameLocal.time + blink_min + gameLocal.random.RandomFloat() * ( blink_max - blink_min );
 }
@@ -2511,7 +2426,7 @@ void idActor::Event_EnableEyeFocus( void ) {
 idActor::Event_DisableEyeFocus
 =====================
 */
-void idActor::Event_DisableEyeFocus( void ) {
+void idActor::DisableEyeFocus( void ) {
 	allowEyeFocus = false;
 
 	idEntity *headEnt = head.GetEntity();
@@ -2527,7 +2442,7 @@ void idActor::Event_DisableEyeFocus( void ) {
 idActor::Event_Footstep
 ===============
 */
-void idActor::Event_Footstep( void ) {
+void idActor::Footstep( void ) {
 	PlayFootStepSound();
 }
 
@@ -2536,7 +2451,7 @@ void idActor::Event_Footstep( void ) {
 idActor::Event_EnableWalkIK
 =====================
 */
-void idActor::Event_EnableWalkIK( void ) {
+void idActor::EnableWalkIK( void ) {
 	walkIK.EnableAll();
 }
 
@@ -2545,7 +2460,7 @@ void idActor::Event_EnableWalkIK( void ) {
 idActor::Event_DisableWalkIK
 =====================
 */
-void idActor::Event_DisableWalkIK( void ) {
+void idActor::DisableWalkIK( void ) {
 	walkIK.DisableAll();
 }
 
@@ -2554,7 +2469,7 @@ void idActor::Event_DisableWalkIK( void ) {
 idActor::Event_EnableLegIK
 =====================
 */
-void idActor::Event_EnableLegIK( int num ) {
+void idActor::EnableLegIK( int num ) {
 	walkIK.EnableLeg( num );
 }
 
@@ -2563,7 +2478,7 @@ void idActor::Event_EnableLegIK( int num ) {
 idActor::Event_DisableLegIK
 =====================
 */
-void idActor::Event_DisableLegIK( int num ) {
+void idActor::DisableLegIK( int num ) {
 	walkIK.DisableLeg( num );
 }
 
@@ -2572,7 +2487,7 @@ void idActor::Event_DisableLegIK( int num ) {
 idActor::Event_PreventPain
 =====================
 */
-void idActor::Event_PreventPain( float duration ) {
+void idActor::PreventPain( float duration ) {
 	painTime = gameLocal.time + SEC2MS( duration );
 }
 
@@ -2581,7 +2496,7 @@ void idActor::Event_PreventPain( float duration ) {
 idActor::Event_DisablePain
 ===============
 */
-void idActor::Event_DisablePain( void ) {
+void idActor::DisablePain( void ) {
 	allowPain = false;
 }
 
@@ -2590,7 +2505,7 @@ void idActor::Event_DisablePain( void ) {
 idActor::Event_EnablePain
 ===============
 */
-void idActor::Event_EnablePain( void ) {
+void idActor::EnablePain( void ) {
 	allowPain = true;
 }
 
@@ -2599,11 +2514,11 @@ void idActor::Event_EnablePain( void ) {
 idActor::Event_GetPainAnim
 =====================
 */
-void idActor::Event_GetPainAnim( void ) {
+const char *idActor::GetPainAnim( void ) {
 	if ( !painAnim.Length() ) {
-		idThread::ReturnString( "pain" );
+		return "pain";
 	} else {
-		idThread::ReturnString( painAnim );
+		return painAnim.c_str();
 	}
 }
 
@@ -2612,7 +2527,7 @@ void idActor::Event_GetPainAnim( void ) {
 idActor::Event_SetAnimPrefix
 =====================
 */
-void idActor::Event_SetAnimPrefix( const char *prefix ) {
+void idActor::SetAnimPrefix( const char *prefix ) {
 	animPrefix = prefix;
 }
 
@@ -2621,7 +2536,7 @@ void idActor::Event_SetAnimPrefix( const char *prefix ) {
 idActor::Event_StopAnim
 ===============
 */
-void idActor::Event_StopAnim( int channel, int frames ) {
+void idActor::StopAnim( int channel, int frames ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
 		headAnim.StopAnim( frames );
@@ -2646,20 +2561,17 @@ void idActor::Event_StopAnim( int channel, int frames ) {
 idActor::Event_PlayAnim
 ===============
 */
-void idActor::Event_PlayAnim( int channel, const char *animname ) {
+int idActor::PlayAnim( int channel, const char *animname ) {
 	animFlags_t	flags;
 	idEntity *headEnt;
-	int	anim;
-
-	anim = GetAnim( channel, animname );
+	int anim = GetAnim( channel, animname );
 	if ( !anim ) {
 		if ( ( channel == ANIMCHANNEL_HEAD ) && head.GetEntity() ) {
 			gameLocal.DPrintf( "missing '%s' animation on '%s' (%s)\n", animname, name.c_str(), spawnArgs.GetString( "def_head", "" ) );
 		} else {
 			gameLocal.DPrintf( "missing '%s' animation on '%s' (%s)\n", animname, name.c_str(), GetEntityDefName() );
 		}
-		idThread::ReturnInt( 0 );
-		return;
+		return 0;
 	}
 
 	switch( channel ) {
@@ -2718,7 +2630,7 @@ void idActor::Event_PlayAnim( int channel, const char *animname ) {
 		gameLocal.Error( "Unknown anim group" );
 		break;
 	}
-	idThread::ReturnInt( 1 );
+	return 1;
 }
 
 /*
@@ -2726,19 +2638,16 @@ void idActor::Event_PlayAnim( int channel, const char *animname ) {
 idActor::Event_PlayCycle
 ===============
 */
-void idActor::Event_PlayCycle( int channel, const char *animname ) {
+int idActor::PlayCycle( int channel, const char *animname ) {
 	animFlags_t	flags;
-	int			anim;
-
-	anim = GetAnim( channel, animname );
+	int			anim = GetAnim( channel, animname );
 	if ( !anim ) {
 		if ( ( channel == ANIMCHANNEL_HEAD ) && head.GetEntity() ) {
 			gameLocal.DPrintf( "missing '%s' animation on '%s' (%s)\n", animname, name.c_str(), spawnArgs.GetString( "def_head", "" ) );
 		} else {
 			gameLocal.DPrintf( "missing '%s' animation on '%s' (%s)\n", animname, name.c_str(), GetEntityDefName() );
 		}
-		idThread::ReturnInt( false );
-		return;
+		return false;
 	}
 
 	switch( channel ) {
@@ -2790,9 +2699,9 @@ void idActor::Event_PlayCycle( int channel, const char *animname ) {
 
 	default:
 		gameLocal.Error( "Unknown anim group" );
+		break;
 	}
-
-	idThread::ReturnInt( true );
+	return true;
 }
 
 /*
@@ -2800,10 +2709,8 @@ void idActor::Event_PlayCycle( int channel, const char *animname ) {
 idActor::Event_IdleAnim
 ===============
 */
-void idActor::Event_IdleAnim( int channel, const char *animname ) {
-	int anim;
-
-	anim = GetAnim( channel, animname );
+int idActor::IdleAnim( int channel, const char* animname ) {
+	int anim = GetAnim( channel, animname );
 	if ( !anim ) {
 		if ( ( channel == ANIMCHANNEL_HEAD ) && head.GetEntity() ) {
 			gameLocal.DPrintf( "missing '%s' animation on '%s' (%s)\n", animname, name.c_str(), spawnArgs.GetString( "def_head", "" ) );
@@ -2827,9 +2734,7 @@ void idActor::Event_IdleAnim( int channel, const char *animname ) {
 		default:
 			gameLocal.Error( "Unknown anim group" );
 		}
-
-		idThread::ReturnInt( false );
-		return;
+		return false;
 	}
 
 	switch( channel ) {
@@ -2897,9 +2802,9 @@ void idActor::Event_IdleAnim( int channel, const char *animname ) {
 
 	default:
 		gameLocal.Error( "Unknown anim group" );
+		break;
 	}
-
-	idThread::ReturnInt( true );
+	return true;
 }
 
 /*
@@ -2907,10 +2812,8 @@ void idActor::Event_IdleAnim( int channel, const char *animname ) {
 idActor::Event_SetSyncedAnimWeight
 ================
 */
-void idActor::Event_SetSyncedAnimWeight( int channel, int anim, float weight ) {
-	idEntity *headEnt;
-
-	headEnt = head.GetEntity();
+void idActor::SetSyncedAnimWeight( int channel, int anim, float weight ) {
+	idEntity *headEnt = head.GetEntity();
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
 		if ( headEnt ) {
@@ -2948,6 +2851,7 @@ void idActor::Event_SetSyncedAnimWeight( int channel, int anim, float weight ) {
 
 	default:
 		gameLocal.Error( "Unknown anim group" );
+		break;
 	}
 }
 
@@ -2956,7 +2860,7 @@ void idActor::Event_SetSyncedAnimWeight( int channel, int anim, float weight ) {
 idActor::Event_OverrideAnim
 ===============
 */
-void idActor::Event_OverrideAnim( int channel ) {
+void idActor::OverrideAnim( int channel ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
 		headAnim.Disable();
@@ -2991,7 +2895,7 @@ void idActor::Event_OverrideAnim( int channel ) {
 idActor::Event_EnableAnim
 ===============
 */
-void idActor::Event_EnableAnim( int channel, int blendFrames ) {
+void idActor::EnableAnim( int channel, int blendFrames ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
 		headAnim.Enable( blendFrames );
@@ -3016,7 +2920,7 @@ void idActor::Event_EnableAnim( int channel, int blendFrames ) {
 idActor::Event_SetBlendFrames
 ===============
 */
-void idActor::Event_SetBlendFrames( int channel, int blendFrames ) {
+void idActor::SetBlendFrames( int channel, int blendFrames ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
 		headAnim.animBlendFrames = blendFrames;
@@ -3044,57 +2948,18 @@ void idActor::Event_SetBlendFrames( int channel, int blendFrames ) {
 idActor::Event_GetBlendFrames
 ===============
 */
-void idActor::Event_GetBlendFrames( int channel ) {
+int idActor::GetBlendFrames( int channel ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
-		idThread::ReturnInt( headAnim.animBlendFrames );
-		break;
-
+		return headAnim.animBlendFrames;
 	case ANIMCHANNEL_TORSO :
-		idThread::ReturnInt( torsoAnim.animBlendFrames );
-		break;
-
+		return torsoAnim.animBlendFrames;
 	case ANIMCHANNEL_LEGS :
-		idThread::ReturnInt( legsAnim.animBlendFrames );
-		break;
-
+		return legsAnim.animBlendFrames;
 	default:
 		gameLocal.Error( "Unknown anim group" );
-		break;
+		return 0;
 	}
-}
-
-/*
-===============
-idActor::Event_AnimState
-===============
-*/
-void idActor::Event_AnimState( int channel, const char *statename, int blendFrames ) {
-	SetAnimState( channel, statename, blendFrames );
-}
-
-/*
-===============
-idActor::Event_GetAnimState
-===============
-*/
-void idActor::Event_GetAnimState( int channel ) {
-	const char *state;
-
-	state = GetAnimState( channel );
-	idThread::ReturnString( state );
-}
-
-/*
-===============
-idActor::Event_InAnimState
-===============
-*/
-void idActor::Event_InAnimState( int channel, const char *statename ) {
-	bool instate;
-
-	instate = InAnimState( channel, statename );
-	idThread::ReturnInt( instate );
 }
 
 /*
@@ -3102,7 +2967,7 @@ void idActor::Event_InAnimState( int channel, const char *statename ) {
 idActor::Event_FinishAction
 ===============
 */
-void idActor::Event_FinishAction( const char *actionname ) {
+void idActor::FinishAction( const char *actionname ) {
 	if ( waitState == actionname ) {
 		SetWaitState( "" );
 	}
@@ -3113,27 +2978,17 @@ void idActor::Event_FinishAction( const char *actionname ) {
 idActor::Event_AnimDone
 ===============
 */
-void idActor::Event_AnimDone( int channel, int blendFrames ) {
-	bool result;
-
+bool idActor::AnimDone( int channel, int blendFrames ) {
 	switch( channel ) {
 	case ANIMCHANNEL_HEAD :
-		result = headAnim.AnimDone( blendFrames );
-		idThread::ReturnInt( result );
-		break;
-
+		return headAnim.AnimDone( blendFrames );
 	case ANIMCHANNEL_TORSO :
-		result = torsoAnim.AnimDone( blendFrames );
-		idThread::ReturnInt( result );
-		break;
-
+		return torsoAnim.AnimDone( blendFrames );
 	case ANIMCHANNEL_LEGS :
-		result = legsAnim.AnimDone( blendFrames );
-		idThread::ReturnInt( result );
-		break;
-
+		return legsAnim.AnimDone( blendFrames );
 	default:
 		gameLocal.Error( "Unknown anim group" );
+		return false;
 	}
 }
 
@@ -3142,12 +2997,8 @@ void idActor::Event_AnimDone( int channel, int blendFrames ) {
 idActor::Event_HasAnim
 ================
 */
-void idActor::Event_HasAnim( int channel, const char *animname ) {
-	if ( GetAnim( channel, animname ) != 0 ) {
-		idThread::ReturnFloat( 1.0f );
-	} else {
-		idThread::ReturnFloat( 0.0f );
-	}
+float idActor::HasAnim( int channel, const char *animname ) {
+	return ( GetAnim( channel, animname ) != NULL ) ? 1.0f : 0.0f;
 }
 
 /*
@@ -3155,7 +3006,7 @@ void idActor::Event_HasAnim( int channel, const char *animname ) {
 idActor::Event_CheckAnim
 ================
 */
-void idActor::Event_CheckAnim( int channel, const char *animname ) {
+void idActor::CheckAnim( int channel, const char *animname ) {
 	if ( !GetAnim( channel, animname ) ) {
 		if ( animPrefix.Length() ) {
 			gameLocal.Error( "Can't find anim '%s_%s' for '%s'", animPrefix.c_str(), animname, name.c_str() );
@@ -3170,23 +3021,18 @@ void idActor::Event_CheckAnim( int channel, const char *animname ) {
 idActor::Event_ChooseAnim
 ================
 */
-void idActor::Event_ChooseAnim( int channel, const char *animname ) {
-	int anim;
-
-	anim = GetAnim( channel, animname );
+const char *idActor::ChooseAnim( int channel, const char *animname ) {
+	int anim = GetAnim( channel, animname );
 	if ( anim ) {
 		if ( channel == ANIMCHANNEL_HEAD ) {
 			if ( head.GetEntity() ) {
-				idThread::ReturnString( head.GetEntity()->GetAnimator()->AnimFullName( anim ) );
-				return;
+				return head.GetEntity()->GetAnimator()->AnimFullName( anim );
 			}
 		} else {
-			idThread::ReturnString( animator.AnimFullName( anim ) );
-			return;
+			return animator.AnimFullName( anim );
 		}
 	}
-
-	idThread::ReturnString( "" );
+	return "";
 }
 
 /*
@@ -3194,23 +3040,18 @@ void idActor::Event_ChooseAnim( int channel, const char *animname ) {
 idActor::Event_AnimLength
 ================
 */
-void idActor::Event_AnimLength( int channel, const char *animname ) {
-	int anim;
-
-	anim = GetAnim( channel, animname );
+float idActor::AnimLength( int channel, const char *animname ) {
+	int anim = GetAnim( channel, animname );
 	if ( anim ) {
 		if ( channel == ANIMCHANNEL_HEAD ) {
 			if ( head.GetEntity() ) {
-				idThread::ReturnFloat( MS2SEC( head.GetEntity()->GetAnimator()->AnimLength( anim ) ) );
-				return;
+				return MS2SEC( head.GetEntity()->GetAnimator()->AnimLength( anim ) );
 			}
 		} else {
-			idThread::ReturnFloat( MS2SEC( animator.AnimLength( anim ) ) );
-			return;
+			return MS2SEC( animator.AnimLength( anim ) );
 		}
 	}
-
-	idThread::ReturnFloat( 0.0f );
+	return 0.0f;
 }
 
 /*
@@ -3218,35 +3059,18 @@ void idActor::Event_AnimLength( int channel, const char *animname ) {
 idActor::Event_AnimDistance
 ================
 */
-void idActor::Event_AnimDistance( int channel, const char *animname ) {
-	int anim;
-
-	anim = GetAnim( channel, animname );
+float idActor::AnimDistance( int channel, const char *animname ) {
+	int anim = GetAnim( channel, animname );
 	if ( anim ) {
 		if ( channel == ANIMCHANNEL_HEAD ) {
 			if ( head.GetEntity() ) {
-				idThread::ReturnFloat( head.GetEntity()->GetAnimator()->TotalMovementDelta( anim ).Length() );
-				return;
+				return head.GetEntity()->GetAnimator()->TotalMovementDelta( anim ).Length();
 			}
 		} else {
-			idThread::ReturnFloat( animator.TotalMovementDelta( anim ).Length() );
-			return;
+			return animator.TotalMovementDelta( anim ).Length();
 		}
 	}
-
-	idThread::ReturnFloat( 0.0f );
-}
-
-/*
-================
-idActor::Event_HasEnemies
-================
-*/
-void idActor::Event_HasEnemies( void ) {
-	bool hasEnemy;
-
-	hasEnemy = HasEnemies();
-	idThread::ReturnInt( hasEnemy );
+	return 0.0f;
 }
 
 /*
@@ -3254,9 +3078,8 @@ void idActor::Event_HasEnemies( void ) {
 idActor::Event_NextEnemy
 ================
 */
-void idActor::Event_NextEnemy( idEntity *ent ) {
+idActor *idActor::NextEnemy( idEntity *ent ) {
 	idActor *actor;
-
 	if ( !ent || ( ent == this ) ) {
 		actor = enemyList.Next();
 	} else {
@@ -3272,22 +3095,10 @@ void idActor::Event_NextEnemy( idEntity *ent ) {
 
 	for( ; actor != NULL; actor = actor->enemyNode.Next() ) {
 		if ( !actor->fl.hidden ) {
-			idThread::ReturnEntity( actor );
-			return;
+			return actor;
 		}
 	}
-
-	idThread::ReturnEntity( NULL );
-}
-
-/*
-================
-idActor::Event_ClosestEnemyToPoint
-================
-*/
-void idActor::Event_ClosestEnemyToPoint( const idVec3 &pos ) {
-	idActor *bestEnt = ClosestEnemyToPoint( pos );
-	idThread::ReturnEntity( bestEnt );
+	return NULL;
 }
 
 /*
@@ -3295,14 +3106,14 @@ void idActor::Event_ClosestEnemyToPoint( const idVec3 &pos ) {
 idActor::Event_StopSound
 ================
 */
-void idActor::Event_StopSound( int channel, int netSync ) {
+void idActor::StopSound( int channel, int netSync ) {
 	if ( channel == SND_CHANNEL_VOICE ) {
 		idEntity *headEnt = head.GetEntity();
 		if ( headEnt ) {
 			headEnt->StopSound( channel, ( netSync != 0 ) );
 		}
 	}
-	StopSound( channel, ( netSync != 0 ) );
+	idEntity::StopSound( channel, ( netSync != 0 ) );
 }
 
 /*
@@ -3310,7 +3121,7 @@ void idActor::Event_StopSound( int channel, int netSync ) {
 idActor::Event_SetNextState
 =====================
 */
-void idActor::Event_SetNextState( const char *name ) {
+void idActor::SetNextState( const char *name ) {
 	idealState = GetScriptFunction( name );
 	if ( idealState == state ) {
 		state = NULL;
@@ -3322,7 +3133,7 @@ void idActor::Event_SetNextState( const char *name ) {
 idActor::Event_SetState
 =====================
 */
-void idActor::Event_SetState( const char *name ) {
+void idActor::ScriptSetState( const char *name ) {
 	idealState = GetScriptFunction( name );
 	if ( idealState == state ) {
 		state = NULL;
@@ -3335,11 +3146,11 @@ void idActor::Event_SetState( const char *name ) {
 idActor::Event_GetState
 =====================
 */
-void idActor::Event_GetState( void ) {
+const char *idActor::GetState( void ) {
 	if ( state ) {
-		idThread::ReturnString( state->Name() );
+		return state->Name();
 	} else {
-		idThread::ReturnString( "" );
+		return "";
 	}
 }
 
@@ -3348,6 +3159,6 @@ void idActor::Event_GetState( void ) {
 idActor::Event_GetHead
 =====================
 */
-void idActor::Event_GetHead( void ) {
-	idThread::ReturnEntity( head.GetEntity() );
+idEntity* idActor::GetHead( void ) {
+	return head.GetEntity();
 }
