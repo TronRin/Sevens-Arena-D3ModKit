@@ -52,7 +52,6 @@ option( CORE						"Build the core" ON )
 option( BASE						"Build the base game code" ON )
 option( D3XP						"Build the d3xp game code" ON )
 option( TOOLS						"Build the tools game code." ON )
-option( TYPEINFOGEN					"Build the TypeInfoGen tool (useful for C++ only mods/games)" ON )
 option( DEDICATED					"Build the dedicated server" ON ) # OFF
 option( ONATIVE						"Optimize for the host CPU" OFF )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
@@ -683,7 +682,6 @@ set(src_game
 	game/gamesys/SaveGame.cpp
 	game/gamesys/SysCmds.cpp
 	game/gamesys/SysCvar.cpp
-	game/gamesys/TypeInfo.cpp
 	game/anim/Anim.cpp
 	game/anim/Anim_Blend.cpp
 	game/anim/Anim_Import.cpp
@@ -764,7 +762,6 @@ set(src_d3xp
 	d3xp/gamesys/SaveGame.cpp
 	d3xp/gamesys/SysCmds.cpp
 	d3xp/gamesys/SysCvar.cpp
-	d3xp/gamesys/TypeInfo.cpp
 	d3xp/anim/Anim.cpp
 	d3xp/anim/Anim_Blend.cpp
 	d3xp/anim/Anim_Import.cpp
@@ -918,31 +915,6 @@ else()
 	set(src_editor_tools "tools/edit_stub.cpp" "tools/edit_public.h" "tools/debugger/debugger_common.h")
 	list(APPEND src_editor_tools
 		${src_debuggerServer}
-	)
-endif()
-
-# Generate the TypeInfoGen
-if (TYPEINFOGEN)
-	set(src_typeinfogen 
-		"TypeInfo/main.cpp"
-		"TypeInfo/TypeInfoGen.cpp"
-		"TypeInfo/TypeInfoGen.h"
-	)
-
-	set (src_toolsupportsrc 
-		framework/CmdSystem.cpp
-		framework/CVarSystem.cpp
-		framework/File.cpp
-		framework/FileSystem.cpp
-		framework/minizip/ioapi.c
-		framework/minizip/ioapi.h
-		framework/minizip/MiniZip64_info.txt
-		framework/minizip/unzip.cpp
-		framework/minizip/unzip.h
-	)
-	
-	set (src_enginestub 
-		tools/tool_idcommon_stub.cpp
 	)
 endif()
 
@@ -1179,35 +1151,6 @@ endif()
 
 	if(NOT APPLE AND NOT WIN32)
 		install(TARGETS ${DHEWM3BINARY}ded
-				RUNTIME DESTINATION "${bindir}"
-				LIBRARY DESTINATION "${libdir}"
-				ARCHIVE DESTINATION "${libdir}"
-		)
-	endif()
-endif()
-
-# Generate the TypeInfoGen
-if (TYPEINFOGEN)
-	add_executable(TypeInfoGen
-		${src_typeinfogen}
-		${src_toolsupportsrc}
-		${src_enginestub}
-	)
-
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_typeinfogen} ${src_toolsupportsrc} ${src_enginestub})
-
-if(HARDLINK_GAME)
-	set_target_properties(TypeInfoGen PROPERTIES COMPILE_DEFINITIONS "ID_TYPEINFO;ID_CONSOLE_TOOLS")
-	target_include_directories(TypeInfoGen PRIVATE ${game_includes})
-else()
-	set_target_properties(TypeInfoGen PROPERTIES COMPILE_DEFINITIONS "ID_TYPEINFO;ID_CONSOLE_TOOLS;__DOOM_DLL__")
-endif()
-	set_target_properties(TypeInfoGen PROPERTIES LINK_FLAGS "${ldflags}")
-	target_link_libraries(TypeInfoGen idlib ZLIB::ZLIB )
-	set_target_properties(TypeInfoGen PROPERTIES FOLDER "exes")
-
-	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS TypeInfoGen
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
