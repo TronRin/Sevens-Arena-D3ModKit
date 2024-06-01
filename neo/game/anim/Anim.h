@@ -194,7 +194,6 @@ private:
 	bool					ParseOptions( idLexer &lex );
 	int						ParseExportSection( idParser &parser );
 
-	static bool				CheckMayaInstall( void );
 	static void				LoadMayaDll( void );
 
 	bool					ConvertMayaToMD5( void );

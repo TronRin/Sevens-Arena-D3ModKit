@@ -1044,6 +1044,9 @@ dkms.conf
 # Raspberry Pi Pico disassembler file
 *.dis
 
+# Do not include MayaSDK please
+neo/libs/MayaSDKDevKit/*
+
 # Doxygen docs
 docs/html/*
 
@@ -1054,7 +1057,6 @@ build*/
 # Doom 3: Ignore PK4 & Keys
 config.spec
 DoomConfig.cfg
-doomkey
 game00.pk4
 game01.pk4
 game02.pk4
@@ -1069,6 +1071,8 @@ pak005.pk4
 pak006.pk4
 pak007.pk4
 pak008.pk4
+doomkey
+xpkey
 STEAM_doomkey
 STEAM_xpkey
 

@@ -41,6 +41,8 @@ If you have questions concerning this license or the applicable additional terms
 
 ***********************************************************************/
 
+idCVar g_MayaImportVersion( "g_MayaImportVersion", "2019", CVAR_GAME | CVAR_INTEGER, "" );
+
 static idStr				Maya_Error;
 
 static exporterInterface_t	Maya_ConvertModel = NULL;
@@ -81,49 +83,6 @@ void idModelExport::Shutdown( void ) {
 
 /*
 =====================
-idModelExport::CheckMayaInstall
-
-Determines if Maya is installed on the user's machine
-=====================
-*/
-bool idModelExport::CheckMayaInstall( void ) {
-#ifndef _WIN32
-	return false;
-#elif 0
-	HKEY	hKey;
-	long	lres, lType;
-
-	lres = RegOpenKey( HKEY_LOCAL_MACHINE, "SOFTWARE\\Alias|Wavefront\\Maya\\4.5\\Setup\\InstallPath", &hKey );
-
-	if ( lres != ERROR_SUCCESS ) {
-		return false;
-	}
-
-	lres = RegQueryValueEx( hKey, "MAYA_INSTALL_LOCATION", NULL, (unsigned long*)&lType, (unsigned char*)NULL, (unsigned long*)NULL );
-
-	RegCloseKey( hKey );
-
-	if ( lres != ERROR_SUCCESS ) {
-		return false;
-	}
-	return true;
-#else
-	HKEY	hKey;
-	long	lres;
-
-	// only check the non-version specific key so that we only have to update the maya dll when new versions are released
-	lres = RegOpenKey( HKEY_LOCAL_MACHINE, "SOFTWARE\\Alias|Wavefront\\Maya", &hKey );
-	RegCloseKey( hKey );
-
-	if ( lres != ERROR_SUCCESS ) {
-		return false;
-	}
-	return true;
-#endif
-}
-
-/*
-=====================
 idModelExport::LoadMayaDll
 
 Checks to see if we can load the Maya export dll
@@ -133,7 +92,7 @@ void idModelExport::LoadMayaDll( void ) {
 	exporterDLLEntry_t	dllEntry;
 	char				dllPath[ MAX_OSPATH ];
 
-	fileSystem->FindDLL( "MayaImport", dllPath );
+	fileSystem->FindDLL( va( "MayaImport%d", g_MayaImportVersion.GetInteger() ), dllPath );
 	if ( !dllPath[ 0 ] ) {
 		return;
 	}
@@ -226,11 +185,6 @@ bool idModelExport::ConvertMayaToMD5( void ) {
 	// if this is the first time we've been run, check if Maya is installed and load our DLL
 	if ( !initialized ) {
 		initialized = true;
-
-		if ( !CheckMayaInstall() ) {
-			Maya_Error = "Maya not installed in registry.";
-			return false;
-		}
 
 		LoadMayaDll();
 
@@ -539,11 +493,6 @@ int idModelExport::ExportModels( const char *pathname, const char *extension ) {
 
 	idFileList *files;
 	int			i;
-
-	if ( !CheckMayaInstall() ) {
-		// if Maya isn't installed, don't bother checking if we have anims to export
-		return 0;
-	}
 
 	gameLocal.Printf( "----- Exporting models -----\n" );
 	if ( !g_exportMask.GetString()[ 0 ] ) {

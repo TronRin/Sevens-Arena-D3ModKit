@@ -26,10 +26,59 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#define IDSTR_NO_REDIRECT
+
 #include "sys/platform.h"
 
-#include "Maya5.0/maya.h"
-//#include "Maya6.0/maya.h"			// must also change include directory in project from "MayaImport\Maya4.5\include" to "MayaImport\Maya6.0\include" (requires MSDev 7.1)
+#ifdef _WIN32
+#define _BOOL
+#include <maya/MStatus.h>
+#include <maya/MString.h> 
+#include <maya/MFileIO.h>
+#include <maya/MLibrary.h>
+#include <maya/MPoint.h>
+#include <maya/MVector.h>
+#include <maya/MMatrix.h>
+#include <maya/MTransformationMatrix.h>
+#include <maya/MEulerRotation.h>
+#include <maya/MObject.h>
+#include <maya/MArgList.h>
+#include <maya/MGlobal.h>
+#include <maya/MDagPath.h>
+#include <maya/MFnDagNode.h>
+#include <maya/MItDag.h>
+#include <maya/MTime.h>
+#include <maya/MAnimControl.h>
+#include <maya\MFnGeometryFilter.h>
+#include <maya\MFnSet.h>
+#include <maya\MSelectionList.h>
+#include <maya\MFloatArray.h>
+#include <maya\MFnWeightGeometryFilter.h>
+#include <maya\MFnSkinCluster.h>
+#include <maya\MItDependencyNodes.h>
+#include <maya\MFnMesh.h>
+#include <maya\MDagPathArray.h>
+#include <maya\MItGeometry.h>
+#include <maya\MPlugArray.h>
+#include <maya\MPlug.h>
+#include <maya\MFloatPointArray.h>
+#include <maya\MFnAttribute.h>
+#include <maya\MFnMatrixData.h>
+#include <maya/MItDependencyGraph.h>
+#include <maya/MItMeshPolygon.h>
+#include <maya/MFnTransform.h>
+#include <maya/MQuaternion.h>
+#include <maya/MFnCamera.h>
+#include <maya/MFloatMatrix.h>
+#include <maya/MFnEnumAttribute.h>
+#undef _BOOL
+#endif // _WIN32
+
+#include "idlib/math/Quat.h"
+#include "idlib/bv/Bounds.h"
+#include "framework/Licensee.h"
+#include "renderer/Model.h"
+
 #include "MayaImport/exporter.h"
 #include "MayaImport/maya_main.h"
 
@@ -43,12 +92,6 @@ bool	initialized = false;
 #define	SLOP_TEXCOORD			0.001f			// merge texture coordinates this far apart
 
 const char *componentNames[ 6 ] = { "Tx", "Ty", "Tz", "Qx", "Qy", "Qz" };
-
-idSys *			sys = NULL;
-idCommon *		common = NULL;
-idCVarSystem *	cvarSystem = NULL;
-
-idCVar *		idCVar::staticVars = NULL;
 
 /*
 =================
@@ -3067,7 +3110,7 @@ dll setup
 Maya_Shutdown
 ===============
 */
-void Maya_Shutdown( void ) {
+ID_MAYA_IMPORT_API void Maya_Shutdown( void ) {
 	if ( initialized ) {
 		errorMessage.Clear();
 		initialized = false;
@@ -3082,7 +3125,7 @@ void Maya_Shutdown( void ) {
 Maya_ConvertModel
 ===============
 */
-const char *Maya_ConvertModel( const char *ospath, const char *commandline ) {
+ID_MAYA_IMPORT_API const char *Maya_ConvertModel( const char *ospath, const char *commandline ) {
 
 	errorMessage = "Ok";
 
@@ -3105,7 +3148,7 @@ const char *Maya_ConvertModel( const char *ospath, const char *commandline ) {
 dllEntry
 ===============
 */
-bool dllEntry( int version, idCommon *common, idSys *sys ) {
+ID_MAYA_IMPORT_API bool dllEntry( int version, idCommon *common, idSys *sys ) {
 
 	if ( !common || !sys ) {
 		return false;

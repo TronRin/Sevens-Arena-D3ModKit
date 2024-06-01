@@ -1,19 +1,3 @@
-# TODO
-
-# osx: place game .dylib's in the bundle (next to the binary)
-# osx: -weak_framework ?
-
-# maybe add these as options:
-# TARGET_MONO
-# SETUP
-# SDK				-D_D3SDK
-
-# don't add these as options, but document them?
-# IDNET_HOST		-DIDNET_HOST=\\"%s\\"' % IDNET_HOST
-# DEBUG_MEMORY		-DID_DEBUG_MEMORY', '-DID_REDIRECT_NEWDELETE
-# LIBC_MALLOC		-DUSE_LIBC_MALLOC=0
-# ID_NOLANADDRESS	-DID_NOLANADDRESS
-
 cmake_minimum_required( VERSION 3.27.8 )
 
 # Check if vcpkg exist in our source folder
@@ -48,11 +32,12 @@ include( GNUInstallDirs OPTIONAL RESULT_VARIABLE GNUINSTALLDIRS )
 include( GitBranch )
 include( GlobbedHeaders )
 
-option( CORE						"Build the core" ON )
+option( ENGINE						"Build the main executable." ON )
+option( DEDICATED					"Build the dedicated server executable." ON )
+option( TOOLS						"Build the include tools into the main executable." ON )
+option( MAYA_IMPORT					"Build the include maya import tool (Requires MayaSDK)." ON )
 option( BASE						"Build the base game code" ON )
 option( D3XP						"Build the d3xp game code" ON )
-option( TOOLS						"Build the tools game code." ON )
-option( DEDICATED					"Build the dedicated server" ON ) # OFF
 option( ONATIVE						"Optimize for the host CPU" OFF )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
 option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases" OFF )
@@ -125,6 +110,30 @@ else()
 endif()
 
 if( TOOLS )
+	if ( MAYA_IMPORT )
+		include( ExternalProject )
+
+		# Locate and download MayaSDK, change MAYASDK_URL to one of the urls listed here: https://aps.autodesk.com/developer/overview/maya
+		# ( Rigth click in anyone > Copy Url)
+		set( MAYASDK_URL "https://autodesk-adn-transfer.s3-us-west-2.amazonaws.com/ADN+Extranet/M%26E/Maya/devkit+2019/Autodesk_Maya_2019_3_Update_DEVKIT_Windows.zip" CACHE STRING "" )
+	
+		# The downloaded Hash & MD5 of the MAYASDK_URL download
+		# These ones are from 2019 make sure to generate one for newer releases!
+		set( MAYASDK_HASH "2332C6C79B8C7974A5645523E395962BBB19901289AAAEE129D3BF2B630829C7" CACHE STRING "" )
+		set( MAYASDK_MD5 "6BC28A0047709DEECC3DBB0D4A0B4D14" CACHE STRING "" )
+	
+		ExternalProject_Add( MayaDevKit
+			URL ${MAYASDK_URL}
+			URL_HASH SHA256=${MAYASDK_HASH}
+			URL_MD5 ${MAYASDK_MD5}
+			DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
+			SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/MayaSDKDevKit
+			CONFIGURE_COMMAND ""
+			BUILD_COMMAND ""
+			INSTALL_COMMAND ""
+		)
+	endif()
+
 	if( MSVC )
 		# This is required for tools on windows.
 		find_package( MFC )
@@ -832,7 +841,7 @@ set(src_tools
 # TODO: add_globbed_headers(src_tools "tools/guied")
 
 # Begin normal (MFC) tools code
-if (TOOLS AND MFC_TOOLS AND MSVC)
+if ( TOOLS AND MFC_TOOLS AND MSVC )
 	set(ALLOWRESOURCES ON)
 	# Common files.
 	file(GLOB src_comafx "tools/comafx/*.cpp")
@@ -1021,44 +1030,47 @@ endif()
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_library(idlib STATIC ${src_idlib})
-if (AROS)
-	add_library(dll STATIC ${src_arosdll})
-		if(CMAKE_SYSTEM_PROCESSOR STREQUAL "i386")
-		set(AROS_ARCH "x86")
-		else()
-		set(AROS_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+# ================================= Idlib ======================================
+
+add_library( idlib STATIC ${src_idlib} )
+if ( AROS )
+	add_library( dll STATIC ${src_arosdll} )
+	if( CMAKE_SYSTEM_PROCESSOR STREQUAL "i386" )
+		set( AROS_ARCH "x86" )
+	else()
+		set( AROS_ARCH ${CMAKE_SYSTEM_PROCESSOR} )
 	endif()
 else()
-	if(D3_COMPILER_IS_GCC_OR_CLANG AND NOT MINGW)
-		set_target_properties(idlib PROPERTIES COMPILE_FLAGS "-fPIC")
+	if( D3_COMPILER_IS_GCC_OR_CLANG AND NOT MINGW )
+		set_target_properties( idlib PROPERTIES COMPILE_FLAGS "-fPIC" )
 	endif()
 endif()
 
-if (MSVC)
-	target_sources(idlib INTERFACE "sys/win32/natvis/idlib.natvis")
+if ( MSVC )
+	target_sources( idlib INTERFACE "sys/win32/natvis/idlib.natvis" )
 endif()
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_idlib})
+source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_idlib} )
 
-set_target_properties(idlib PROPERTIES FOLDER "libs")
+set_target_properties( idlib PROPERTIES FOLDER "libs" )
 
-if(HARDLINK_GAME)
-	if(BASE)
-		set(src_core ${src_core} ${src_game})
-		set(game_includes "${CMAKE_SOURCE_DIR}/game")
-		if(D3XP)
-			message(WARNING "hardlinking the base game, d3xp will not be supported (disable BASE for D3XP support with HARDLINK_GAME)")
-		endif()
-		
-	elseif(D3XP)
-		set(src_core ${src_core} ${src_d3xp})
-		set(game_includes "${CMAKE_SOURCE_DIR}/d3xp")
+# ================================= Engine ======================================
+
+if( HARDLINK_GAME )
+	if( BASE )
+		set( src_core ${src_core} ${src_game} )
+		set( game_includes "${CMAKE_SOURCE_DIR}/game" )
+		if( D3XP )
+			message( WARNING "hardlinking the base game, d3xp will not be supported (disable BASE for D3XP support with HARDLINK_GAME)" )
+		endif()	
+	elseif( D3XP )
+		set( src_core ${src_core} ${src_d3xp} )
+		set( game_includes "${CMAKE_SOURCE_DIR}/d3xp" )
 	endif()
-endif()# HARDLINK_GAME
+endif()
 
-if(CORE)
-	add_executable(${DHEWM3BINARY} WIN32 MACOSX_BUNDLE
+if( ENGINE )
+	add_executable( ${DHEWM3BINARY} WIN32 MACOSX_BUNDLE
 		${src_core}
 		${src_sys_base}
 		${src_sys_core}
@@ -1066,32 +1078,32 @@ if(CORE)
 	)
 	
 	if( MSVC )
-		set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DHEWM3BINARY})
+		set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DHEWM3BINARY} )
 	endif()
 
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools})
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools} )
 
-if(HARDLINK_GAME)
-	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}")
-	target_include_directories(${DHEWM3BINARY} PRIVATE ${game_includes})
+	if( HARDLINK_GAME )
+		set_target_properties( ${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}" )
+		target_include_directories( ${DHEWM3BINARY} PRIVATE ${game_includes} )
 	
-	# Hack to get .natvis added
-	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
-	endif()
-else()
-	set_target_properties(${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "__DOOM_DLL__;${TOOLS_DEFINES}")
-endif()
-
-	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+		# Hack to get .natvis added
+		if ( MSVC )
+			target_sources( ${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis" )
+		endif()
+	else()
+		set_target_properties( ${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "__DOOM_DLL__;${TOOLS_DEFINES}" )
 	endif()
 
-	set_target_properties(${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist)
-	set_target_properties(${DHEWM3BINARY} PROPERTIES FOLDER "exes")
+	if ( MSVC )
+		target_sources( ${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis" )
+	endif()
 
-	target_link_libraries(${DHEWM3BINARY}
+	set_target_properties( ${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( ${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist )
+	set_target_properties( ${DHEWM3BINARY} PROPERTIES FOLDER "exes" )
+
+	target_link_libraries( ${DHEWM3BINARY}
 		idlib
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${OPENAL_LIBRARY}
@@ -1101,7 +1113,7 @@ endif()
 		${sys_libs}
 	)
 
-	if(NOT APPLE AND NOT WIN32)
+	if( NOT APPLE AND NOT WIN32 )
 		install(TARGETS ${DHEWM3BINARY}
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
@@ -1110,8 +1122,10 @@ endif()
 	endif()
 endif()
 
-if(DEDICATED)
-	add_executable(${DHEWM3BINARY}ded WIN32 MACOSX_BUNDLE
+# ============================== Dedicate Server ================================
+
+if( DEDICATED )
+	add_executable( ${DHEWM3BINARY}ded WIN32 MACOSX_BUNDLE
 		${src_core}
 		${src_stub_openal}
 		${src_stub_gl}
@@ -1119,28 +1133,28 @@ if(DEDICATED)
 		${src_debuggerServer}
 	)
 	
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer})
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer} )
 
-if(HARDLINK_GAME)
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED")
-	target_include_directories(${DHEWM3BINARY}ded PRIVATE ${game_includes})
+	if( HARDLINK_GAME )
+		set_target_properties( ${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED" )
+		target_include_directories( ${DHEWM3BINARY}ded PRIVATE ${game_includes} )
 	
-	# Hack to get .natvis added
-	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis")
-	endif()
-else()
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__")
-endif()
-
-	if (MSVC)
-		target_sources(${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis")
+		# Hack to get .natvis added
+		if ( MSVC )
+			target_sources( ${DHEWM3BINARY} PRIVATE "sys/win32/natvis/game.natvis" )
+		endif()
+	else()
+		set_target_properties( ${DHEWM3BINARY}ded PROPERTIES COMPILE_DEFINITIONS "ID_DEDICATED;__DOOM_DLL__" )
 	endif()
 
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(${DHEWM3BINARY}ded PROPERTIES FOLDER "exes")
+	if ( MSVC )
+		target_sources( ${DHEWM3BINARY} PRIVATE "sys/win32/natvis/engine.natvis" )
+	endif()
 
-	target_link_libraries(${DHEWM3BINARY}ded
+	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES FOLDER "exes" )
+
+	target_link_libraries( ${DHEWM3BINARY}ded
 		idlib
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${CURL_LIBRARY}
@@ -1149,8 +1163,8 @@ endif()
 		${sys_libs}
 	)
 
-	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS ${DHEWM3BINARY}ded
+	if( NOT APPLE AND NOT WIN32 )
+		install( TARGETS ${DHEWM3BINARY}ded
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
@@ -1158,33 +1172,100 @@ endif()
 	endif()
 endif()
 
-if(BASE AND NOT HARDLINK_GAME)
-	if (AROS)
-		add_executable(base sys/aros/dll/dllglue.c ${src_game})
-		set_target_properties(base PROPERTIES OUTPUT_NAME "base.aros-${AROS_ARCH}")
-	else()
-		add_library(base SHARED ${src_game})
-	endif()
-	
-	if (MSVC)
-		target_sources(base PRIVATE "sys/win32/natvis/game.natvis")
-	endif()
-	
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game})
-	
-	set_target_properties(base PROPERTIES PREFIX "")
-	set_target_properties(base PROPERTIES COMPILE_DEFINITIONS "GAME_DLL")
-	target_include_directories(base PRIVATE "${CMAKE_SOURCE_DIR}/game")
-	set_target_properties(base PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(base PROPERTIES INSTALL_NAME_DIR "@executable_path")
-	if (AROS)
-		target_link_libraries(base idlib dll)
-	else()
-		target_link_libraries(base idlib)
-	endif()
-	set_target_properties(base PROPERTIES FOLDER "dlls")
+# ============================== Maya Import ================================
 
-	if(NOT APPLE AND NOT WIN32)
+if( TOOLS AND MAYA_IMPORT )
+	set( src_mayaimport 
+		MayaImport/exporter.h
+		MayaImport/maya_main.cpp
+		MayaImport/maya_main.h
+	)
+
+	set ( src_toolsupportsrc 
+		framework/CmdSystem.cpp
+		framework/CVarSystem.cpp
+		framework/File.cpp
+		framework/FileSystem.cpp
+		framework/minizip/ioapi.c
+		framework/minizip/ioapi.h
+		framework/minizip/MiniZip64_info.txt
+		framework/minizip/unzip.cpp
+		framework/minizip/unzip.h
+	)
+
+	set ( src_enginestub 
+		tools/tool_idcommon_stub.cpp
+	)
+
+	add_library( MayaImport SHARED
+		${src_mayaimport}
+		${src_toolsupportsrc}
+		${src_enginestub}
+	)
+
+	add_dependencies( MayaImport MayaDevKit )
+	
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_mayaimport} ${src_toolsupportsrc} ${src_enginestub} )
+
+	if( HARDLINK_GAME )
+		if ( MSVC )
+			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
+		else()
+			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
+		endif()
+		target_include_directories( MayaImport PRIVATE ${game_includes} )
+	else()
+		if ( MSVC )
+			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
+		else()
+			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
+		endif()
+	endif()
+	set_target_properties( MayaImport PROPERTIES LINK_FLAGS "${ldflags}" )
+	target_link_libraries( MayaImport idlib ZLIB::ZLIB )
+	target_include_directories( MayaImport PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/include" )
+	target_link_directories( MayaImport PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/lib" )
+	target_link_libraries( MayaImport idlib Foundation OpenMaya OpenMayaAnim )
+	set_target_properties( MayaImport PROPERTIES FOLDER "dlls" )
+
+	if( NOT APPLE AND NOT WIN32 )
+		install( TARGETS MayaImport
+				RUNTIME DESTINATION "${bindir}"
+				LIBRARY DESTINATION "${libdir}"
+				ARCHIVE DESTINATION "${libdir}"
+		)
+	endif()
+endif()
+
+# ============================== Doom 3 ================================
+
+if( BASE AND NOT HARDLINK_GAME )
+	if ( AROS )
+		add_executable( base sys/aros/dll/dllglue.c ${src_game} )
+		set_target_properties( base PROPERTIES OUTPUT_NAME "base.aros-${AROS_ARCH}" )
+	else()
+		add_library( base SHARED ${src_game} )
+	endif()
+	
+	if ( MSVC )
+		target_sources( base PRIVATE "sys/win32/natvis/game.natvis" )
+	endif()
+	
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game} )
+	
+	set_target_properties( base PROPERTIES PREFIX "" )
+	set_target_properties( base PROPERTIES COMPILE_DEFINITIONS "GAME_DLL" )
+	target_include_directories( base PRIVATE "${CMAKE_SOURCE_DIR}/game" )
+	set_target_properties( base PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( base PROPERTIES INSTALL_NAME_DIR "@executable_path" )
+	if ( AROS )
+		target_link_libraries( base idlib dll )
+	else()
+		target_link_libraries( base idlib )
+	endif()
+	set_target_properties( base PROPERTIES FOLDER "dlls" )
+
+	if( NOT APPLE AND NOT WIN32 )
 		install(TARGETS base
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
@@ -1193,34 +1274,36 @@ if(BASE AND NOT HARDLINK_GAME)
 	endif()
 endif()
 
-if(D3XP AND NOT HARDLINK_GAME)
-	if (AROS)
-		add_executable(d3xp sys/aros/dll/dllglue.c ${src_d3xp})
-		set_target_properties(d3xp PROPERTIES OUTPUT_NAME "d3xp.aros-${AROS_ARCH}")
+# ============================== Doom 3: RoE ================================
+
+if( D3XP AND NOT HARDLINK_GAME )
+	if ( AROS )
+		add_executable( d3xp sys/aros/dll/dllglue.c ${src_d3xp} )
+		set_target_properties( d3xp PROPERTIES OUTPUT_NAME "d3xp.aros-${AROS_ARCH}" )
 	else()
-		add_library(d3xp SHARED ${src_d3xp})
+		add_library( d3xp SHARED ${src_d3xp} )
 	endif()
 
-	if (MSVC)
-		target_sources(d3xp PRIVATE "sys/win32/natvis/game.natvis")
+	if ( MSVC )
+		target_sources( d3xp PRIVATE "sys/win32/natvis/game.natvis" )
 	endif()
 
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_d3xp})
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_d3xp} )
 
-	set_target_properties(d3xp PROPERTIES PREFIX "")
-	set_target_properties(d3xp PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF")
-	target_include_directories(d3xp PRIVATE "${CMAKE_SOURCE_DIR}/d3xp")
-	set_target_properties(d3xp PROPERTIES LINK_FLAGS "${ldflags}")
-	set_target_properties(d3xp PROPERTIES INSTALL_NAME_DIR "@executable_path")
-	if (AROS)
-		target_link_libraries(d3xp idlib dll)
+	set_target_properties( d3xp PROPERTIES PREFIX "")
+	set_target_properties( d3xp PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF" )
+	target_include_directories( d3xp PRIVATE "${CMAKE_SOURCE_DIR}/d3xp" )
+	set_target_properties( d3xp PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( d3xp PROPERTIES INSTALL_NAME_DIR "@executable_path" )
+	if ( AROS )
+		target_link_libraries( d3xp idlib dll )
 	else()
-		target_link_libraries(d3xp idlib)
+		target_link_libraries( d3xp idlib )
 	endif()
-	set_target_properties(d3xp PROPERTIES FOLDER "dlls")
+	set_target_properties( d3xp PROPERTIES FOLDER "dlls" )
 
-	if(NOT APPLE AND NOT WIN32)
-		install(TARGETS d3xp
+	if( NOT APPLE AND NOT WIN32 )
+		install( TARGETS d3xp
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"

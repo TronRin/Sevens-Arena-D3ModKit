@@ -25,6 +25,13 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
+
+#ifndef __EXPORTER_H__
+#define __EXPORTER_H__
+
+#include "idlib/containers/Hierarchy.h"
+#include "idlib/containers/StrList.h"
+
 #define MAYA_DEFAULT_CAMERA		"camera1"
 
 #define	ANIM_TX			BIT( 0 )
@@ -455,3 +462,5 @@ public:
 	void					ConvertModel( void );
 	void					ConvertToMD3( void );
 };
+
+#endif /* !__EXPORTER_H__ */
