@@ -36,6 +36,7 @@ option( GAME_CODE					"Build the game code." ON )
 option( TOOLS						"Build the include tools into the main executable." ON )
 option( MAYA_IMPORT					"Build the include maya import tool (Requires MayaSDK)." ON )
 option( ONATIVE						"Optimize for the host CPU." OFF )
+option( IMGUI						"Build with Dear ImGui integration - requires SDL2 and C++11" ON )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
 option( LINUX_RELEASE_BINS			"Set RPATH to \$ORIGIN/libs/ for Linux binary releases." OFF )
 option( HARDLINK_GAME				"Compile gamecode into executable (no game DLLs)" OFF )
@@ -78,10 +79,6 @@ endif()
 # Set these if we found either MFC or any UI toolkit, turn off TOOLS if we didn't found neither of theses
 set( MFC_TOOLS OFF ) # (Visual Studio + SDL2 only)
 
-# we need C++11 for ImGui
-# TODO: if we allow disabling ImGui, we could disable setting the c++ standard - or maybe just embrace C++11?
-set ( CMAKE_CXX_STANDARD 11 )
-
 # Define our cpu variable
 include( CPUDefine )
 
@@ -104,6 +101,22 @@ if ( FREETYPE )
 	find_path( FREETYPE_INCLUDE_DIR "fttypes.h" PATH_SUFFIXES "freetype" )
 	include_directories( ${FREETYPE_INCLUDE_DIR} )
 	add_definitions( -DID_BUILD_FREETYPE )
+endif()
+
+# ImGUI
+if ( IMGUI )
+	if( SDL2 )
+		# we need C++11 for ImGui
+		set ( CMAKE_CXX_STANDARD 11 )
+		message( STATUS "Dear ImGui integration enabled" )
+	else()
+		message( WARNING "Disabling IMGUI because SDL1.2 is used - it needs SDL2!" )
+		set( IMGUI OFF )
+		add_definitions( -DIMGUI_DISABLE )
+	endif()
+else()
+	message( STATUS "Dear ImGui integration disabled" )
+	add_definitions( -DIMGUI_DISABLE )
 endif()
 
 # Curl
