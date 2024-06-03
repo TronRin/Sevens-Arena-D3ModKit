@@ -86,9 +86,6 @@ include( CPUDefine )
 find_package( Stb REQUIRED )
 include_directories( ${Stb_INCLUDE_DIR} )
 
-find_package( ZLIB REQUIRED )
-include_directories( ${ZLIB_INCLUDE_DIRS} )
-
 find_package( OpenAL REQUIRED )
 include_directories( ${OPENAL_INCLUDE_DIR} )
 

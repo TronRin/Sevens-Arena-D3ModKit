@@ -11,6 +11,7 @@ set ( src_toolsupportsrc
 	${CMAKE_SOURCE_DIR}/framework/CVarSystem.cpp
 	${CMAKE_SOURCE_DIR}/framework/File.cpp
 	${CMAKE_SOURCE_DIR}/framework/FileSystem.cpp
+	${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c
 	${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c
 	${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.h
 	${CMAKE_SOURCE_DIR}/framework/minizip/MiniZip64_info.txt
@@ -47,7 +48,6 @@ else()
 	endif()
 endif()
 set_target_properties( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "${ldflags}" )
-target_link_libraries( ${PROJECT_NAME} idlib ZLIB::ZLIB )
 target_include_directories( ${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/libs/MayaSDKDevKit/include" )
 target_link_directories( ${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/libs/MayaSDKDevKit/lib" )
 target_link_libraries( ${PROJECT_NAME} idlib Foundation OpenMaya OpenMayaAnim )

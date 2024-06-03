@@ -40,6 +40,7 @@ set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/async/MsgChannel.cpp
 	${CMAKE_SOURCE_DIR}/framework/async/NetworkSystem.cpp
 	${CMAKE_SOURCE_DIR}/framework/async/ServerScan.cpp
+	${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c
 	${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c
 	${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp
 )
@@ -476,7 +477,6 @@ if( ENGINE )
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${OPENAL_LIBRARY}
 		${CURL_LIBRARY}
-		${ZLIB_LIBRARY}
 		${SDL2_LIBRARY}
 		${sys_libs}
 	)
@@ -539,7 +539,6 @@ if( DEDICATED )
 		idlib
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
 		${CURL_LIBRARY}
-		${ZLIB_LIBRARY}
 		${SDL2_LIBRARY}
 		${sys_libs}
 	)

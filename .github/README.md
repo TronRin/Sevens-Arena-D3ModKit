@@ -10,6 +10,7 @@ This fork is base on Defunk's MD5 changes for D3Quest such has:
 - Binary Animations
 - PNG has default image format
 - Mikktspace
+- ImGUI
 
 # CHANGES
 
