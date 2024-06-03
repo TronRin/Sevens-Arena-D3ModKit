@@ -86,8 +86,8 @@ void RigidBodyDerivatives( const float t, const void *clientData, const float *s
 
 	// underwater we have a higher friction
 	if ( p->GetWaterLevelf() == 0.0f ) {
-		d->force = - p->linearFriction * s->linearMomentum /* + p->externalForce */;
-		d->torque = - p->angularFriction * s->angularMomentum /*  + p->externalTorque */ ;
+		d->force = - p->linearFriction * s->linearMomentum + p->current.externalForce;
+		d->torque = - p->angularFriction * s->angularMomentum + p->current.externalTorque;
 	} else {
 		// don't let water friction go less than 25% of the water viscosity
 		float percent = Max( 0.25f,p->GetSubmergedPercent( s->position,s->orientation.Transpose() ) );
