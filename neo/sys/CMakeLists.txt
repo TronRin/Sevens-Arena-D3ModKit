@@ -45,6 +45,10 @@ set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp
 )
 
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c )
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c )
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp )
+
 add_globbed_headers( src_framework "framework" )
 
 set( src_aas_file
@@ -108,7 +112,10 @@ set( src_renderer
 	${CMAKE_SOURCE_DIR}/renderer/tr_trace.cpp
 	${CMAKE_SOURCE_DIR}/renderer/tr_trisurf.cpp
 	${CMAKE_SOURCE_DIR}/renderer/tr_turboshadow.cpp
+	${CMAKE_SOURCE_DIR}/renderer/stblib_impls.c
 )
+
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/renderer/stblib_impls.c )
 
 add_globbed_headers( src_renderer "renderer" )
 
@@ -152,7 +159,10 @@ set( src_sound
 	${CMAKE_SOURCE_DIR}/sound/snd_system.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_wavefile.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_world.cpp
+	${CMAKE_SOURCE_DIR}/sound/stbvorbis_impl.c
 )
+
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/sound/stbvorbis_impl.c )
 
 add_globbed_headers( src_sound "sound" )
 
