@@ -1130,6 +1130,9 @@ const int GRAB_RELATIVEMOUSE = (1 << 2);
 void GLimp_GrabInput(int flags);
 
 bool GLimp_SetSwapInterval( int swapInterval );
+
+void GLimp_UpdateWindowSize();
+
 /*
 ====================================================================
 
