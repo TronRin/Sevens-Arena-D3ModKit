@@ -305,7 +305,7 @@ bool idMD5Anim::LoadBinary(const char* filename, const char* baseFolder) {
 				componentPtr[numAnimatedComponents * i] -= baseFrame[0].t.z;
 			}
 			totaldeltatest.z = componentPtr[numAnimatedComponents * (numFrames - 1)];
-		//	componentPtr++;
+			//	componentPtr++;
 		} else {
 			totaldeltatest.z = 0.0f;
 		}
@@ -313,7 +313,7 @@ bool idMD5Anim::LoadBinary(const char* filename, const char* baseFolder) {
 		totaldeltatest.Zero();
 	}
 	if (totaldelta != totaldeltatest) {
-		common ->Printf("TOTALDELTA: %f,%f,%f > %f,%f,%f / %f,%f,%f > 0 ~ %s\n", totaldelta.x, totaldelta.y, totaldelta.z, totaldeltatest.x, totaldeltatest.y, totaldeltatest.z, baseFrame[0].t.x, baseFrame[0].t.y, baseFrame[0].t.z, filename);
+		common->Printf("TOTALDELTA: %f,%f,%f > %f,%f,%f / %f,%f,%f > 0 ~ %s\n", totaldelta.x, totaldelta.y, totaldelta.z, totaldeltatest.x, totaldeltatest.y, totaldeltatest.z, baseFrame[0].t.x, baseFrame[0].t.y, baseFrame[0].t.z, filename);
 		totaldelta = totaldeltatest;
 	}
 	#endif

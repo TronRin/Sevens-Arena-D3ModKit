@@ -33,6 +33,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Light.h"
 #include "Projectile.h"
 #include "WorldSpawn.h"
+
 #include "Actor.h"
 
 #if MD5_ENABLE_GIBS > 0
@@ -365,11 +366,10 @@ void idActor::SetupHead( void ) {
 
 #ifdef _D3XP
 		// copy slowmo param to the head
-		args.SetBool( "slowmo", spawnArgs.GetBool("slowmo", "1") );
+		args.SetBool( "slowmo", spawnArgs.GetBool( "slowmo", "1" ) );
 #endif
 
-
-		headEnt = static_cast<idAFAttachment *>( gameLocal.SpawnEntityType( idAFAttachment::Type, &args ) );
+		headEnt = static_cast<idAFAttachment *>( gameLocal.SpawnEntityType( idAFAttachment::GetClassType(), &args ) );
 		headEnt->SetName( va( "%s_head", name.c_str() ) );
 		headEnt->SetBody( this, headModel, damageJoint );
 		head = headEnt;
@@ -577,7 +577,7 @@ void idActor::Save( idSaveGame *savefile ) const {
 	}
 
 #ifdef _D3XP
-	savefile->WriteInt(damageCap);
+	savefile->WriteInt( damageCap );
 #endif
 
 }
@@ -710,7 +710,7 @@ void idActor::Restore( idRestoreGame *savefile ) {
 	}
 
 #ifdef _D3XP
-	savefile->ReadInt(damageCap);
+	savefile->ReadInt( damageCap );
 #endif
 }
 
@@ -732,7 +732,7 @@ void idActor::Hide( void ) {
 		next = ent->GetNextTeamEntity();
 		if ( ent->GetBindMaster() == this ) {
 			ent->Hide();
-			if ( ent->IsType( idLight::Type ) ) {
+			if ( ent->IsType( idLight::GetClassType() ) ) {
 				static_cast<idLight *>( ent )->Off();
 			}
 		}
@@ -757,14 +757,12 @@ void idActor::Show( void ) {
 		next = ent->GetNextTeamEntity();
 		if ( ent->GetBindMaster() == this ) {
 			ent->Show();
-			if ( ent->IsType( idLight::Type ) ) {
+			if ( ent->IsType( idLight::GetClassType() ) ) {
 #ifdef _D3XP
-				if(!spawnArgs.GetBool("lights_off", "0")) {
+				if ( !spawnArgs.GetBool( "lights_off", "0" ) ) {
 					static_cast<idLight *>( ent )->On();
 				}
 #endif
-
-
 			}
 		}
 	}
@@ -1204,7 +1202,7 @@ bool idActor::CanSee( idEntity *ent, bool useFov ) const {
 		return false;
 	}
 
-	if ( ent->IsType( idActor::Type ) ) {
+	if ( ent->IsType( idActor::GetClassType() ) ) {
 		toPos = ( ( idActor * )ent )->GetEyePosition();
 	} else {
 		toPos = ent->GetPhysics()->GetOrigin();
@@ -1930,7 +1928,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 	SetTimeState ts( timeGroup );
 
 	// Helltime boss is immune to all projectiles except the helltime killer
-	if ( finalBoss && idStr::Icmp(inflictor->GetEntityDefName(), "projectile_helltime_killer") ) {
+	if ( finalBoss && idStr::Icmp( inflictor->GetEntityDefName(), "projectile_helltime_killer" ) ) {
 		return;
 	}
 
@@ -1940,7 +1938,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 		return;
 	}
 #else
-	if ( finalBoss && !inflictor->IsType( idSoulCubeMissile::Type ) ) {
+	if ( finalBoss && !inflictor->IsType( idSoulCubeMissile::GetClassType() ) ) {
 		return;
 	}
 #endif
@@ -1951,7 +1949,6 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 	}
 
 	int	damage = damageDef->GetInt( "damage" ) * damageScale;
-
 	damage = GetDamageForLocation( damage, location );
 
 	// inform the attacker that they hit someone
@@ -1974,7 +1971,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 					(ai_testDismemberment.GetInteger() == 4) ||
 					(ai_testDismemberment.GetInteger() == 3 && (damage >= health * (gibbedZone == 2 ? 2 : 1))) || // Require 2x current health to gib body.
 					(ai_testDismemberment.GetInteger() == 2 && (damageZonesHeap[gibbedZone] >= 50 || (damageZonesHeap[gibbedZone] >= 25 && gibbedZone >= 3))) || // Require 2x to gib head/body (given head usually receives 2x).
-					(ai_testDismemberment.GetInteger() <= 1 && (damageZonesHeap[gibbedZone] >= health * (gibbedZone == 2 ? 4 : 1))) // Require 2x to gib body.
+					(ai_testDismemberment.GetInteger() <= 1 && (damageZonesHeap[gibbedZone] >= health * (gibbedZone == 2 ? 4 : 1))) // Require 3x to gib body.
 				) {
 				#else
 				if (damageZonesHeap[gibbedZone] >= health * (gibbedZone == 2 ? 4 : 1)) {
@@ -1997,7 +1994,7 @@ void idActor::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &dir
 
 #ifdef _D3XP
 		//Check the health against any damage cap that is currently set
-		if(damageCap >= 0 && health < damageCap) {
+		if ( damageCap >= 0 && health < damageCap ) {
 			health = damageCap;
 		}
 #endif
@@ -2429,7 +2426,7 @@ const char *idActor::GetDamageGroup( int location ) {
 
 /*
 =====================
-idActor::Event_EnableEyeFocus
+idActor::PlayFootStepSound
 =====================
 */
 void idActor::PlayFootStepSound( void ) {
@@ -3138,7 +3135,7 @@ idActor *idActor::NextEnemy( idEntity *ent ) {
 	if ( !ent || ( ent == this ) ) {
 		actor = enemyList.Next();
 	} else {
-		if ( !ent->IsType( idActor::Type ) ) {
+		if ( !ent->IsType( idActor::GetClassType() ) ) {
 			gameLocal.Error( "'%s' cannot be an enemy", ent->name.c_str() );
 		}
 

@@ -108,7 +108,7 @@ void idSaveGame::Close( void ) {
 
 	objects.Clear();
 
-#ifdef ID_DEBUG_MEMORY
+#ifdef ID_USE_TYPEINFO
 	idStr gameState = file->GetName();
 	gameState.StripFileExtension();
 	WriteGameState_f( idCmdArgs( va( "test %s_save", gameState.c_str() ), false ) );
@@ -824,7 +824,7 @@ void idRestoreGame::CreateObjects( void ) {
 		}
 		objects[ i ] = type->CreateInstance();
 
-#ifdef ID_DEBUG_MEMORY
+#ifdef ID_USE_TYPEINFO
 		InitTypeVariables( objects[i], type->classname, 0xce );
 #endif
 	}
@@ -850,14 +850,14 @@ void idRestoreGame::RestoreObjects( void ) {
 
 	// regenerate render entities and render lights because are not saved
 	for( i = 1; i < objects.Num(); i++ ) {
-		if ( objects[ i ]->IsType( idEntity::Type ) ) {
+		if ( objects[ i ]->IsType( idEntity::GetClassType() ) ) {
 			idEntity *ent = static_cast<idEntity *>( objects[ i ] );
 			ent->UpdateVisuals();
 			ent->Present();
 		}
 	}
 
-#ifdef ID_DEBUG_MEMORY
+#ifdef ID_USE_TYPEINFO
 	idStr gameState = file->GetName();
 	gameState.StripFileExtension();
 	WriteGameState_f( idCmdArgs( va( "test %s_restore", gameState.c_str() ), false ) );

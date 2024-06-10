@@ -49,7 +49,6 @@ class idPlayer;
 class idItemTeam;
 #endif
 
-
 typedef enum {
 	GAME_SP = 0,
 	GAME_DM,
@@ -63,7 +62,6 @@ typedef enum {
 } gameType_t;
 
 #ifdef CTF
-
 // Used by the UI
 typedef enum {
 	FLAGSTATUS_INBASE = 0,
@@ -73,7 +71,6 @@ typedef enum {
 } flagStatus_t;
 
 #endif
-
 
 typedef enum {
 		PLAYER_VOTE_NONE,
@@ -211,13 +208,11 @@ public:
 		MSG_HOLYSHIT,
 #ifdef CTF
 		MSG_POINTLIMIT,
-
 		MSG_FLAGTAKEN,
 		MSG_FLAGDROP,
 		MSG_FLAGRETURN,
 		MSG_FLAGCAPTURE,
 		MSG_SCOREUPDATE,
-
 #endif
 		MSG_COUNT
 	} msg_evt_t;
@@ -300,7 +295,6 @@ public:
 
 	int             player_red_flag;            // Ent num of red flag carrier for HUD
 	int             player_blue_flag;           // Ent num of blue flag carrier for HUD
-
 #endif
 	void			PlayerStats( int clientNum, char *data, const int len );
 

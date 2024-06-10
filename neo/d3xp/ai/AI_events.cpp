@@ -59,7 +59,7 @@ idActor *idAI::FindEnemy( int useFOV ) {
 		for ( i = 0; i < gameLocal.numClients ; i++ ) {
 			ent = gameLocal.entities[ i ];
 
-			if ( !ent || !ent->IsType( idActor::Type ) ) {
+			if ( !ent || !ent->IsType( idActor::GetClassType() ) ) {
 				continue;
 			}
 
@@ -96,7 +96,7 @@ idActor *idAI::FindEnemyAI( int useFOV ) {
 	bestDist = idMath::INFINITY;
 	bestEnemy = NULL;
 	for ( ent = gameLocal.activeEntities.Next(); ent != NULL; ent = ent->activeNode.Next() ) {
-		if ( ent->fl.hidden || ent->fl.isDormant || !ent->IsType( idActor::Type ) ) {
+		if ( ent->fl.hidden || ent->fl.isDormant || !ent->IsType( idActor::GetClassType() ) ) {
 			continue;
 		}
 
@@ -141,7 +141,7 @@ idActor *idAI::FindEnemyInCombatNodes( void ) {
 	for ( i = 0; i < gameLocal.numClients ; i++ ) {
 		ent = gameLocal.entities[ i ];
 
-		if ( !ent || !ent->IsType( idActor::Type ) ) {
+		if ( !ent || !ent->IsType( idActor::GetClassType() ) ) {
 			continue;
 		}
 
@@ -152,7 +152,7 @@ idActor *idAI::FindEnemyInCombatNodes( void ) {
 
 		for( j = 0; j < targets.Num(); j++ ) {
 			targetEnt = targets[ j ].GetEntity();
-			if ( !targetEnt || !targetEnt->IsType( idCombatNode::Type ) ) {
+			if ( !targetEnt || !targetEnt->IsType( idCombatNode::GetClassType() ) ) {
 				continue;
 			}
 
@@ -182,7 +182,7 @@ idActor *idAI::ClosestReachableEnemyOfEntity( idEntity *team_mate ) {
 	int		enemyAreaNum;
 	aasPath_t path;
 
-	if ( !team_mate->IsType( idActor::Type ) ) {
+	if ( !team_mate->IsType( idActor::GetClassType() ) ) {
 		gameLocal.Error( "Entity '%s' is not an AI character or player", team_mate->GetName() );
 	}
 
@@ -240,7 +240,7 @@ idAI::SetEnemy
 void idAI::SetEnemy( idEntity *ent ) {
 	if ( !ent ) {
 		ClearEnemy();
-	} else if ( !ent->IsType( idActor::Type ) ) {
+	} else if ( !ent->IsType( idActor::GetClassType() ) ) {
 		gameLocal.Error( "'%s' is not an idActor (player or ai controlled character)", ent->name.c_str() );
 	} else {
 		SetEnemy( static_cast<idActor *>( ent ) );
@@ -391,7 +391,7 @@ void idAI::LaunchProjectile( const char *entityDefName ) {
 		gameLocal.Error( "Could not spawn entityDef '%s'", clsname );
 	}
 
-	if ( !ent->IsType( idProjectile::Type ) ) {
+	if ( !ent->IsType( idProjectile::GetClassType() ) ) {
 		clsname = ent->GetClassname();
 		gameLocal.Error( "'%s' is not an idProjectile", clsname );
 	}
@@ -490,7 +490,7 @@ bool idAI::MeleeAttackToJoint( const char *jointname, const char* meleeDefName )
 	gameLocal.clip.TranslationEntities( trace, start, end, NULL, mat3_identity, MASK_SHOT_BOUNDINGBOX, this );
 	if ( trace.fraction < 1.0f ) {
 		hitEnt = gameLocal.GetTraceEntity( trace );
-		if ( hitEnt && hitEnt->IsType( idActor::Type ) ) {
+		if ( hitEnt && hitEnt->IsType( idActor::GetClassType() ) ) {
 			DirectDamage( meleeDefName, hitEnt );
 			return true;
 		}
@@ -530,7 +530,7 @@ bool idAI::CanBecomeSolid( void ) {
 		}
 
 #ifdef _D3XP
-		if ( ( spawnClearMoveables && hit->IsType( idMoveable::Type ) ) || ( hit->IsType( idBarrel::Type ) || hit->IsType( idExplodingBarrel::Type ) ) ) {
+		if ( ( spawnClearMoveables && hit->IsType( idMoveable::GetClassType() ) ) || ( hit->IsType( idBarrel::GetClassType() ) || hit->IsType( idExplodingBarrel::GetClassType() ) ) ) {
 			idVec3 push;
 			push = hit->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
 			push.z = 30.f;
@@ -788,7 +788,7 @@ idCombatNode *idAI::GetCombatNode( void ) {
 
 			for( i = 0; i < targets.Num(); i++ ) {
 				targetEnt = targets[ i ].GetEntity();
-				if ( !targetEnt || !targetEnt->IsType( idCombatNode::Type ) ) {
+				if ( !targetEnt || !targetEnt->IsType( idCombatNode::GetClassType() ) ) {
 					continue;
 				}
 
@@ -816,7 +816,7 @@ idCombatNode *idAI::GetCombatNode( void ) {
 	bestDist = ( myPos - lastVisibleEnemyPos ).LengthSqr();
 	for( i = 0; i < targets.Num(); i++ ) {
 		targetEnt = targets[ i ].GetEntity();
-		if ( !targetEnt || !targetEnt->IsType( idCombatNode::Type ) ) {
+		if ( !targetEnt || !targetEnt->IsType( idCombatNode::GetClassType() ) ) {
 			continue;
 		}
 
@@ -854,7 +854,7 @@ bool idAI::EnemyInCombatCone( idEntity *ent, int use_current_enemy_location ) {
 		return false;
 	}
 
-	if ( !ent || !ent->IsType( idCombatNode::Type ) ) {
+	if ( !ent || !ent->IsType( idCombatNode::GetClassType() ) ) {
 		// not a combat node
 		return false;
 	}
@@ -962,7 +962,7 @@ idAI::SetTalkTarget
 =====================
 */
 void idAI::SetTalkTarget( idEntity *target ) {
-	if ( target && !target->IsType( idActor::Type ) ) {
+	if ( target && !target->IsType( idActor::GetClassType() ) ) {
 		gameLocal.Error( "Cannot set talk target to '%s'.  Not a character or player.", target->GetName() );
 	}
 	talkTarget = static_cast<idActor *>( target );
@@ -1101,7 +1101,7 @@ bool idAI::CanHitEnemy( void ) {
 	hit = gameLocal.GetTraceEntity( tr );
 	if ( tr.fraction >= 1.0f || ( hit == enemyEnt ) ) {
 		lastHitCheckResult = true;
-	} else if ( ( tr.fraction < 1.0f ) && ( hit->IsType( idAI::Type ) ) &&
+	} else if ( ( tr.fraction < 1.0f ) && ( hit->IsType( idAI::GetClassType() ) ) &&
 		( static_cast<idAI *>( hit )->team != team ) ) {
 		lastHitCheckResult = true;
 	} else {
@@ -1908,7 +1908,7 @@ void idAI::ThrowMoveable( void ) {
 	idEntity *moveable = NULL;
 
 	for ( ent = GetNextTeamEntity(); ent != NULL; ent = ent->GetNextTeamEntity() ) {
-		if ( ent->GetBindMaster() == this && ent->IsType( idMoveable::Type ) ) {
+		if ( ent->GetBindMaster() == this && ent->IsType( idMoveable::GetClassType() ) ) {
 			moveable = ent;
 			break;
 		}
@@ -1929,7 +1929,7 @@ void idAI::ThrowAF( void ) {
 	idEntity *af = NULL;
 
 	for ( ent = GetNextTeamEntity(); ent != NULL; ent = ent->GetNextTeamEntity() ) {
-		if ( ent->GetBindMaster() == this && ent->IsType( idAFEntity_Base::Type ) ) {
+		if ( ent->GetBindMaster() == this && ent->IsType( idAFEntity_Base::GetClassType() ) ) {
 			af = ent;
 			break;
 		}
@@ -2132,7 +2132,7 @@ idEntity *idAI::FindActorsInBounds( const idVec3 &mins, const idVec3 &maxs ) {
 	numListedEntities = gameLocal.clip.EntitiesTouchingBounds( idBounds( mins, maxs ), CONTENTS_BODY, entityList, MAX_GENTITIES );
 	for( i = 0; i < numListedEntities; i++ ) {
 		ent = entityList[ i ];
-		if ( ent != this && !ent->IsHidden() && ( ent->health > 0 ) && ent->IsType( idActor::Type ) ) {
+		if ( ent != this && !ent->IsHidden() && ( ent->health > 0 ) && ent->IsType( idActor::GetClassType() ) ) {
 			return ent;
 		}
 	}
@@ -2174,7 +2174,7 @@ bool idAI::CanReachEntity( idEntity *ent ) {
 		if ( !ent->GetFloorPos( 64.0f, pos ) ) {
 			return false;
 		}
-		if ( ent->IsType( idActor::Type ) && static_cast<idActor *>( ent )->OnLadder()) {
+		if ( ent->IsType( idActor::GetClassType() ) && static_cast<idActor *>( ent )->OnLadder()) {
 			return false;
 		}
 	} else {
@@ -2241,7 +2241,7 @@ idVec3 idAI::GetReachableEntityPosition( idEntity *ent ) {
 			// NOTE: not a good way to return 'false'
 			return vec3_zero;
 		}
-		if ( ent->IsType( idActor::Type ) && static_cast<idActor *>( ent )->OnLadder()) {
+		if ( ent->IsType( idActor::GetClassType() ) && static_cast<idActor *>( ent )->OnLadder()) {
 			// NOTE: not a good way to return 'false'
 			return vec3_zero;
 		}

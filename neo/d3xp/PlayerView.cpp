@@ -1456,9 +1456,6 @@ void FullscreenFX_InfluenceVision::HighQuality() {
 	}
 }
 
-
-
-
 /*
 ==================
 FullscreenFX_Bloom::Initialize

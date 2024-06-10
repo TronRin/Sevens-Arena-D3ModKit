@@ -43,6 +43,7 @@ If you have questions concerning this license or the applicable additional terms
 
 const int ASYNC_PLAYER_INV_AMMO_BITS = idMath::BitsForInteger( 999 );	// 9 bits to cover the range [0, 999]
 const int ASYNC_PLAYER_INV_CLIP_BITS = -7;								// -7 bits to cover the range [-1, 60]
+
 /*
 ===============================================================================
 
@@ -140,7 +141,6 @@ const int MAX_PDAS = 64;
 const int MAX_PDA_ITEMS = 128;
 const int STEPUP_TIME = 200;
 const int MAX_INVENTORY_ITEMS = 20;
-
 
 #ifdef _D3XP
 idVec3 idPlayer::colorBarTable[ 8 ] = {
@@ -1028,7 +1028,6 @@ int idInventory::HasAmmo( ammo_t type, int amount ) {
 
 	// return how many shots we can fire
 	return ammo[ type ] / amount;
-
 }
 
 /*
@@ -1457,7 +1456,7 @@ void idPlayer::SetupWeaponEntity( void ) {
 		weapon.GetEntity()->Clear();
 		currentWeapon = -1;
 	} else if ( !gameLocal.isClient ) {
-		weapon = static_cast<idWeapon *>( gameLocal.SpawnEntityType( idWeapon::Type, NULL ) );
+		weapon = static_cast<idWeapon *>( gameLocal.SpawnEntityType( idWeapon::GetClassType(), NULL ) );
 		weapon.GetEntity()->SetOwner( this );
 		currentWeapon = -1;
 	}
@@ -1717,7 +1716,7 @@ void idPlayer::Init( void ) {
 	}
 
 	//isChatting = false;
-	cvarSystem->SetCVarBool("ui_chat", false);
+	cvarSystem->SetCVarBool( "ui_chat", false );
 }
 
 /*
@@ -1759,11 +1758,12 @@ void idPlayer::Spawn( void ) {
 	if ( !gameLocal.isMultiplayer || entityNumber == gameLocal.localClientNum ) {
 
 		// load HUD
-		if ( gameLocal.isMultiplayer ) {
-			hud = uiManager->FindGui( "guis/mphud.gui", true, false, true );
-		} else if ( spawnArgs.GetString( "hud", "", temp ) ) {
+		if ( spawnArgs.GetString( "hud", "", temp ) && !gameLocal.isMultiplayer ) {
+			hud = uiManager->FindGui( temp, true, false, true );
+		} else if ( spawnArgs.GetString( "mphud", "", temp ) ) {
 			hud = uiManager->FindGui( temp, true, false, true );
 		}
+
 		if ( hud ) {
 			hud->Activate( true, gameLocal.time );
 #ifdef CTF
@@ -2054,8 +2054,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( hudPowerup );
 	savefile->WriteInt( lastHudPowerup );
 	savefile->WriteInt( hudPowerupDuration );
-
-
 #endif
 
 	savefile->WriteInt( heartRate );
@@ -2314,8 +2312,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( hudPowerup );
 	savefile->ReadInt( lastHudPowerup );
 	savefile->ReadInt( hudPowerupDuration );
-
-
 #endif
 
 	savefile->ReadInt( heartRate );
@@ -2473,6 +2469,7 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadInt( focusTime );
 	savefile->ReadObject( reinterpret_cast<idClass *&>( focusVehicle ) );
 	savefile->ReadUserInterface( cursor );
+
 	// DG: make it scale to 4:3 so crosshair looks properly round
 	//     yes, like so many scaling-related things this is a bit hacky
 	//     and note that this is special cased in StateChanged and you
@@ -2906,7 +2903,7 @@ bool idPlayer::BalanceTDM( void ) {
 	teamCount[ 0 ] = teamCount[ 1 ] = 0;
 	for( i = 0; i < gameLocal.numClients; i++ ) {
 		ent = gameLocal.entities[ i ];
-		if ( ent && ent->IsType( idPlayer::Type ) ) {
+		if ( ent && ent->IsType( idPlayer::GetClassType() ) ) {
 			teamCount[ static_cast< idPlayer * >( ent )->team ]++;
 		}
 	}
@@ -3006,7 +3003,6 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 
 	inclip		= weapon.GetEntity()->AmmoInClip();
 	ammoamount	= weapon.GetEntity()->AmmoAvailable();
-
 #ifdef _D3XP
 	//Hack to stop the bloodstone ammo to display when it is being activated
 	if ( ammoamount < 0 || !weapon.GetEntity()->IsReady() || currentWeapon == weapon_bloodstone) {
@@ -3025,7 +3021,6 @@ void idPlayer::UpdateHudAmmo( idUserInterface *_hud ) {
 #endif
 		_hud->SetStateString( "player_ammo", weapon.GetEntity()->ClipSize() ? va( "%i", inclip ) : "--" );		// how much in the current clip
 		_hud->SetStateString( "player_clips", weapon.GetEntity()->ClipSize() ? va( "%i", ammoamount / weapon.GetEntity()->ClipSize() ) : "--" );
-
 #ifdef _D3XP
 		_hud->SetStateString( "player_allammo", va( "%i/%i", inclip, ammoamount ) );
 #else
@@ -3086,7 +3081,6 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	_hud->SetStateInt( "player_stamina", staminapercentage );
 	_hud->SetStateInt( "player_armor", inventory.armor );
 	_hud->SetStateInt( "player_hr", heartRate );
-
 	_hud->SetStateInt( "player_nostamina", ( max_stamina == 0 ) ? 1 : 0 );
 
 	_hud->HandleNamedEvent( "updateArmorHealthAir" );
@@ -3141,7 +3135,6 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 
 #endif
 
-
 	UpdateHudAmmo( _hud );
 }
 
@@ -3154,7 +3147,7 @@ void idPlayer::UpdateHudWeapon( bool flashWeapon ) {
 	idUserInterface *hud = idPlayer::hud;
 
 	// if updating the hud of a followed client
-	if ( gameLocal.localClientNum >= 0 && gameLocal.entities[ gameLocal.localClientNum ] && gameLocal.entities[ gameLocal.localClientNum ]->IsType( idPlayer::Type ) ) {
+	if ( gameLocal.localClientNum >= 0 && gameLocal.entities[ gameLocal.localClientNum ] && gameLocal.entities[ gameLocal.localClientNum ]->IsType( idPlayer::GetClassType() ) ) {
 		idPlayer *p = static_cast< idPlayer * >( gameLocal.entities[ gameLocal.localClientNum ] );
 		if ( p->spectating && p->spectator == entityNumber ) {
 			assert( p->hud );
@@ -4433,7 +4426,6 @@ idPlayer::NextWeapon
 ===============
 */
 void idPlayer::NextWeapon( void ) {
-
 	const char *weap;
 	int w;
 
@@ -4489,7 +4481,6 @@ idPlayer::PrevWeapon
 ===============
 */
 void idPlayer::PrevWeapon( void ) {
-
 	const char *weap;
 	int w;
 
@@ -5397,9 +5388,9 @@ void idPlayer::UpdateFocus( void ) {
 		}
 
 		if ( allowFocus ) {
-			if ( ent->IsType( idAFAttachment::Type ) ) {
+			if ( ent->IsType( idAFAttachment::GetClassType() ) ) {
 				idEntity *body = static_cast<idAFAttachment *>( ent )->GetBody();
-				if ( body && body->IsType( idAI::Type ) && ( static_cast<idAI *>( body )->GetTalkState() >= TALK_OK ) ) {
+				if ( body && body->IsType( idAI::GetClassType() ) && ( static_cast<idAI *>( body )->GetTalkState() >= TALK_OK ) ) {
 					gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
 					if ( ( trace.fraction < 1.0f ) && ( trace.c.entityNum == ent->entityNumber ) ) {
 						ClearFocus();
@@ -5412,7 +5403,7 @@ void idPlayer::UpdateFocus( void ) {
 				continue;
 			}
 
-			if ( ent->IsType( idAI::Type ) ) {
+			if ( ent->IsType( idAI::GetClassType() ) ) {
 				if ( static_cast<idAI *>( ent )->GetTalkState() >= TALK_OK ) {
 					gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
 					if ( ( trace.fraction < 1.0f ) && ( trace.c.entityNum == ent->entityNumber ) ) {
@@ -5426,7 +5417,7 @@ void idPlayer::UpdateFocus( void ) {
 				continue;
 			}
 
-			if ( ent->IsType( idAFEntity_Vehicle::Type ) ) {
+			if ( ent->IsType( idAFEntity_Vehicle::GetClassType() ) ) {
 				gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
 				if ( ( trace.fraction < 1.0f ) && ( trace.c.entityNum == ent->entityNumber ) ) {
 					ClearFocus();
@@ -6142,7 +6133,7 @@ void idPlayer::UpdateAir( void ) {
 	idPhysics* phys = GetPhysics();
 
 	if ( phys != NULL ) {
-		if ( phys->IsType( idPhysics_Actor::Type ) &&
+		if ( phys->IsType( idPhysics_Actor::GetClassType() ) &&
 			static_cast<idPhysics_Actor*>(phys)->GetWaterLevel() >= WATERLEVEL_HEAD ) {
 			newAirless = true;
 			isUnderWater = true;
@@ -6657,7 +6648,7 @@ void idPlayer::UseVehicle( void ) {
 	idVec3 start, end;
 	idEntity *ent;
 
-	if ( GetBindMaster() && GetBindMaster()->IsType( idAFEntity_Vehicle::Type ) ) {
+	if ( GetBindMaster() && GetBindMaster()->IsType( idAFEntity_Vehicle::GetClassType() ) ) {
 		Show();
 		static_cast<idAFEntity_Vehicle*>(GetBindMaster())->Use( this );
 	} else {
@@ -6666,7 +6657,7 @@ void idPlayer::UseVehicle( void ) {
 		gameLocal.clip.TracePoint( trace, start, end, MASK_SHOT_RENDERMODEL, this );
 		if ( trace.fraction < 1.0f ) {
 			ent = gameLocal.entities[ trace.c.entityNum ];
-			if ( ent && ent->IsType( idAFEntity_Vehicle::Type ) ) {
+			if ( ent && ent->IsType( idAFEntity_Vehicle::GetClassType() ) ) {
 				Hide();
 				static_cast<idAFEntity_Vehicle*>(ent)->Use( this );
 			}
@@ -7168,7 +7159,7 @@ void idPlayer::Move( void ) {
 		newEyeOffset = pm_deadviewheight.GetFloat();
 	} else if ( physicsObj.IsCrouching() ) {
 		newEyeOffset = pm_crouchviewheight.GetFloat();
-	} else if ( GetBindMaster() && GetBindMaster()->IsType( idAFEntity_Vehicle::Type ) ) {
+	} else if ( GetBindMaster() && GetBindMaster()->IsType( idAFEntity_Vehicle::GetClassType() ) ) {
 		newEyeOffset = 0.0f;
 	} else {
 		newEyeOffset = pm_normalviewheight.GetFloat();
@@ -7196,7 +7187,7 @@ void idPlayer::Move( void ) {
 
 		// check if we're standing on top of a monster and give a push if we are
 		idEntity *groundEnt = physicsObj.GetGroundEntity();
-		if ( groundEnt && groundEnt->IsType( idAI::Type ) ) {
+		if ( groundEnt && groundEnt->IsType( idAI::GetClassType() ) ) {
 			idVec3 vel = physicsObj.GetLinearVelocity();
 			if ( vel.ToVec2().LengthSqr() < 0.1f ) {
 				vel.ToVec2() = physicsObj.GetOrigin().ToVec2() - groundEnt->GetPhysics()->GetAbsBounds().GetCenter().ToVec2();
@@ -7282,7 +7273,7 @@ void idPlayer::UpdateHud( void ) {
 
 	if ( gameLocal.realClientTime == lastMPAimTime ) {
 		if ( MPAim != -1 && gameLocal.mpGame.IsGametypeTeamBased() /* CTF */
-			&& gameLocal.entities[ MPAim ] && gameLocal.entities[ MPAim ]->IsType( idPlayer::Type )
+			&& gameLocal.entities[ MPAim ] && gameLocal.entities[ MPAim ]->IsType( idPlayer::GetClassType() )
 			&& static_cast< idPlayer * >( gameLocal.entities[ MPAim ] )->team == team ) {
 				aimed = static_cast< idPlayer * >( gameLocal.entities[ MPAim ] );
 				hud->SetStateString( "aim_text", gameLocal.userInfo[ MPAim ].GetString( "ui_name" ) );
@@ -7936,7 +7927,7 @@ void idPlayer::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 	if ( gameLocal.isMultiplayer || g_testDeath.GetBool() ) {
 		idPlayer *killer = NULL;
 		// no gibbing in MP. Event_Gib will early out in MP
-		if ( attacker->IsType( idPlayer::Type ) ) {
+		if ( attacker->IsType( idPlayer::GetClassType() ) ) {
 			killer = static_cast<idPlayer*>(attacker);
 			if ( health < -20 || killer->PowerUpActive( BERSERK ) ) {
 				gibDeath = true;
@@ -7987,12 +7978,12 @@ callback function for when another entity received damage from this entity.  dam
 void idPlayer::DamageFeedback( idEntity *victim, idEntity *inflictor, int &damage ) {
 	assert( !gameLocal.isClient );
 	damage *= PowerUpModifier( BERSERK );
-	if ( damage && ( victim != this ) && ( victim->IsType( idActor::Type ) || victim->IsType( idDamagable::Type ) ) ) {
+	if ( damage && ( victim != this ) && ( victim->IsType( idActor::GetClassType() ) || victim->IsType( idDamagable::GetClassType() ) ) ) {
 
 		idPlayer *victimPlayer = NULL;
 
 		/* No damage feedback sound for hitting friendlies in CTF */
-		if ( victim->IsType( idPlayer::Type ) ) {
+		if ( victim->IsType( idPlayer::GetClassType() ) ) {
 			victimPlayer = static_cast<idPlayer*>(victim);
 		}
 
@@ -8022,7 +8013,7 @@ void idPlayer::CalcDamagePoints( idEntity *inflictor, idEntity *attacker, const 
 	damageDef->GetInt( "damage", "20", damage );
 	damage = GetDamageForLocation( damage, location );
 
-	idPlayer *player = attacker->IsType( idPlayer::Type ) ? static_cast<idPlayer*>(attacker) : NULL;
+	idPlayer *player = attacker->IsType( idPlayer::GetClassType() ) ? static_cast<idPlayer*>(attacker) : NULL;
 	if ( !gameLocal.isMultiplayer ) {
 		if ( inflictor != gameLocal.world ) {
 			switch ( g_skill.GetInteger() ) {
@@ -8155,7 +8146,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		attacker = gameLocal.world;
 	}
 
-	if ( attacker->IsType( idAI::Type ) ) {
+	if ( attacker->IsType( idAI::GetClassType() ) ) {
 #ifndef _D3XP
 		if ( PowerUpActive( BERSERK ) ) {
 			return;
@@ -8183,7 +8174,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	damageDef->dict.GetInt( "knockback", "20", knockback );
 
 /*#ifdef _D3XP
-	idPlayer *player = attacker->IsType( idPlayer::Type ) ? static_cast<idPlayer*>(attacker) : NULL;
+	idPlayer *player = attacker->IsType( idPlayer::GetClassType() ) ? static_cast<idPlayer*>(attacker) : NULL;
 
 	if ( gameLocal.mpGame.IsGametypeTeamBased()
 		&& !gameLocal.serverInfo.GetBool( "si_teamDamage" )
@@ -8210,7 +8201,6 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		// set the timer so that the player can't cancel out the movement immediately
 		physicsObj.SetKnockBack( idMath::ClampInt( 50, 200, knockback * 2 ) );
 	}
-
 
 	// give feedback on the player view and audibly when armor is helping
 	if ( armorSave ) {
@@ -8840,9 +8830,7 @@ idPlayer::AddAIKill
 =============
 */
 void idPlayer::AddAIKill( void ) {
-
 #ifndef _D3XP
-
 	int max_souls;
 	int ammo_souls;
 
@@ -8851,7 +8839,6 @@ void idPlayer::AddAIKill( void ) {
 	}
 
 	assert( hud );
-
 
 	ammo_souls = idWeapon::GetAmmoNumForName( "ammo_souls" );
 	max_souls = inventory.MaxAmmoForAmmoClass( this, "ammo_souls" );
@@ -8917,7 +8904,7 @@ void idPlayer::SetLastHitTime( int time ) {
 	}
 	if ( hud ) {
 		if ( MPAim != -1 ) {
-			if ( gameLocal.entities[ MPAim ] && gameLocal.entities[ MPAim ]->IsType( idPlayer::Type ) ) {
+			if ( gameLocal.entities[ MPAim ] && gameLocal.entities[ MPAim ]->IsType( idPlayer::GetClassType() ) ) {
 				aimed = static_cast< idPlayer * >( gameLocal.entities[ MPAim ] );
 			}
 			assert( aimed );
@@ -8930,7 +8917,7 @@ void idPlayer::SetLastHitTime( int time ) {
 			MPAimHighlight = true;
 			MPAimFadeTime = 0;
 		} else if ( lastMPAim != -1 ) {
-			if ( gameLocal.entities[ lastMPAim ] && gameLocal.entities[ lastMPAim ]->IsType( idPlayer::Type ) ) {
+			if ( gameLocal.entities[ lastMPAim ] && gameLocal.entities[ lastMPAim ]->IsType( idPlayer::GetClassType() ) ) {
 				aimed = static_cast< idPlayer * >( gameLocal.entities[ lastMPAim ] );
 			}
 			assert( aimed );
@@ -8956,7 +8943,7 @@ void idPlayer::SetInfluenceLevel( int level ) {
 	if ( level != influenceActive ) {
 		if ( level ) {
 			for ( idEntity *ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
-				if ( ent->IsType( idProjectile::Type ) ) {
+				if ( ent->IsType( idProjectile::GetClassType() ) ) {
 					// remove all projectiles
 					ent->PostEventMS( &EV_Remove, 0 );
 				}

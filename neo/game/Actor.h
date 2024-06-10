@@ -177,7 +177,7 @@ public:
 	void					Sever(renderEntity_t* entity, int& zone);
 	void					Bleed(int gibbedPart = 0, int gibbedZone = 0);
 	#endif
-	virtual void			SpawnGibs(const idVec3& dir, const char* damageDefName);
+	virtual void			SpawnGibs( const idVec3 &dir, const char *damageDefName );
 
 protected:
 	friend class			idAnimState;

@@ -57,10 +57,6 @@ typedef struct {
 
 #define	MAX_SCREEN_BLOBS	8
 
-
-
-
-
 #ifdef _D3XP
 class WarpPolygon_t {
 public:
@@ -84,19 +80,9 @@ public:
 
 	idList<WarpPolygon_t>	polys;
 };
-#endif
-
-
-
-
-
-
-
-#ifdef _D3XP
 
 class idPlayerView;
 class FullscreenFXManager;
-
 
 /*
 ==================
@@ -305,8 +291,6 @@ public:
 	virtual void			Restore( idRestoreGame *savefile );
 };
 
-
-
 /*
 ==================
 FullscreenFXManager
@@ -345,14 +329,6 @@ public:
 };
 
 #endif
-
-
-
-
-
-
-
-
 
 class idPlayerView {
 public:

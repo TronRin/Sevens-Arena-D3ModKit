@@ -355,7 +355,7 @@ int GetObstacles( const idPhysics *physics, const idAAS *aas, const idEntity *ig
 			continue;
 		}
 
-		if ( obEnt->IsType( idActor::Type ) ) {
+		if ( obEnt->IsType( idActor::GetClassType() ) ) {
 			obPhys = obEnt->GetPhysics();
 			// ignore myself, my enemy, and dead bodies
 			if ( ( obPhys == physics ) || ( obEnt == ignore ) || ( obEnt->health <= 0 ) ) {
@@ -372,7 +372,7 @@ int GetObstacles( const idPhysics *physics, const idAAS *aas, const idEntity *ig
 					}
 				}
 			}
-		} else if ( obEnt->IsType( idMoveable::Type ) ) {
+		} else if ( obEnt->IsType( idMoveable::GetClassType() ) ) {
 			// moveables are considered obstacles
 		} else {
 			// ignore everything else
@@ -1187,7 +1187,7 @@ bool idAI::PredictPath( const idEntity *ent, const idAAS *aas, const idVec3 &sta
 					return true;
 				}
 
-				if ( step ) {
+				if ( step != 0 ) {
 
 					// step down at end point
 					tmpStart = trace.endPos;

@@ -689,6 +689,7 @@ set(src_game
 	game/gamesys/Class.cpp
 	game/gamesys/Event.cpp
 	game/gamesys/SaveGame.cpp
+	game/gamesys/State.cpp
 	game/gamesys/SysCmds.cpp
 	game/gamesys/SysCvar.cpp
 	game/anim/Anim.cpp
@@ -769,6 +770,7 @@ set(src_d3xp
 	d3xp/gamesys/Class.cpp
 	d3xp/gamesys/Event.cpp
 	d3xp/gamesys/SaveGame.cpp
+	d3xp/gamesys/State.cpp
 	d3xp/gamesys/SysCmds.cpp
 	d3xp/gamesys/SysCvar.cpp
 	d3xp/anim/Anim.cpp

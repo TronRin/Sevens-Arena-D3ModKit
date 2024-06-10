@@ -181,7 +181,7 @@ void idGrabber::Initialize( void ) {
 		if ( !beamTarget ) {
 			args.SetVector( "origin", vec3_origin );
 			args.SetBool( "start_off", true );
-			beamTarget = ( idBeam * )gameLocal.SpawnEntityType( idBeam::Type, &args );
+			beamTarget = ( idBeam * )gameLocal.SpawnEntityType( idBeam::GetClassType(), &args );
 		}
 
 		if ( !beam ) {
@@ -192,7 +192,7 @@ void idGrabber::Initialize( void ) {
 			args.Set( "width", "6" );
 			args.Set( "skin", "textures/smf/flareSizeable" );
 			args.Set( "_color", "0.0235 0.843 0.969 0.2" );
-			beam = ( idBeam * )gameLocal.SpawnEntityType( idBeam::Type, &args );
+			beam = ( idBeam * )gameLocal.SpawnEntityType( idBeam::GetClassType(), &args );
 			beam->SetShaderParm( 6, 1.0f );
 		}
 
@@ -250,7 +250,7 @@ void idGrabber::StartDrag( idEntity *grabEnt, int id ) {
 	grabEnt->timeGroup = TIME_GROUP2;
 
 	// Handle specific class types
-	if ( grabEnt->IsType( idProjectile::Type ) ) {
+	if ( grabEnt->IsType( idProjectile::GetClassType() ) ) {
 		idProjectile* p = (idProjectile*)grabEnt;
 
 		p->CatchProjectile( thePlayer, "_catch" );
@@ -266,12 +266,12 @@ void idGrabber::StartDrag( idEntity *grabEnt, int id ) {
 		grabEnt->GetPhysics()->SetContents( 0 );
 		grabEnt->GetPhysics()->SetClipMask( CONTENTS_SOLID|CONTENTS_BODY );
 
-	} else if ( grabEnt->IsType( idExplodingBarrel::Type ) ) {
+	} else if ( grabEnt->IsType( idExplodingBarrel::GetClassType() ) ) {
 		idExplodingBarrel *ebarrel = static_cast<idExplodingBarrel*>(grabEnt);
 
 		ebarrel->StartBurning();
 
-	} else if ( grabEnt->IsType( idAFEntity_Gibbable::Type ) ) {
+	} else if ( grabEnt->IsType( idAFEntity_Gibbable::GetClassType() ) ) {
 		holdingAF = true;
 		clipModelId = 0;
 
@@ -280,7 +280,7 @@ void idGrabber::StartDrag( idEntity *grabEnt, int id ) {
 
 			aiEnt->StartRagdoll();
 		}
-	} else if ( grabEnt->IsType( idMoveableItem::Type ) ) {
+	} else if ( grabEnt->IsType( idMoveableItem::GetClassType() ) ) {
 		grabEnt->PostEventMS( &EV_Touch, 250, thePlayer, 0 );
 	}
 
@@ -357,11 +357,11 @@ void idGrabber::StopDrag( bool dropOnly ) {
 		}
 
 		// If the object isn't near its goal, just drop it in place.
-		if ( !ent->IsType( idProjectile::Type ) && ( dropOnly || drag.GetDistanceToGoal() > DRAG_FAIL_LEN ) ) {
+		if ( !ent->IsType( idProjectile::GetClassType() ) && ( dropOnly || drag.GetDistanceToGoal() > DRAG_FAIL_LEN ) ) {
 			ent->GetPhysics()->SetLinearVelocity( vec3_origin );
 			thePlayer->StartSoundShader( declManager->FindSound( "grabber_maindrop" ), SND_CHANNEL_WEAPON, 0, false, NULL );
 
-			if ( ent->IsType( idExplodingBarrel::Type ) ) {
+			if ( ent->IsType( idExplodingBarrel::GetClassType() ) ) {
 				idExplodingBarrel *ebarrel = static_cast<idExplodingBarrel*>(ent);
 
 				ebarrel->SetStability( true );
@@ -373,7 +373,7 @@ void idGrabber::StopDrag( bool dropOnly ) {
 			thePlayer->StartSoundShader( declManager->FindSound( "grabber_release" ), SND_CHANNEL_WEAPON, 0, false, NULL );
 
 			// Orient projectiles away from the player
-			if ( ent->IsType( idProjectile::Type ) ) {
+			if ( ent->IsType( idProjectile::GetClassType() ) ) {
 				idPlayer *player = owner.GetEntity();
 				idAngles ang = player->firstPersonViewAxis[0].ToAngles();
 
@@ -385,18 +385,18 @@ void idGrabber::StopDrag( bool dropOnly ) {
 				ent->GetPhysics()->SetContents( savedContents );
 				ent->GetPhysics()->SetClipMask( savedClipmask );
 
-			} else if ( ent->IsType( idMoveable::Type ) ) {
+			} else if ( ent->IsType( idMoveable::GetClassType() ) ) {
 				// Turn on damage for this object
 				idMoveable *obj = static_cast<idMoveable*>(ent);
 				obj->EnableDamage( true, 2.5f );
 				obj->SetAttacker( thePlayer );
 
-				if ( ent->IsType( idExplodingBarrel::Type ) ) {
+				if ( ent->IsType( idExplodingBarrel::GetClassType() ) ) {
 					idExplodingBarrel *ebarrel = static_cast<idExplodingBarrel*>(ent);
 					ebarrel->SetStability( false );
 				}
 
-			} else if ( ent->IsType( idMoveableItem::Type ) ) {
+			} else if ( ent->IsType( idMoveableItem::GetClassType() ) ) {
 				ent->GetPhysics()->SetClipMask( MASK_MONSTERSOLID );
 			}
 		}
@@ -442,7 +442,7 @@ int idGrabber::Update( idPlayer *player, bool hide ) {
 	if ( endTime > gameLocal.time ) {
 		bool abort = !dragEnt.IsValid();
 
-		if ( !abort && dragEnt.GetEntity()->IsType( idProjectile::Type ) ) {
+		if ( !abort && dragEnt.GetEntity()->IsType( idProjectile::GetClassType() ) ) {
 			idProjectile *proj = (idProjectile *)dragEnt.GetEntity();
 
 			if ( proj->GetProjectileState() >= 3 ) {
@@ -484,17 +484,17 @@ int idGrabber::Update( idPlayer *player, bool hide ) {
 			}
 
 			// Check if this is a valid entity to hold
-			if ( newEnt && ( newEnt->IsType( idMoveable::Type ) ||
-					newEnt->IsType( idMoveableItem::Type ) ||
-					newEnt->IsType( idProjectile::Type ) ||
-					newEnt->IsType( idAFEntity_Gibbable::Type ) ) &&
+			if ( newEnt && ( newEnt->IsType( idMoveable::GetClassType() ) ||
+					newEnt->IsType( idMoveableItem::GetClassType() ) ||
+					newEnt->IsType( idProjectile::GetClassType() ) ||
+					newEnt->IsType( idAFEntity_Gibbable::GetClassType() ) ) &&
 					newEnt->noGrab == false &&
 					newEnt->GetPhysics()->GetBounds().GetRadius() < MAX_PICKUP_SIZE &&
 					newEnt->GetPhysics()->GetLinearVelocity().LengthSqr() < MAX_PICKUP_VELOCITY ) {
 
 				bool validAF = true;
 
-				if ( newEnt->IsType( idAFEntity_Gibbable::Type ) ) {
+				if ( newEnt->IsType( idAFEntity_Gibbable::GetClassType() ) ) {
 					idAFEntity_Gibbable *afEnt = static_cast<idAFEntity_Gibbable*>(newEnt);
 
 					if ( grabbableAI( newEnt->spawnArgs.GetString( "classname" ) ) ) {
@@ -615,7 +615,7 @@ int idGrabber::Update( idPlayer *player, bool hide ) {
 		}
 
 		// Orient projectiles away from the player
-		if ( dragEnt.GetEntity()->IsType( idProjectile::Type ) ) {
+		if ( dragEnt.GetEntity()->IsType( idProjectile::GetClassType() ) ) {
 			idAngles ang = player->firstPersonViewAxis[0].ToAngles();
 			ang.pitch += 90.f;
 			entPhys->SetAxis( ang.ToMat3() );

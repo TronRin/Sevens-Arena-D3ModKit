@@ -1172,7 +1172,7 @@ idVarDef *idCompiler::ParseSysObjectCall( idVarDef *funcDef ) {
 		Error( "\"%s\" cannot be called with object notation", funcDef->Name() );
 	}
 
-	if ( !idThread::Type.RespondsTo( *funcDef->value.functionPtr->eventdef ) ) {
+	if ( !idThread::GetClassType().RespondsTo( *funcDef->value.functionPtr->eventdef ) ) {
 		Error( "\"%s\" is not callable as a 'sys' function", funcDef->Name() );
 	}
 
@@ -1486,8 +1486,8 @@ idCompiler::GetExpression
 ==============
 */
 idVarDef *idCompiler::GetExpression( int priority ) {
-	const opcode_t		*op;
-	const opcode_t		*oldop;
+	const opcode_t	*op;
+	const opcode_t	*oldop;
 	idVarDef		*e;
 	idVarDef		*e2;
 	const idVarDef	*oldtype;

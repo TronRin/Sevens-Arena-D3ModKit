@@ -201,7 +201,7 @@ void idDragEntity::Update( idPlayer *player ) {
 						newEnt = newEnt->GetBindMaster();
 					}
 
-					if ( newEnt->IsType( idAFEntity_Base::Type ) && static_cast<idAFEntity_Base *>(newEnt)->IsActiveAF() ) {
+					if ( newEnt->IsType( idAFEntity_Base::GetClassType() ) && static_cast<idAFEntity_Base *>(newEnt)->IsActiveAF() ) {
 						idAFEntity_Base *af = static_cast<idAFEntity_Base *>(newEnt);
 
 						// joint being dragged
@@ -211,7 +211,7 @@ void idDragEntity::Update( idPlayer *player ) {
 						// get the name of the body being dragged
 						newBodyName = af->GetAFPhysics()->GetBody( trace.c.id )->GetName();
 
-					} else if ( !newEnt->IsType( idWorldspawn::Type ) ) {
+					} else if ( !newEnt->IsType( idWorldspawn::GetClassType() ) ) {
 
 						if ( trace.c.id < 0 ) {
 							newJoint = CLIPMODEL_ID_TO_JOINT_HANDLE( trace.c.id );
@@ -234,7 +234,7 @@ void idDragEntity::Update( idPlayer *player ) {
 					bodyName = newBodyName;
 
 					if ( !cursor ) {
-						cursor = ( idCursor3D * )gameLocal.SpawnEntityType( idCursor3D::Type );
+						cursor = ( idCursor3D * )gameLocal.SpawnEntityType( idCursor3D::GetClassType() );
 					}
 
 					idPhysics *phys = dragEnt.GetEntity()->GetPhysics();
@@ -247,9 +247,9 @@ void idDragEntity::Update( idPlayer *player ) {
 					cursor->drag.SetPhysics( phys, id, localEntityPoint );
 					cursor->Show();
 
-					if ( phys->IsType( idPhysics_AF::Type ) ||
-							phys->IsType( idPhysics_RigidBody::Type ) ||
-								phys->IsType( idPhysics_Monster::Type ) ) {
+					if ( phys->IsType( idPhysics_AF::GetClassType() ) ||
+							phys->IsType( idPhysics_RigidBody::GetClassType() ) ||
+								phys->IsType( idPhysics_Monster::GetClassType() ) ) {
 						cursor->BecomeActive( TH_THINK );
 					}
 				}
@@ -330,7 +330,7 @@ void idDragEntity::BindSelected( void ) {
 
 	af = static_cast<idAFEntity_Base *>(dragEnt.GetEntity());
 
-	if ( !af || !af->IsType( idAFEntity_Base::Type ) || !af->IsActiveAF() ) {
+	if ( !af || !af->IsType( idAFEntity_Base::GetClassType() ) || !af->IsActiveAF() ) {
 		return;
 	}
 
@@ -382,7 +382,7 @@ void idDragEntity::UnbindSelected( void ) {
 
 	af = static_cast<idAFEntity_Base *>(selected.GetEntity());
 
-	if ( !af || !af->IsType( idAFEntity_Base::Type ) || !af->IsActiveAF() ) {
+	if ( !af || !af->IsType( idAFEntity_Base::GetClassType() ) || !af->IsActiveAF() ) {
 		return;
 	}
 
@@ -547,40 +547,40 @@ void idEditEntities::DisplayEntities( void ) {
 
 	switch( g_editEntityMode.GetInteger() ) {
 		case 1:
-			sit.typeInfo = &idLight::Type;
+			sit.typeInfo = &idLight::GetClassType();
 			sit.textKey = "texture";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 2:
-			sit.typeInfo = &idSound::Type;
+			sit.typeInfo = &idSound::GetClassType();
 			sit.textKey = "s_shader";
 			selectableEntityClasses.Append( sit );
-			sit.typeInfo = &idLight::Type;
+			sit.typeInfo = &idLight::GetClassType();
 			sit.textKey = "texture";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 3:
-			sit.typeInfo = &idAFEntity_Base::Type;
+			sit.typeInfo = &idAFEntity_Base::GetClassType();
 			sit.textKey = "articulatedFigure";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 4:
-			sit.typeInfo = &idFuncEmitter::Type;
+			sit.typeInfo = &idFuncEmitter::GetClassType();
 			sit.textKey = "model";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 5:
-			sit.typeInfo = &idAI::Type;
+			sit.typeInfo = &idAI::GetClassType();
 			sit.textKey = "name";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 6:
-			sit.typeInfo = &idEntity::Type;
+			sit.typeInfo = &idEntity::GetClassType();
 			sit.textKey = "name";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 7:
-			sit.typeInfo = &idEntity::Type;
+			sit.typeInfo = &idEntity::GetClassType();
 			sit.textKey = "model";
 			selectableEntityClasses.Append( sit );
 			break;
@@ -607,11 +607,11 @@ void idEditEntities::DisplayEntities( void ) {
 		}
 
 		bool drawArrows = false;
-		if ( ent->GetType() == &idAFEntity_Base::Type ) {
+		if ( ent->GetType() == &idAFEntity_Base::GetClassType() ) {
 			if ( !static_cast<idAFEntity_Base *>(ent)->IsActiveAF() ) {
 				continue;
 			}
-		} else if ( ent->GetType() == &idSound::Type ) {
+		} else if ( ent->GetType() == &idSound::GetClassType() ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
 			}
@@ -619,7 +619,7 @@ void idEditEntities::DisplayEntities( void ) {
 			if ( ss->HasDefaultSound() || ss->base->GetState() == DS_DEFAULTED ) {
 				color.Set( 1.0f, 0.0f, 1.0f, 1.0f );
 			}
-		} else if ( ent->GetType() == &idFuncEmitter::Type ) {
+		} else if ( ent->GetType() == &idFuncEmitter::GetClassType() ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
 			}
@@ -1147,7 +1147,6 @@ void idGameEdit::MapEntityTranslate( const char *name, const idVec3 &v ) const {
 	}
 }
 
-
 /***********************************************************************
 
   Debugger
@@ -1170,24 +1169,20 @@ bool idGameEditExt::IsLineCode( const char *filename, int linenumber ) const {
 	return false;
 }
 
-void idGameEditExt::GetLoadedScripts(idStrList** result)
-{
+void idGameEditExt::GetLoadedScripts( idStrList **result ) {
 	(*result)->Clear();
 	idProgram* program = &gameLocal.program;
 
-	for (int i = 0; i < program->NumFilenames(); i++)
-	{
-		(*result)->AddUnique(idStr(program->GetFilename(i)));
+	for ( int i = 0; i < program->NumFilenames(); i++ ) {
+		(*result)->AddUnique( idStr( program->GetFilename( i ) ) );
 	}
 }
 
-void idGameEditExt::MSG_WriteScriptList(idBitMsg* msg)
-{
+void idGameEditExt::MSG_WriteScriptList( idBitMsg *msg ) {
 	idProgram* program = &gameLocal.program;
 
-	msg->WriteInt(program->NumFilenames());
-	for (int i = 0; i < program->NumFilenames(); i++)
-	{
+	msg->WriteInt( program->NumFilenames() );
+	for ( int i = 0; i < program->NumFilenames(); i++ ) {
 		idStr file = program->GetFilename(i);
 		//fix this. it seams that scripts triggered by the runtime are stored with a wrong path
 		//the use // instead of '\'
@@ -1196,13 +1191,10 @@ void idGameEditExt::MSG_WriteScriptList(idBitMsg* msg)
 	}
 }
 
-const char* idGameEditExt::GetFilenameForStatement(idProgram* program, int index) const
-{
-	return program->GetFilenameForStatement(index);
+const char *idGameEditExt::GetFilenameForStatement( idProgram *program, int index ) const {
+	return program->GetFilenameForStatement( index );
 }
 
-int idGameEditExt::GetLineNumberForStatement(idProgram* program, int index) const
-{
-	return program->GetLineNumberForStatement(index);
+int idGameEditExt::GetLineNumberForStatement( idProgram *program, int index ) const {
+	return program->GetLineNumberForStatement( index );
 }
-

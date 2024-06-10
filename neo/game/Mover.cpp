@@ -1701,7 +1701,7 @@ void idElevator::Event_Touch( idEntity *other, trace_t *trace ) {
 		return;
 	}
 
-	if ( !other->IsType( idPlayer::Type ) ) {
+	if ( !other->IsType( idPlayer::GetClassType() ) ) {
 		return;
 	}
 
@@ -1783,7 +1783,7 @@ idElevator::Event_TeamBlocked
 void idElevator::Event_TeamBlocked( idEntity *blockedEntity, idEntity *blockingEntity ) {
 	if ( blockedEntity == this ) {
 		Event_GotoFloor( lastFloor );
-	} else if ( blockedEntity && blockedEntity->IsType( idDoor::Type ) ) {
+	} else if ( blockedEntity && blockedEntity->IsType( idDoor::GetClassType() ) ) {
 		// open the inner doors if one is blocked
 		idDoor *blocked = static_cast<idDoor *>( blockedEntity );
 		idDoor *door = GetDoor( spawnArgs.GetString( "innerdoor" ) );
@@ -1794,7 +1794,6 @@ void idElevator::Event_TeamBlocked( idEntity *blockedEntity, idEntity *blockingE
 		}
 	}
 }
-
 
 /*
 ===============
@@ -1942,11 +1941,11 @@ idDoor *idElevator::GetDoor( const char *name ) {
 	doorEnt = NULL;
 	if ( name && *name ) {
 		ent = gameLocal.FindEntity( name );
-		if ( ent && ent->IsType( idDoor::Type ) ) {
+		if ( ent && ent->IsType( idDoor::GetClassType() ) ) {
 			doorEnt = static_cast<idDoor*>( ent );
 			master = doorEnt->GetMoveMaster();
 			if ( master != doorEnt ) {
-				if ( master->IsType( idDoor::Type ) ) {
+				if ( master->IsType( idDoor::GetClassType() ) ) {
 					doorEnt = static_cast<idDoor*>( master );
 				} else {
 					doorEnt = NULL;
@@ -2305,7 +2304,7 @@ void idMover_Binary::Spawn( void ) {
 	} else {
 		// find the first entity spawned on this team (which could be us)
 		for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
-			if ( ent->IsType( idMover_Binary::Type ) && !idStr::Icmp( static_cast<idMover_Binary *>(ent)->team.c_str(), temp ) ) {
+			if ( ent->IsType( idMover_Binary::GetClassType() ) && !idStr::Icmp( static_cast<idMover_Binary *>(ent)->team.c_str(), temp ) ) {
 				break;
 			}
 		}
@@ -3399,7 +3398,7 @@ void idDoor::Hide( void ) {
 		master->Hide();
 	} else {
 		for ( slave = this; slave != NULL; slave = slave->GetActivateChain() ) {
-			if ( slave->IsType( idDoor::Type ) ) {
+			if ( slave->IsType( idDoor::GetClassType() ) ) {
 				slaveDoor = static_cast<idDoor *>( slave );
 				companion = slaveDoor->companionDoor;
 				if ( companion && ( companion != master ) && ( companion->GetMoveMaster() != master ) ) {
@@ -3438,7 +3437,7 @@ void idDoor::Show( void ) {
 		master->Show();
 	} else {
 		for ( slave = this; slave != NULL; slave = slave->GetActivateChain() ) {
-			if ( slave->IsType( idDoor::Type ) ) {
+			if ( slave->IsType( idDoor::GetClassType() ) ) {
 				slaveDoor = static_cast<idDoor *>( slave );
 				companion = slaveDoor->companionDoor;
 				if ( companion && ( companion != master ) && ( companion->GetMoveMaster() != master ) ) {
@@ -3488,7 +3487,7 @@ void idDoor::Use( idEntity *other, idEntity *activator ) {
 	if ( gameLocal.RequirementMet( activator, requires, removeItem ) ) {
 		if ( syncLock.Length() ) {
 			idEntity *sync = gameLocal.FindEntity( syncLock );
-			if ( sync && sync->IsType( idDoor::Type ) ) {
+			if ( sync && sync->IsType( idDoor::GetClassType() ) ) {
 				if ( static_cast<idDoor *>( sync )->IsOpen() ) {
 					return;
 				}
@@ -3527,7 +3526,7 @@ void idDoor::Lock( int f ) {
 
 	// lock all the doors on the team
 	for( other = moveMaster; other != NULL; other = other->GetActivateChain() ) {
-		if ( other->IsType( idDoor::Type ) ) {
+		if ( other->IsType( idDoor::GetClassType() ) ) {
 			idDoor *door = static_cast<idDoor *>( other );
 			if ( other == moveMaster ) {
 				if ( door->sndTrigger == NULL ) {
@@ -3597,7 +3596,7 @@ void idDoor::CalcTriggerBounds( float size, idBounds &bounds ) {
 
 	fl.takedamage = true;
 	for( other = activateChain; other != NULL; other = other->GetActivateChain() ) {
-		if ( other->IsType( idDoor::Type ) ) {
+		if ( other->IsType( idDoor::GetClassType() ) ) {
 			// find the bounds of everything on the team
 			bounds.AddBounds( other->GetPhysics()->GetAbsBounds() );
 
@@ -3665,7 +3664,7 @@ void idDoor::Event_SpawnDoorTrigger( void ) {
 	// check if any of the doors are marked as toggled
 	toggle = false;
 	for( other = moveMaster; other != NULL; other = other->GetActivateChain() ) {
-		if ( other->IsType( idDoor::Type ) && other->spawnArgs.GetBool( "toggle" ) ) {
+		if ( other->IsType( idDoor::GetClassType() ) && other->spawnArgs.GetBool( "toggle" ) ) {
 			toggle = true;
 			break;
 		}
@@ -3674,7 +3673,7 @@ void idDoor::Event_SpawnDoorTrigger( void ) {
 	if ( toggle ) {
 		// mark them all as toggled
 		for( other = moveMaster; other != NULL; other = other->GetActivateChain() ) {
-			if ( other->IsType( idDoor::Type ) ) {
+			if ( other->IsType( idDoor::GetClassType() ) ) {
 				other->spawnArgs.Set( "toggle", "1" );
 			}
 		}
@@ -3811,7 +3810,7 @@ void idDoor::Event_Touch( idEntity *other, trace_t *trace ) {
 			Use( this, other );
 		}
 	} else if ( sndTrigger && trace->c.id == sndTrigger->GetId() ) {
-		if ( other && other->IsType( idPlayer::Type ) && IsLocked() && gameLocal.time > nextSndTriggerTime ) {
+		if ( other && other->IsType( idPlayer::GetClassType() ) && IsLocked() && gameLocal.time > nextSndTriggerTime ) {
 			StartSound( "snd_locked", SND_CHANNEL_ANY, 0, false, NULL );
 			nextSndTriggerTime = gameLocal.time + 10000;
 		}
@@ -3828,7 +3827,7 @@ void idDoor::Event_SpectatorTouch( idEntity *other, trace_t *trace ) {
 	idBounds	bounds;
 	idPlayer	*p;
 
-	assert( other && other->IsType( idPlayer::Type ) && static_cast< idPlayer * >( other )->spectating );
+	assert( other && other->IsType( idPlayer::GetClassType() ) && static_cast< idPlayer * >( other )->spectating );
 
 	p = static_cast< idPlayer * >( other );
 	// avoid flicker when stopping right at clip box boundaries
@@ -3881,7 +3880,7 @@ void idDoor::Event_Activate( idEntity *activator ) {
 
 	if ( syncLock.Length() ) {
 		idEntity *sync = gameLocal.FindEntity( syncLock );
-		if ( sync && sync->IsType( idDoor::Type ) ) {
+		if ( sync && sync->IsType( idDoor::GetClassType() ) ) {
 			if ( static_cast<idDoor *>( sync )->IsOpen() ) {
 				return;
 			}
@@ -3956,7 +3955,7 @@ void idDoor::Event_OpenPortal( void ) {
 	idDoor *slaveDoor;
 
 	for ( slave = this; slave != NULL; slave = slave->GetActivateChain() ) {
-		if ( slave->IsType( idDoor::Type ) ) {
+		if ( slave->IsType( idDoor::GetClassType() ) ) {
 			slaveDoor = static_cast<idDoor *>( slave );
 			if ( slaveDoor->areaPortal ) {
 				slaveDoor->SetPortalState( true );
@@ -3979,7 +3978,7 @@ void idDoor::Event_ClosePortal( void ) {
 
 	for ( slave = this; slave != NULL; slave = slave->GetActivateChain() ) {
 		if ( !slave->IsHidden() ) {
-			if ( slave->IsType( idDoor::Type ) ) {
+			if ( slave->IsType( idDoor::GetClassType() ) ) {
 				slaveDoor = static_cast<idDoor *>( slave );
 				if ( slaveDoor->areaPortal ) {
 					slaveDoor->SetPortalState( false );
@@ -4199,7 +4198,7 @@ idPlat::Event_Touch
 ===============
 */
 void idPlat::Event_Touch( idEntity *other, trace_t *trace ) {
-	if ( !other->IsType( idPlayer::Type ) ) {
+	if ( !other->IsType( idPlayer::GetClassType() ) ) {
 		return;
 	}
 

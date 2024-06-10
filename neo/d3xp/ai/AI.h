@@ -694,7 +694,7 @@ public:
 protected:
 
 	//
-	// ai/ai_script.cpp
+	//  ai/ai_script.cpp
 	//
 	void					Script_Activate( idEntity *activator );
 	void					Script_Touch( idEntity *other, trace_t *trace );

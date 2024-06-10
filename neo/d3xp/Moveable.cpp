@@ -311,7 +311,7 @@ bool idMoveable::Collide( const trace_t &collision, const idVec3 &velocity ) {
 				f = v > maxDamageVelocity ? 1.0f : idMath::Sqrt( v - minDamageVelocity ) * ( 1.0f / idMath::Sqrt( maxDamageVelocity - minDamageVelocity ) );
 				dir = velocity;
 				dir.NormalizeFast();
-				if ( ent->IsType( idAI::Type ) && hasMonsterDamage ) {
+				if ( ent->IsType( idAI::GetClassType() ) && hasMonsterDamage ) {
 #ifdef _D3XP
 					if ( attacker ) {
 						ent->Damage( this, attacker, dir, monsterDamage, f, INVALID_JOINT );
@@ -346,7 +346,7 @@ bool idMoveable::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	}
 
 #ifdef _D3XP
-	if ( this->IsType( idExplodingBarrel::Type ) ) {
+	if ( this->IsType( idExplodingBarrel::GetClassType() ) ) {
 		idExplodingBarrel *ebarrel = static_cast<idExplodingBarrel*>(this);
 
 		if ( !ebarrel->IsStable() ) {
@@ -908,14 +908,16 @@ void idExplodingBarrel::Restore( idRestoreGame *savefile ) {
 
 #ifdef _D3XP
 	savefile->ReadBool( isStable );
+#endif
 
+	// DG: enforce getting fresh handle, else this may be tied to an unrelated light!
 	if ( lightDefHandle != -1 ) {
 		lightDefHandle = gameRenderWorld->AddLightDef( &light );
 	}
+	// DG: same for render entity
 	if ( particleModelDefHandle != -1 ) {
 		particleModelDefHandle = gameRenderWorld->AddEntityDef( &particleRenderEntity );
 	}
-#endif
 }
 
 /*
@@ -1193,7 +1195,7 @@ void idExplodingBarrel::Killed( idEntity *inflictor, idEntity *attacker, int dam
 			dir.Normalize();
 
 			gameLocal.SpawnEntityDef( *debris_args, &ent, false );
-			if ( !ent || !ent->IsType( idDebris::Type ) ) {
+			if ( !ent || !ent->IsType( idDebris::GetClassType() ) ) {
 				gameLocal.Error( "'projectile_debris' is not an idDebris" );
 			}
 
@@ -1274,7 +1276,7 @@ void idExplodingBarrel::Event_Respawn() {
 	if ( minRespawnDist ) {
 		float minDist = -1;
 		for ( i = 0; i < gameLocal.numClients; i++ ) {
-			if ( !gameLocal.entities[ i ] || !gameLocal.entities[ i ]->IsType( idPlayer::Type ) ) {
+			if ( !gameLocal.entities[ i ] || !gameLocal.entities[ i ]->IsType( idPlayer::GetClassType() ) ) {
 				continue;
 			}
 			idVec3 v = gameLocal.entities[ i ]->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();

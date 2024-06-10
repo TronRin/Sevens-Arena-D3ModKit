@@ -303,7 +303,7 @@ void idItem::Spawn( void ) {
 
 #ifdef CTF
 	// idItemTeam does not rotate and bob
-	if ( spawnArgs.GetBool( "spin" ) || (gameLocal.isMultiplayer && !this->IsType( idItemTeam::Type ) ) ) {
+	if ( spawnArgs.GetBool( "spin" ) || (gameLocal.isMultiplayer && !this->IsType( idItemTeam::GetClassType() ) ) ) {
 		spin = true;
 		BecomeActive( TH_THINK );
 	}
@@ -516,7 +516,7 @@ idItem::Event_Touch
 ================
 */
 void idItem::Event_Touch( idEntity *other, trace_t *trace ) {
-	if ( !other->IsType( idPlayer::Type ) ) {
+	if ( !other->IsType( idPlayer::GetClassType() ) ) {
 		return;
 	}
 
@@ -539,7 +539,7 @@ void idItem::Event_Trigger( idEntity *activator ) {
 		return;
 	}
 
-	if ( activator && activator->IsType( idPlayer::Type ) ) {
+	if ( activator && activator->IsType( idPlayer::GetClassType() ) ) {
 		Pickup( static_cast<idPlayer *>( activator ) );
 	}
 }
@@ -649,8 +649,6 @@ bool idItemPowerup::GiveToPlayer( idPlayer *player ) {
 }
 
 #ifdef CTF
-
-
 /*
 ===============================================================================
 
@@ -1258,7 +1256,7 @@ void idItemTeam::SpawnNugget( idVec3 pos ) {
 	idEntity * ent = idMoveableItem::DropItem( nuggetName, pos, GetPhysics()->GetAxis(), angle.ToMat3()*idVec3(velocity, velocity, velocity), 0, spawnArgs.GetInt("nugget_removedelay") );
 	idPhysics_RigidBody * physics = static_cast<idPhysics_RigidBody *>( ent->GetPhysics() );
 
-	if ( physics && physics->IsType( idPhysics_RigidBody::Type ) ) {
+	if ( physics && physics->IsType( idPhysics_RigidBody::GetClassType() ) ) {
 		physics->DisableImpact();
 	}
 }
@@ -1348,7 +1346,6 @@ void idItemTeam::Present( void ) {
 
 	idEntity::Present();
 }
-
 #endif
 
 /*
@@ -1497,7 +1494,7 @@ void idObjective::Event_Trigger( idEntity *activator ) {
 
 				// a tad slow but keeps from having to update all objectives in all maps with a name ptr
 				for( int i = 0; i < gameLocal.num_entities; i++ ) {
-					if ( gameLocal.entities[ i ] && gameLocal.entities[ i ]->IsType( idObjectiveComplete::Type ) ) {
+					if ( gameLocal.entities[ i ] && gameLocal.entities[ i ]->IsType( idObjectiveComplete::GetClassType() ) ) {
 						if ( idStr::Icmp( spawnArgs.GetString( "objectivetitle" ), gameLocal.entities[ i ]->spawnArgs.GetString( "objectivetitle" ) ) == 0 ){
 							gameLocal.entities[ i ]->spawnArgs.SetBool( "objEnabled", true );
 							break;
@@ -2049,7 +2046,7 @@ idItemRemover::Event_Trigger
 ================
 */
 void idItemRemover::Event_Trigger( idEntity *activator ) {
-	if ( activator->IsType( idPlayer::Type ) ) {
+	if ( activator->IsType( idPlayer::GetClassType() ) ) {
 		RemoveItem( static_cast<idPlayer *>(activator) );
 	}
 }
@@ -2120,8 +2117,7 @@ void idObjectiveComplete::Event_Trigger( idEntity *activator ) {
 
 		if ( spawnArgs.GetString( "inv_objective", NULL ) ) {
 			if ( player->hud ) {
-				player->hud->SetStateString( "objective", "2");
-
+				player->hud->SetStateString( "objective", "2" );
 				player->hud->SetStateString( "objectivetext", spawnArgs.GetString( "objectivetext" ) );
 #ifdef _D3XP
 				player->hud->SetStateString( "objectivecompletetitle", spawnArgs.GetString( "objectivetitle" ) );

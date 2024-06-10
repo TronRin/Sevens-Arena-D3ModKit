@@ -132,7 +132,7 @@ bool idPlayerStart::ClientReceiveEvent( int event, int time, const idBitMsg &msg
 		case EVENT_TELEPORTPLAYER: {
 			entityNumber = msg.ReadBits( GENTITYNUM_BITS );
 			idPlayer *player = static_cast<idPlayer *>( gameLocal.entities[entityNumber] );
-			if ( player != NULL && player->IsType( idPlayer::Type ) ) {
+			if ( player != NULL && player->IsType( idPlayer::GetClassType() ) ) {
 				Event_TeleportPlayer( player );
 			}
 			return true;
@@ -153,7 +153,7 @@ FIXME: add functionality to fx system ( could be done with player scripting too 
 */
 void idPlayerStart::Event_TeleportStage( idEntity *_player ) {
 	idPlayer *player;
-	if ( !_player->IsType( idPlayer::Type ) ) {
+	if ( !_player->IsType( idPlayer::GetClassType() ) ) {
 		common->Warning( "idPlayerStart::Event_TeleportStage: entity is not an idPlayer\n" );
 		return;
 	}
@@ -230,7 +230,7 @@ idPlayerStart::Event_TeleportPlayer
 void idPlayerStart::Event_TeleportPlayer( idEntity *activator ) {
 	idPlayer *player;
 
-	if ( activator->IsType( idPlayer::Type ) ) {
+	if ( activator->IsType( idPlayer::GetClassType() ) ) {
 		player = static_cast<idPlayer*>( activator );
 	} else {
 		player = gameLocal.GetLocalPlayer();
@@ -372,7 +372,7 @@ void idPathCorner::DrawDebugInfo( void ) {
 	idBounds bnds( idVec3( -4.0, -4.0f, -8.0f ), idVec3( 4.0, 4.0f, 64.0f ) );
 
 	for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
-		if ( !ent->IsType( idPathCorner::Type ) ) {
+		if ( !ent->IsType( idPathCorner::GetClassType() ) ) {
 			continue;
 		}
 
@@ -396,7 +396,7 @@ idPathCorner *idPathCorner::RandomPath( const idEntity *source, const idEntity *
 	num = 0;
 	for( i = 0; i < source->targets.Num(); i++ ) {
 		ent = source->targets[ i ].GetEntity();
-		if ( ent && ( ent != ignore ) && ent->IsType( idPathCorner::Type ) ) {
+		if ( ent && ( ent != ignore ) && ent->IsType( idPathCorner::GetClassType() ) ) {
 			path[ num++ ] = static_cast<idPathCorner *>( ent );
 			if ( num >= MAX_GENTITIES ) {
 				break;
@@ -1320,7 +1320,7 @@ void idAnimated::Event_LaunchMissilesUpdate( int launchjoint, int targetjoint, i
 	dir.Normalize();
 
 	gameLocal.SpawnEntityDef( *projectileDef, &ent, false );
-	if ( !ent || !ent->IsType( idProjectile::Type ) ) {
+	if ( !ent || !ent->IsType( idProjectile::GetClassType() ) ) {
 		gameLocal.Error( "idAnimated '%s' at (%s): in 'launchMissiles' call '%s' is not an idProjectile", name.c_str(), GetPhysics()->GetOrigin().ToString(0), projectilename );
 	}
 	projectile = ( idProjectile * )ent;
@@ -1373,14 +1373,12 @@ idAnimated::Event_SetAnimation
 =====================
 */
 void idAnimated::Event_SetAnimation( const char *animName ) {
-
 	//BSM Nerve: Need to add some error checking so we don't change the animation
 	//in the middle of the existing animation
 	anim = animator.GetAnim( animName );
 	if ( !anim ) {
 		gameLocal.Error( "idAnimated '%s' at (%s): cannot find anim '%s'", name.c_str(), GetPhysics()->GetOrigin().ToString(0), animName );
 	}
-
 }
 
 /*
@@ -2297,7 +2295,7 @@ void idBeam::Event_MatchTarget( void ) {
 	targetBeam = NULL;
 	for( i = 0; i < targets.Num(); i++ ) {
 		targetEnt = targets[ i ].GetEntity();
-		if ( targetEnt && targetEnt->IsType( idBeam::Type ) ) {
+		if ( targetEnt && targetEnt->IsType( idBeam::GetClassType() ) ) {
 			targetBeam = static_cast<idBeam *>( targetEnt );
 			break;
 		}
@@ -2520,7 +2518,7 @@ void idLiquid::Event_Touch( idEntity *other, trace_t *trace ) {
 	idPhysics_Actor *phys;
 
 	//only for actors!
-	if ( !other->GetPhysics()->IsType( idPhysics_Actor::Type ) ) {
+	if ( !other->GetPhysics()->IsType( idPhysics_Actor::GetClassType() ) ) {
 		return;
 	}
 
@@ -2574,7 +2572,7 @@ bool idLiquid::Collide( const trace_t &collision, const idVec3 &velocity )
 	int customType;
 
 	//avoid too many spashes for AFs!
-	if ( e->GetPhysics()->IsType( idPhysics_AF::Type ) ) {
+	if ( e->GetPhysics()->IsType( idPhysics_AF::GetClassType() ) ) {
 		idPhysics_AF* phys = static_cast<idPhysics_AF*>( e->GetPhysics() );
 
 		if ( phys->nextWaterSplash < gameLocal.time ) {
@@ -2607,7 +2605,7 @@ bool idLiquid::Collide( const trace_t &collision, const idVec3 &velocity )
 		if ( skipSound ) {
 			skipSound = false;
 		} else {
-			e->StartSound( "snd_water", SND_CHANNEL_ANY, 0, false, NULL );
+			e->StartSound( "snd_footstep_liquid", SND_CHANNEL_ANY, 0, false, NULL );
 		}
 	} else if( velSquare > physicsObj.GetMinWaveVelocity().LengthSqr() ) {
 		splash = this->waves;
@@ -2617,7 +2615,7 @@ bool idLiquid::Collide( const trace_t &collision, const idVec3 &velocity )
 	}
 
 	// spawn the particle
-	gameLocal.smokeParticles->EmitSmoke( splash, gameLocal.time, gameLocal.random.RandomFloat(), splashSpot, mat3_identity, timeGroup /* D3XP */ );
+	gameLocal.smokeParticles->EmitSmoke( splash, gameLocal.time, gameLocal.random.RandomFloat(), splashSpot, collision.endAxis, timeGroup /* D3XP */ );
 	return true;
 }
 
@@ -3130,7 +3128,7 @@ void idFuncRadioChatter::Event_Activate( idEntity *activator ) {
 	const idSoundShader *shader;
 	int length;
 
-	if ( activator->IsType( idPlayer::Type ) ) {
+	if ( activator->IsType( idPlayer::GetClassType() ) ) {
 		player = static_cast<idPlayer *>( activator );
 	} else {
 		player = gameLocal.GetLocalPlayer();
@@ -3156,7 +3154,7 @@ idFuncRadioChatter::Event_ResetRadioHud
 ================
 */
 void idFuncRadioChatter::Event_ResetRadioHud( idEntity *activator ) {
-	idPlayer *player = ( activator->IsType( idPlayer::Type ) ) ? static_cast<idPlayer *>( activator ) : gameLocal.GetLocalPlayer();
+	idPlayer *player = ( activator->IsType( idPlayer::GetClassType() ) ) ? static_cast<idPlayer *>( activator ) : gameLocal.GetLocalPlayer();
 	player->hud->HandleNamedEvent( "radioChatterDown" );
 	ActivateTargets( activator );
 }
@@ -3207,11 +3205,11 @@ void idPhantomObjects::Save( idSaveGame *savefile ) const {
 	savefile->WriteInt( min_wait );
 	savefile->WriteInt( max_wait );
 	target.Save( savefile );
-
 	savefile->WriteInt( targetTime.Num() );
 	for( i = 0; i < targetTime.Num(); i++ ) {
 		savefile->WriteInt( targetTime[ i ] );
 	}
+
 	for( i = 0; i < lastTargetPos.Num(); i++ ) {
 		savefile->WriteVec3( lastTargetPos[ i ] );
 	}
@@ -3291,7 +3289,7 @@ void idPhantomObjects::Event_Activate( idEntity *activator ) {
 		return;
 	}
 
-	if ( !activator || !activator->IsType( idActor::Type ) ) {
+	if ( !activator || !activator->IsType( idActor::GetClassType() ) ) {
 		target = gameLocal.GetLocalPlayer();
 	} else {
 		target = static_cast<idActor *>( activator );
@@ -3398,7 +3396,7 @@ void idPhantomObjects::Think( void ) {
 			} else {
 				targetTime[ i ] = gameLocal.time + gameLocal.random.RandomInt( max_wait - min_wait ) + min_wait;
 			}
-			if ( ent->IsType( idMoveable::Type ) ) {
+			if ( ent->IsType( idMoveable::GetClassType() ) ) {
 				idMoveable *ment = static_cast<idMoveable*>( ent );
 				ment->EnableDamage( true, 2.5f );
 			}
@@ -3577,7 +3575,7 @@ void idShockwave::Think() {
 				continue;
 			}
 
-			if ( !ent->IsType( idMoveable::Type ) && !ent->IsType( idAFEntity_Base::Type ) && !ent->IsType( idPlayer::Type )) {
+			if ( !ent->IsType( idMoveable::GetClassType() ) && !ent->IsType( idAFEntity_Base::GetClassType() ) && !ent->IsType( idPlayer::GetClassType() )) {
 				continue;
 			}
 
@@ -3586,7 +3584,7 @@ void idShockwave::Think() {
 
 			float dist = force.Normalize();
 
-			if(ent->IsType( idPlayer::Type )) {
+			if(ent->IsType( idPlayer::GetClassType() )) {
 
 				if(ent->GetPhysics()->GetAbsBounds().IntersectsBounds(bounds)) {
 
@@ -3612,7 +3610,7 @@ void idShockwave::Think() {
 					force.z += 4.f;
 					force.NormalizeFast();
 
-					if ( ent->IsType( idAFEntity_Base::Type ) ) {
+					if ( ent->IsType( idAFEntity_Base::GetClassType() ) ) {
 						force = force * (ent->GetPhysics()->GetMass() * magnitude * 0.01f);
 					} else {
 						force = force * ent->GetPhysics()->GetMass() * magnitude;
@@ -3759,7 +3757,7 @@ idFuncMountedObject::Event_Activate
 ================
 */
 void idFuncMountedObject::Event_Activate( idEntity *activator ) {
-	if ( !isMounted && activator->IsType( idPlayer::Type ) ) {
+	if ( !isMounted && activator->IsType( idPlayer::GetClassType() ) ) {
 		idPlayer *client = (idPlayer *)activator;
 
 		mountedPlayer = client;
@@ -3770,7 +3768,7 @@ void idFuncMountedObject::Event_Activate( idEntity *activator ) {
 		idPathCorner	*spot;
 
 		for ( i = 0; i < targets.Num(); i++ ) {
-		if ( targets[i]->IsType( idPathCorner::Type ) ) {
+		if ( targets[i]->IsType( idPathCorner::GetClassType() ) ) {
 		spot = (idPathCorner*)targets[i];
 		break;
 		}
@@ -3854,7 +3852,7 @@ void idFuncMountedWeapon::Think( void ) {
 			idVec3			dir;
 
 			gameLocal.SpawnEntityDef( *projectile, &ent );
-			if ( !ent || !ent->IsType( idProjectile::Type ) ) {
+			if ( !ent || !ent->IsType( idProjectile::GetClassType() ) ) {
 				const char *projectileName = spawnArgs.GetString( "def_projectile" );
 				gameLocal.Error( "'%s' is not an idProjectile", projectileName );
 			}
@@ -3885,7 +3883,7 @@ void idFuncMountedWeapon::Event_PostSpawn( void ) {
 
 	if ( targets.Num() >= 1 ) {
 		for ( int i=0; i < targets.Num(); i++ ) {
-			if ( targets[i].GetEntity()->IsType( idStaticEntity::Type ) ) {
+			if ( targets[i].GetEntity()->IsType( idStaticEntity::GetClassType() ) ) {
 				turret = targets[i].GetEntity();
 				break;
 			}

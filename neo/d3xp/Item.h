@@ -202,7 +202,6 @@ private:
 };
 
 #ifdef CTF
-
 class idItemTeam : public idMoveableItem {
 public:
 	CLASS_PROTOTYPE( idItemTeam );
@@ -264,7 +263,6 @@ private:
 	void					SpawnNugget( idVec3 pos );
 	void                    UpdateGuis( void );
 };
-
 #endif
 
 

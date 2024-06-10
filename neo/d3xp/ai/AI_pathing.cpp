@@ -36,6 +36,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "ai/AI.h"
 
+#include <stddef.h>
+
 /*
 ===============================================================================
 
@@ -353,7 +355,7 @@ int GetObstacles( const idPhysics *physics, const idAAS *aas, const idEntity *ig
 			continue;
 		}
 
-		if ( obEnt->IsType( idActor::Type ) ) {
+		if ( obEnt->IsType( idActor::GetClassType() ) ) {
 			obPhys = obEnt->GetPhysics();
 			// ignore myself, my enemy, and dead bodies
 			if ( ( obPhys == physics ) || ( obEnt == ignore ) || ( obEnt->health <= 0 ) ) {
@@ -370,7 +372,7 @@ int GetObstacles( const idPhysics *physics, const idAAS *aas, const idEntity *ig
 					}
 				}
 			}
-		} else if ( obEnt->IsType( idMoveable::Type ) ) {
+		} else if ( obEnt->IsType( idMoveable::GetClassType() ) ) {
 			// moveables are considered obstacles
 		} else {
 			// ignore everything else
@@ -611,6 +613,7 @@ pathNode_t *BuildPathTree( const obstacle_t *obstacles, int numObstacles, const 
 
 	root->delta = seekPos - root->pos;
 	root->numNodes = 0;
+	
 	pathNodeQueue.Add( root );
 
 	for ( node = pathNodeQueue.Get(); node && pathNodeAllocator.GetAllocCount() < MAX_PATH_NODES; node = pathNodeQueue.Get() ) {

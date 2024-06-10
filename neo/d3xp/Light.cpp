@@ -361,7 +361,7 @@ void idLight::Spawn( void ) {
 
 #ifdef CTF
 	// Midnight CTF
-	if ( gameLocal.mpGame.IsGametypeFlagBased() && gameLocal.serverInfo.GetBool("si_midnight") && !spawnArgs.GetBool("midnight_override") ) {
+	if ( gameLocal.mpGame.IsGametypeFlagBased() && gameLocal.serverInfo.GetBool( "si_midnight" ) && !spawnArgs.GetBool( "midnight_override" ) ) {
 		Off();
 	}
 #endif
@@ -1001,7 +1001,7 @@ void idLight::Event_SetSoundHandles( void ) {
 
 	for ( i = 0; i < targets.Num(); i++ ) {
 		targetEnt = targets[ i ].GetEntity();
-		if ( targetEnt && targetEnt->IsType( idLight::Type ) ) {
+		if ( targetEnt && targetEnt->IsType( idLight::GetClassType() ) ) {
 			idLight	*light = static_cast<idLight*>(targetEnt);
 			light->lightParent = this;
 

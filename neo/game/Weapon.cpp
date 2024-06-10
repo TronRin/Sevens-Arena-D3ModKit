@@ -103,7 +103,7 @@ idWeapon::Spawn
 void idWeapon::Spawn( void ) {
 	if ( !gameLocal.isClient ) {
 		// setup the world model
-		worldModel = static_cast< idAnimatedEntity * >( gameLocal.SpawnEntityType( idAnimatedEntity::Type, NULL ) );
+		worldModel = static_cast< idAnimatedEntity * >( gameLocal.SpawnEntityType( idAnimatedEntity::GetClassType(), NULL ) );
 		worldModel.GetEntity()->fl.networkSync = true;
 	}
 
@@ -799,7 +799,7 @@ void idWeapon::GetWeaponDef( const char *objectname, int ammoinclip ) {
 		} else {
 			const char *spawnclass = projectileDef->dict.GetString( "spawnclass" );
 			idTypeInfo *cls = idClass::GetClass( spawnclass );
-			if ( !cls || !cls->IsType( idProjectile::Type ) ) {
+			if ( !cls || !cls->IsType( idProjectile::GetClassType() ) ) {
 				gameLocal.Warning( "Invalid spawnclass '%s' on projectile '%s' (used by weapon '%s')", spawnclass, projectileName, objectname );
 			} else {
 				projectileDict = projectileDef->dict;
@@ -991,7 +991,7 @@ void idWeapon::UpdateGUI( void ) {
 
 	if ( gameLocal.localClientNum != owner->entityNumber ) {
 		// if updating the hud for a followed client
-		if ( gameLocal.localClientNum >= 0 && gameLocal.entities[ gameLocal.localClientNum ] && gameLocal.entities[ gameLocal.localClientNum ]->IsType( idPlayer::Type ) ) {
+		if ( gameLocal.localClientNum >= 0 && gameLocal.entities[ gameLocal.localClientNum ] && gameLocal.entities[ gameLocal.localClientNum ]->IsType( idPlayer::GetClassType() ) ) {
 			idPlayer *p = static_cast< idPlayer * >( gameLocal.entities[ gameLocal.localClientNum ] );
 			if ( !p->spectating || p->spectator != owner->entityNumber ) {
 				return;
@@ -1774,9 +1774,9 @@ void idWeapon::AlertMonsters( void ) {
 
 	if ( tr.fraction < 1.0f ) {
 		ent = gameLocal.GetTraceEntity( tr );
-		if ( ent->IsType( idAI::Type ) ) {
+		if ( ent->IsType( idAI::GetClassType() ) ) {
 			static_cast<idAI *>( ent )->TouchedByFlashlight( owner );
-		} else if ( ent->IsType( idTrigger::Type ) ) {
+		} else if ( ent->IsType( idTrigger::GetClassType() ) ) {
 			ent->Signal( SIG_TOUCH );
 			ent->ProcessEvent( &EV_Touch, owner, &tr );
 		}
@@ -1793,9 +1793,9 @@ void idWeapon::AlertMonsters( void ) {
 
 	if ( tr.fraction < 1.0f ) {
 		ent = gameLocal.GetTraceEntity( tr );
-		if ( ent->IsType( idAI::Type ) ) {
+		if ( ent->IsType( idAI::GetClassType() ) ) {
 			static_cast<idAI *>( ent )->TouchedByFlashlight( owner );
-		} else if ( ent->IsType( idTrigger::Type ) ) {
+		} else if ( ent->IsType( idTrigger::GetClassType() ) ) {
 			ent->Signal( SIG_TOUCH );
 			ent->ProcessEvent( &EV_Touch, owner, &tr );
 		}
@@ -2803,7 +2803,7 @@ void idWeapon::LaunchProjectiles( int num_projectiles, float spread, float fuseO
 				gameLocal.SpawnEntityDef( projectileDict, &ent, false );
 			}
 
-			if ( !ent || !ent->IsType( idProjectile::Type ) ) {
+			if ( !ent || !ent->IsType( idProjectile::GetClassType() ) ) {
 				const char *projectileName = weaponDef->dict.GetString( "def_projectile" );
 				gameLocal.Error( "'%s' is not an idProjectile", projectileName );
 			}
@@ -2892,7 +2892,7 @@ bool idWeapon::Melee( void ) {
 			float push = meleeDef->dict.GetFloat( "push" );
 			idVec3 impulse = -push * owner->PowerUpModifier( SPEED ) * tr.c.normal;
 
-			if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) && ( ent->IsType( idActor::Type ) || ent->IsType( idAFAttachment::Type) ) ) {
+			if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) && ( ent->IsType( idActor::GetClassType() ) || ent->IsType( idAFAttachment::GetClassType()) ) ) {
 				return 0;
 			}
 
@@ -2901,7 +2901,7 @@ bool idWeapon::Melee( void ) {
 			// weapon stealing - do this before damaging so weapons are not dropped twice
 			if ( gameLocal.isMultiplayer
 				&& weaponDef && weaponDef->dict.GetBool( "stealing" )
-				&& ent->IsType( idPlayer::Type )
+				&& ent->IsType( idPlayer::GetClassType() )
 				&& !owner->PowerUpActive( BERSERK )
 				&& ( gameLocal.gameType != GAME_TDM || gameLocal.serverInfo.GetBool( "si_teamDamage" ) || ( owner->team != static_cast< idPlayer * >( ent )->team ) )
 				) {
@@ -2913,9 +2913,9 @@ bool idWeapon::Melee( void ) {
 				meleeDef->dict.GetVector( "kickDir", "0 0 0", kickDir );
 				globalKickDir = muzzleAxis * kickDir;
 				#if MD5_ENABLE_GIBS > 0
-				ent->Damage(owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier(MELEE_DAMAGE), CLIPMODEL_ID_TO_JOINT_HANDLE(tr.c.id));
+					ent->Damage( owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier( MELEE_DAMAGE ), CLIPMODEL_ID_TO_JOINT_HANDLE( tr.c.id ) );
 				#else
-				ent->Damage(owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier(MELEE_DAMAGE), tr.c.id);
+					ent->Damage( owner, owner, globalKickDir, meleeDefName, owner->PowerUpModifier( MELEE_DAMAGE ), tr.c.id );
 				#endif
 				hit = true;
 			}
@@ -3022,7 +3022,7 @@ void idWeapon::EjectBrass( void ) {
 	}
 
 	gameLocal.SpawnEntityDef( brassDict, &ent, false );
-	if ( !ent || !ent->IsType( idDebris::Type ) ) {
+	if ( !ent || !ent->IsType( idDebris::GetClassType() ) ) {
 		gameLocal.Error( "'%s' is not an idDebris", weaponDef ? weaponDef->dict.GetString( "def_ejectBrass" ) : "def_ejectBrass" );
 	}
 	idDebris *debris = static_cast<idDebris *>(ent);

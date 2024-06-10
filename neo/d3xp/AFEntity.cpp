@@ -910,7 +910,7 @@ void idAFEntity_Base::DropAFs( idEntity *ent, const char *type, idList<idEntity 
 		args.Set( "classname", kv->GetValue() );
 		gameLocal.SpawnEntityDef( args, &newEnt );
 
-		if ( newEnt && newEnt->IsType( idAFEntity_Base::Type ) ) {
+		if ( newEnt && newEnt->IsType( idAFEntity_Base::GetClassType() ) ) {
 			af = static_cast<idAFEntity_Base *>(newEnt);
 			af->GetPhysics()->SetOrigin( ent->GetPhysics()->GetOrigin() );
 			af->GetPhysics()->SetAxis( ent->GetPhysics()->GetAxis() );
@@ -1492,7 +1492,7 @@ void idAFEntity_WithAttachedHead::SetupHead( void ) {
 			gameLocal.Error( "Joint '%s' not found for 'head_joint' on '%s'", jointName.c_str(), name.c_str() );
 		}
 
-		headEnt = static_cast<idAFAttachment *>( gameLocal.SpawnEntityType( idAFAttachment::Type, NULL ) );
+		headEnt = static_cast<idAFAttachment *>( gameLocal.SpawnEntityType( idAFAttachment::GetClassType(), NULL ) );
 		headEnt->SetName( va( "%s_head", name.c_str() ) );
 		headEnt->SetBody( this, headModel, joint );
 		headEnt->SetCombatModel();
@@ -2842,7 +2842,7 @@ bool idGameEdit::AF_SpawnEntity( const char *fileName ) {
 	}
 	args.Set( "articulatedFigure", fileName );
 	args.Set( "nodrop", "1" );
-	ent = static_cast<idAFEntity_Generic *>(gameLocal.SpawnEntityType( idAFEntity_Generic::Type, &args));
+	ent = static_cast<idAFEntity_Generic *>(gameLocal.SpawnEntityType( idAFEntity_Generic::GetClassType(), &args));
 
 	// always update this entity
 	ent->BecomeActive( TH_THINK );
@@ -2869,7 +2869,7 @@ void idGameEdit::AF_UpdateEntities( const char *fileName ) {
 
 	// reload any idAFEntity_Generic which uses the given articulated figure file
 	for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
-		if ( ent->IsType( idAFEntity_Base::Type ) ) {
+		if ( ent->IsType( idAFEntity_Base::GetClassType() ) ) {
 			af = static_cast<idAFEntity_Base *>(ent);
 			if ( name.Icmp( af->GetAFName() ) == 0 ) {
 				af->LoadAF();
@@ -2902,7 +2902,7 @@ void idGameEdit::AF_UndoChanges( void ) {
 
 		// reload all AF entities using the file
 		for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
-			if ( ent->IsType( idAFEntity_Base::Type ) ) {
+			if ( ent->IsType( idAFEntity_Base::GetClassType() ) ) {
 				af = static_cast<idAFEntity_Base *>(ent);
 				if ( idStr::Icmp( decl->GetName(), af->GetAFName() ) == 0 ) {
 					af->LoadAF();
@@ -3163,7 +3163,6 @@ idRenderModel *idGameEdit::AF_CreateMesh( const idDict &args, idVec3 &meshOrigin
 }
 
 #ifdef _D3XP
-
 /*
 ===============================================================================
 idHarvestable
@@ -3222,11 +3221,11 @@ void idHarvestable::Init(idEntity* parent) {
 	}
 
 	idEntity* head = NULL;
-	if(parent->IsType(idActor::Type)) {
+	if(parent->IsType(idActor::GetClassType())) {
 		idActor* withHead = (idActor*)parent;
 		head = withHead->GetHeadEntity();
 	}
-	if(parent->IsType(idAFEntity_WithAttachedHead::Type)) {
+	if(parent->IsType(idAFEntity_WithAttachedHead::GetClassType())) {
 		idAFEntity_WithAttachedHead* withHead = (idAFEntity_WithAttachedHead*)parent;
 		head = withHead->head.GetEntity();
 	}
@@ -3365,11 +3364,11 @@ void idHarvestable::BeginBurn() {
 	parent->SetShaderParm( SHADERPARM_TIME_OF_DEATH, gameLocal.slow.time * 0.001f );
 
 	idEntity* head = NULL;
-	if(parent->IsType(idActor::Type)) {
+	if(parent->IsType(idActor::GetClassType())) {
 		idActor* withHead = (idActor*)parent;
 		head = withHead->GetHeadEntity();
 	}
-	if(parent->IsType(idAFEntity_WithAttachedHead::Type)) {
+	if(parent->IsType(idAFEntity_WithAttachedHead::GetClassType())) {
 		idAFEntity_WithAttachedHead* withHead = (idAFEntity_WithAttachedHead*)parent;
 		head = withHead->head.GetEntity();
 	}
@@ -3528,14 +3527,14 @@ void idHarvestable::Event_Touch( idEntity *other, trace_t *trace ) {
 	if(!parent) {
 		return;
 	}
-	if(parent->IsType(idAFEntity_Gibbable::Type)) {
+	if(parent->IsType(idAFEntity_Gibbable::GetClassType())) {
 		idAFEntity_Gibbable* gibParent = (idAFEntity_Gibbable*)parent;
 		if(gibParent->IsGibbed())
 			return;
 	}
 
 
-	if(!startTime && other && other->IsType(idPlayer::Type)) {
+	if(!startTime && other && other->IsType(idPlayer::GetClassType())) {
 		idPlayer *thePlayer = static_cast<idPlayer *>(other);
 
 		if(thePlayer->harvest_lock) {

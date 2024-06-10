@@ -270,7 +270,7 @@ void idProjectile::Create( idEntity *owner, const idVec3 &start, const idVec3 &d
 	damagePower = 1.0f;
 
 #ifdef _D3XP
-	if(spawnArgs.GetBool("reset_time_offset", "0")) {
+	if ( spawnArgs.GetBool( "reset_time_offset", "0" ) ) {
 		renderEntity.shaderParms[ SHADERPARM_TIMEOFFSET ] = -MS2SEC( gameLocal.time );
 	}
 #endif
@@ -330,7 +330,7 @@ void idProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 
 	int				clipMask;
 
 	// allow characters to throw projectiles during cinematics, but not the player
-	if ( owner.GetEntity() && !owner.GetEntity()->IsType( idPlayer::Type ) ) {
+	if ( owner.GetEntity() && !owner.GetEntity()->IsType( idPlayer::GetClassType() ) ) {
 		cinematic = owner.GetEntity()->cinematic;
 	} else {
 		cinematic = false;
@@ -497,7 +497,7 @@ void idProjectile::Think( void ) {
 		idVec3 dir = -GetPhysics()->GetLinearVelocity();
 		dir.Normalize();
 #ifdef _D3XP
-		SetTimeState ts(originalTimeGroup);
+		SetTimeState ts( originalTimeGroup );
 #endif
 		if ( !gameLocal.smokeParticles->EmitSmoke( smokeFly, smokeFlyTime, gameLocal.random.RandomFloat(), GetPhysics()->GetOrigin(), dir.ToMat3(), timeGroup /*_D3XP*/ ) ) {
 			smokeFlyTime = gameLocal.time;
@@ -567,7 +567,7 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	}
 
 	// just get rid of the projectile when it hits a player in noclip
-	if ( ent->IsType( idPlayer::Type ) && static_cast<idPlayer *>( ent )->noclip ) {
+	if ( ent->IsType( idPlayer::GetClassType() ) && static_cast<idPlayer *>( ent )->noclip ) {
 		PostEventMS( &EV_Remove, 0 );
 		return true;
 	}
@@ -582,11 +582,11 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 	}
 
 	// MP: projectiles open doors
-	if ( gameLocal.isMultiplayer && ent->IsType( idDoor::Type ) && !static_cast< idDoor * >(ent)->IsOpen() && !ent->spawnArgs.GetBool( "no_touch" ) ) {
+	if ( gameLocal.isMultiplayer && ent->IsType( idDoor::GetClassType() ) && !static_cast< idDoor * >(ent)->IsOpen() && !ent->spawnArgs.GetBool( "no_touch" ) ) {
 		ent->ProcessEvent( &EV_Activate , this );
 	}
 
-	if ( ent->IsType( idActor::Type ) || ( ent->IsType( idAFAttachment::Type ) && static_cast<const idAFAttachment*>(ent)->GetBody()->IsType( idActor::Type ) ) ) {
+	if ( ent->IsType( idActor::GetClassType() ) || ( ent->IsType( idAFAttachment::GetClassType() ) && static_cast<const idAFAttachment*>(ent)->GetBody()->IsType( idActor::GetClassType() ) ) ) {
 		if ( !projectileFlags.detonate_on_actor ) {
 			return false;
 		}
@@ -622,9 +622,9 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 		}
 
 		// if the projectile owner is a player
-		if ( owner.GetEntity() && owner.GetEntity()->IsType( idPlayer::Type ) ) {
+		if ( owner.GetEntity() && owner.GetEntity()->IsType( idPlayer::GetClassType() ) ) {
 			// if the projectile hit an actor
-			if ( ent->IsType( idActor::Type ) ) {
+			if ( ent->IsType( idActor::GetClassType() ) ) {
 				idPlayer *player = static_cast<idPlayer *>( owner.GetEntity() );
 				player->AddProjectileHits( 1 );
 				damageScale *= player->PowerUpModifier( PROJECTILE_DAMAGE );
@@ -886,7 +886,7 @@ void idProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 
 		splashArgs.Set( "model", "sludgebulletimpact.prt" );
 		splashArgs.Set( "start_off", "1" );
-		splashEnt = static_cast<idFuncEmitter *>( gameLocal.SpawnEntityType( idFuncEmitter::Type, &splashArgs ) );
+		splashEnt = static_cast<idFuncEmitter *>( gameLocal.SpawnEntityType( idFuncEmitter::GetClassType(), &splashArgs ) );
 
 		splashEnt->GetPhysics()->SetOrigin( testOrg );
 		splashEnt->PostEventMS( &EV_Activate, 0, this );
@@ -1006,7 +1006,7 @@ void idProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 				dir.Normalize();
 
 				gameLocal.SpawnEntityDef( *debris, &ent, false );
-				if ( !ent || !ent->IsType( idDebris::Type ) ) {
+				if ( !ent || !ent->IsType( idDebris::GetClassType() ) ) {
 					gameLocal.Error( "'projectile_debris' is not an idDebris" );
 				}
 
@@ -1027,7 +1027,7 @@ void idProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 				dir.Normalize();
 
 				gameLocal.SpawnEntityDef( *debris, &ent, false );
-				if ( !ent || !ent->IsType( idDebris::Type ) ) {
+				if ( !ent || !ent->IsType( idDebris::GetClassType() ) ) {
 					gameLocal.Error( "'projectile_shrapnel' is not an idDebris" );
 				}
 
@@ -1105,7 +1105,7 @@ void idProjectile::Event_Touch( idEntity *other, trace_t *trace ) {
 
 #ifdef CTF
 	// Projectiles do not collide with flags
-	if ( other->IsType( idItemTeam::Type ) )
+	if ( other->IsType( idItemTeam::GetClassType() ) )
 		return;
 #endif
 
@@ -1134,7 +1134,7 @@ void idProjectile::CatchProjectile( idEntity* o, const char* reflectName ) {
 	owner = o;
 	physicsObj.GetClipModel()->SetOwner( o );
 
-	if ( this->IsType( idGuidedProjectile::Type ) ) {
+	if ( this->IsType( idGuidedProjectile::GetClassType() ) ) {
 		idGuidedProjectile *proj = static_cast<idGuidedProjectile*>(this);
 
 		proj->SetEnemy( prevowner );
@@ -1211,11 +1211,11 @@ bool idProjectile::ClientPredictionCollide( idEntity *soundEnt, const idDict &pr
 	}
 
 	// don't do anything if hitting a noclip player
-	if ( ent->IsType( idPlayer::Type ) && static_cast<idPlayer *>( ent )->noclip ) {
+	if ( ent->IsType( idPlayer::GetClassType() ) && static_cast<idPlayer *>( ent )->noclip ) {
 		return false;
 	}
 
-	if ( ent->IsType( idActor::Type ) || ( ent->IsType( idAFAttachment::Type ) && static_cast<const idAFAttachment*>(ent)->GetBody()->IsType( idActor::Type ) ) ) {
+	if ( ent->IsType( idActor::GetClassType() ) || ( ent->IsType( idAFAttachment::GetClassType() ) && static_cast<const idAFAttachment*>(ent)->GetBody()->IsType( idActor::GetClassType() ) ) ) {
 		if ( !projectileDef.GetBool( "detonate_on_actor" ) ) {
 			return false;
 		}
@@ -1511,7 +1511,7 @@ idGuidedProjectile::GetSeekPos
 void idGuidedProjectile::GetSeekPos( idVec3 &out ) {
 	idEntity *enemyEnt = enemy.GetEntity();
 	if ( enemyEnt ) {
-		if ( enemyEnt->IsType( idActor::Type ) ) {
+		if ( enemyEnt->IsType( idActor::GetClassType() ) ) {
 			out = static_cast<idActor *>(enemyEnt)->GetEyePosition();
 			out.z -= 12.0f;
 		} else {
@@ -1607,9 +1607,9 @@ idGuidedProjectile::Launch
 void idGuidedProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVec3 &pushVelocity, const float timeSinceFire, const float launchPower, float dmgPower ) {
 	idProjectile::Launch( start, dir, pushVelocity, timeSinceFire, launchPower, dmgPower );
 	if ( owner.GetEntity() ) {
-		if ( owner.GetEntity()->IsType( idAI::Type ) ) {
+		if ( owner.GetEntity()->IsType( idAI::GetClassType() ) ) {
 			enemy = static_cast<idAI *>( owner.GetEntity() )->GetEnemy();
-		} else if ( owner.GetEntity()->IsType( idPlayer::Type ) ) {
+		} else if ( owner.GetEntity()->IsType( idPlayer::GetClassType() ) ) {
 			trace_t tr;
 			idPlayer *player = static_cast<idPlayer*>( owner.GetEntity() );
 			idVec3 start = player->GetEyePosition();
@@ -1619,7 +1619,7 @@ void idGuidedProjectile::Launch( const idVec3 &start, const idVec3 &dir, const i
 				enemy = gameLocal.GetTraceEntity( tr );
 			}
 			// ignore actors on the player's team
-			if ( enemy.GetEntity() == NULL || !enemy.GetEntity()->IsType( idActor::Type ) || ( static_cast<idActor *>( enemy.GetEntity() )->team == player->team ) ) {
+			if ( enemy.GetEntity() == NULL || !enemy.GetEntity()->IsType( idActor::GetClassType() ) || ( static_cast<idActor *>( enemy.GetEntity() )->team == player->team ) ) {
 				enemy = player->EnemyWithMostHealth();
 			}
 		}
@@ -1641,8 +1641,8 @@ void idGuidedProjectile::Launch( const idVec3 &start, const idVec3 &dir, const i
 void idGuidedProjectile::SetEnemy( idEntity *ent ) {
 	enemy = ent;
 }
-void idGuidedProjectile::Event_SetEnemy(idEntity *ent) {
-	SetEnemy(ent);
+void idGuidedProjectile::Event_SetEnemy( idEntity *ent ) {
+	SetEnemy( ent );
 }
 #endif
 
@@ -1730,7 +1730,7 @@ void idSoulCubeMissile::KillTarget( const idVec3 &dir ) {
 	idActor		*act;
 
 	ReturnToOwner();
-	if ( enemy.GetEntity() && enemy.GetEntity()->IsType( idActor::Type ) ) {
+	if ( enemy.GetEntity() && enemy.GetEntity()->IsType( idActor::GetClassType() ) ) {
 		act = static_cast<idActor*>( enemy.GetEntity() );
 		killPhase = true;
 		orbitOrg = act->GetPhysics()->GetAbsBounds().GetCenter();
@@ -1742,7 +1742,7 @@ void idSoulCubeMissile::KillTarget( const idVec3 &dir ) {
 			smokeKillTime = gameLocal.time;
 		}
 		ownerEnt = owner.GetEntity();
-		if ( ( act->health > 0 ) && ownerEnt && ownerEnt->IsType( idPlayer::Type ) && ( ownerEnt->health > 0 ) && !act->spawnArgs.GetBool( "boss" ) ) {
+		if ( ( act->health > 0 ) && ownerEnt && ownerEnt->IsType( idPlayer::GetClassType() ) && ( ownerEnt->health > 0 ) && !act->spawnArgs.GetBool( "boss" ) ) {
 			static_cast<idPlayer *>( ownerEnt )->GiveHealthPool( act->health );
 		}
 		act->Damage( this, owner.GetEntity(), dir,  spawnArgs.GetString( "def_damage" ), 1.0f, INVALID_JOINT );
@@ -1785,7 +1785,7 @@ void idSoulCubeMissile::Think( void ) {
 				PostEventSec( &EV_Remove, 2.0f );
 
 				ownerEnt = owner.GetEntity();
-				if ( ownerEnt && ownerEnt->IsType( idPlayer::Type ) ) {
+				if ( ownerEnt && ownerEnt->IsType( idPlayer::GetClassType() ) ) {
 					static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( NULL );
 				}
 
@@ -1803,7 +1803,7 @@ idSoulCubeMissile::GetSeekPos
 ================
 */
 void idSoulCubeMissile::GetSeekPos( idVec3 &out ) {
-	if ( returnPhase && owner.GetEntity() && owner.GetEntity()->IsType( idActor::Type ) ) {
+	if ( returnPhase && owner.GetEntity() && owner.GetEntity()->IsType( idActor::GetClassType() ) ) {
 		idActor *act = static_cast<idActor*>( owner.GetEntity() );
 		out = act->GetEyePosition();
 		return;
@@ -1844,7 +1844,7 @@ void idSoulCubeMissile::Launch( const idVec3 &start, const idVec3 &dir, const id
 	offs = spawnArgs.GetVector( "launchOffset", "0 0 -4" );
 	newStart += offs;
 	idGuidedProjectile::Launch( newStart, dir, pushVelocity, timeSinceFire, launchPower, dmgPower );
-	if ( enemy.GetEntity() == NULL || !enemy.GetEntity()->IsType( idActor::Type ) ) {
+	if ( enemy.GetEntity() == NULL || !enemy.GetEntity()->IsType( idActor::GetClassType() ) ) {
 		destOrg = start + dir * 256.0f;
 	} else {
 		destOrg.Zero();
@@ -1859,7 +1859,7 @@ void idSoulCubeMissile::Launch( const idVec3 &start, const idVec3 &dir, const id
 	UpdateVisuals();
 
 	ownerEnt = owner.GetEntity();
-	if ( ownerEnt && ownerEnt->IsType( idPlayer::Type ) ) {
+	if ( ownerEnt && ownerEnt->IsType( idPlayer::GetClassType() ) ) {
 		static_cast<idPlayer *>( ownerEnt )->SetSoulCubeProjectile( this );
 	}
 
@@ -2012,7 +2012,7 @@ void idBFGProjectile::Think( void ) {
 			if ( beamTargets[i].target.GetEntity() == NULL ) {
 				continue;
 			}
-			idPlayer *player = ( beamTargets[i].target.GetEntity()->IsType( idPlayer::Type ) ) ? static_cast<idPlayer*>( beamTargets[i].target.GetEntity() ) : NULL;
+			idPlayer *player = ( beamTargets[i].target.GetEntity()->IsType( idPlayer::GetClassType() ) ) ? static_cast<idPlayer*>( beamTargets[i].target.GetEntity() ) : NULL;
 #ifdef _D3XP
 			// Major hack for end boss.  :(
 			idAnimatedEntity	*beamEnt;
@@ -2144,7 +2144,7 @@ void idBFGProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVe
 		ent = entityList[ e ];
 		assert( ent );
 
-		if ( ent == this || ent == owner.GetEntity() || ent->IsHidden() || !ent->IsActive() || !ent->fl.takedamage || ent->health <= 0 || !ent->IsType( idActor::Type ) ) {
+		if ( ent == this || ent == owner.GetEntity() || ent->IsHidden() || !ent->IsActive() || !ent->fl.takedamage || ent->health <= 0 || !ent->IsType( idActor::GetClassType() ) ) {
 			continue;
 		}
 
@@ -2152,7 +2152,7 @@ void idBFGProjectile::Launch( const idVec3 &start, const idVec3 &dir, const idVe
 			continue;
 		}
 
-		if ( ent->IsType( idPlayer::Type ) ) {
+		if ( ent->IsType( idPlayer::GetClassType() ) ) {
 			idPlayer *player = static_cast<idPlayer*>( ent );
 			player->playerView.EnableBFGVision( true );
 		}
@@ -2255,7 +2255,7 @@ void idBFGProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 	idEntity *	ownerEnt;
 
 	ownerEnt = owner.GetEntity();
-	if ( ownerEnt && ownerEnt->IsType( idPlayer::Type ) ) {
+	if ( ownerEnt && ownerEnt->IsType( idPlayer::GetClassType() ) ) {
 		player = static_cast< idPlayer * >( ownerEnt );
 	} else {
 		player = NULL;
@@ -2285,7 +2285,7 @@ void idBFGProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 		// if the projectile owner is a player
 		if ( player ) {
 			// if the projectile hit an actor
-			if ( beamTargets[i].target.GetEntity()->IsType( idActor::Type ) ) {
+			if ( beamTargets[i].target.GetEntity()->IsType( idActor::GetClassType() ) ) {
 				player->SetLastHitTime( gameLocal.time );
 				player->AddProjectileHits( 1 );
 				damageScale *= player->PowerUpModifier( PROJECTILE_DAMAGE );

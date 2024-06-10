@@ -260,7 +260,7 @@ public:
 	int						ZoneParse(const char* zone, int& step);
 	void					ParseZone(const char* zone);
 	#endif
-	bool					LoadAnim(const char* filename);
+	bool					LoadAnim( const char *filename );
 
 	void					IncreaseRefs( void ) const;
 	void					DecreaseRefs( void ) const;

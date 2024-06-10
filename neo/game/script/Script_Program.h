@@ -71,7 +71,7 @@ public:
 	int					firstStatement;
 	int					numStatements;
 	int					parmTotal;
-	int					locals;			// total ints of parms + locals
+	int					locals;				// total ints of parms + locals
 	int					filenum;			// source file defined in
 	idList<int>			parmSize;
 };

@@ -49,7 +49,7 @@ If you have questions concerning this license or the applicable additional terms
 #define	D_EVENT_ENTITY_NULL			'E'			// event can handle NULL entity pointers
 #define D_EVENT_TRACE				't'
 
-#define MAX_EVENTS					4096
+#define MAX_EVENTS					8192		// Upped from 4096
 
 class idClass;
 class idTypeInfo;
@@ -107,7 +107,8 @@ public:
 
 								~idEvent();
 
-	static idEvent				*Alloc( const idEventDef *evdef, int numargs, va_list args );
+	static void					WriteDebugInfo( void );
+	static idEvent *			Alloc( const idEventDef *evdef, int numargs, va_list args );
 	static void					CopyArgs( const idEventDef *evdef, int numargs, va_list args, intptr_t data[ D_EVENT_MAXARGS ]  );
 
 	void						Free( void );
@@ -115,6 +116,7 @@ public:
 	byte						*GetData( void );
 
 	static void					CancelEvents( const idClass *obj, const idEventDef *evdef = NULL );
+	static bool					EventIsPosted( const idClass *obj, const idEventDef *evdef );
 	static void					ClearEventList( void );
 	static void					ServiceEvents( void );
 	static void					Init( void );
@@ -123,8 +125,6 @@ public:
 	// save games
 	static void					Save( idSaveGame *savefile );					// archives object for save game file
 	static void					Restore( idRestoreGame *savefile );				// unarchives object from save game file
-	static void					SaveTrace( idSaveGame *savefile, const trace_t &trace );
-	static void					RestoreTrace( idRestoreGame *savefile, trace_t &trace );
 
 };
 

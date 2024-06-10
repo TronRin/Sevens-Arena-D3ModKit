@@ -575,7 +575,7 @@ public:
 	void					MoveToAttackPosition( idEntity *entity, const char *attack_anim );
 	void					SlideTo( const idVec3 &pos, float time );
 	void					Wander( void );
-	idCombatNode *			GetCombatNode(void);
+	idCombatNode *			GetCombatNode( void );
 	bool					EnemyInCombatCone( idEntity *ent, int use_current_enemy_location );
 	idVec3					GetJumpVelocity( const idVec3 &pos, float speed, float max_height );
 	bool					EntityInAttackCone( idEntity *ent );

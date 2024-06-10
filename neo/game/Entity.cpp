@@ -812,7 +812,7 @@ void idEntity::BecomeActive( int flags ) {
 			teamMaster->BecomeActive( TH_PHYSICS );
 		} else if ( !( thinkFlags & TH_PHYSICS ) ) {
 			// if this is a pusher
-			if ( physics->IsType( idPhysics_Parametric::Type ) || physics->IsType( idPhysics_Actor::Type ) ) {
+			if ( physics->IsType( idPhysics_Parametric::GetClassType() ) || physics->IsType( idPhysics_Actor::GetClassType() ) ) {
 				gameLocal.sortPushers = true;
 			}
 		}
@@ -1290,7 +1290,6 @@ void idEntity::Present( void ) {
 	} else {
 		gameRenderWorld->UpdateEntityDef( modelDefHandle, &renderEntity );
 	}
-
 }
 
 /*
@@ -1345,7 +1344,6 @@ bool idEntity::ModelCallback( renderEntity_s *renderEntity, const renderView_t *
 	}
 
 	return ent->UpdateRenderEntity( renderEntity, renderView );
-
 }
 
 /*
@@ -1650,7 +1648,7 @@ bool idEntity::InitBind( idEntity *master ) {
 	Unbind();
 
 	// add any bind constraints to an articulated figure
-	if ( master && IsType( idAFEntity_Base::Type ) ) {
+	if ( master && IsType( idAFEntity_Base::GetClassType() ) ) {
 		static_cast<idAFEntity_Base *>(this)->AddBindConstraints();
 	}
 
@@ -1815,7 +1813,7 @@ void idEntity::Unbind( void ) {
 	idEntity *	ent;
 
 	// remove any bind constraints from an articulated figure
-	if ( IsType( idAFEntity_Base::Type ) ) {
+	if ( IsType( idAFEntity_Base::GetClassType() ) ) {
 		static_cast<idAFEntity_Base *>(this)->RemoveBindConstraints();
 	}
 
@@ -2557,7 +2555,7 @@ idEntity::UpdateFromPhysics
 */
 void idEntity::UpdateFromPhysics( bool moveBack ) {
 
-	if ( IsType( idActor::Type ) ) {
+	if ( IsType( idActor::GetClassType() ) ) {
 		idActor *actor = static_cast<idActor *>( this );
 
 		// set master delta angles for actors
@@ -2594,7 +2592,7 @@ idEntity::SetAxis
 */
 void idEntity::SetAxis( const idMat3 &axis ) {
 
-	if ( GetPhysics()->IsType( idPhysics_Actor::Type ) ) {
+	if ( GetPhysics()->IsType( idPhysics_Actor::GetClassType() ) ) {
 		static_cast<idActor *>(this)->viewAxis = axis;
 	} else {
 		GetPhysics()->SetAxis( axis );
@@ -4140,12 +4138,12 @@ void idEntity::RestorePosition( void ) {
 		if ( part->bindMaster != this ) {
 			continue;
 		}
-		if ( part->GetPhysics()->IsType( idPhysics_Parametric::Type ) ) {
+		if ( part->GetPhysics()->IsType( idPhysics_Parametric::GetClassType() ) ) {
 			if ( static_cast<idPhysics_Parametric *>(part->GetPhysics())->IsPusher() ) {
 				gameLocal.Warning( "teleported '%s' which has the pushing mover '%s' bound to it\n", GetName(), part->GetName() );
 				gameLocal.Warning( "  from (%.2f %.2f %.2f) to (%.2f %.2f %.2f)\n", oldOrg.x, oldOrg.y, oldOrg.z, org.x, org.y, org.z);
 			}
-		} else if ( part->GetPhysics()->IsType( idPhysics_AF::Type ) ) {
+		} else if ( part->GetPhysics()->IsType( idPhysics_AF::GetClassType() ) ) {
 			gameLocal.Warning( "teleported '%s' which has the articulated figure '%s' bound to it\n", GetName(), part->GetName() );
 		}
 	}

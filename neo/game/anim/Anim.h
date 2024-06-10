@@ -237,6 +237,7 @@ private:
 	idStr					name;
 	idVec3					totaldelta;
 	mutable int				ref_count;
+
 public:
 	#if MD5_ENABLE_GIBS > 0 // ANIMS
 	int						gibLimit;
