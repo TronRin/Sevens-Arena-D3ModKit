@@ -460,7 +460,7 @@ void idConsoleLocal::Clear() {
 	int		i;
 
 	for ( i = 0 ; i < CON_TEXTSIZE ; i++ ) {
-		text[i] = (idStr::ColorIndex(C_COLOR_WHITE)<<8) | ' ';
+		text[i] = (idStr::ColorIndex(C_COLOR_CYAN)<<8) | ' ';
 	}
 
 	Bottom();		// go to end
@@ -904,7 +904,7 @@ void idConsoleLocal::Linefeed() {
 	}
 	current++;
 	for ( i = 0; i < LINE_WIDTH; i++ ) {
-		text[(current%TOTAL_LINES)*LINE_WIDTH+i] = (idStr::ColorIndex(C_COLOR_WHITE)<<8) | ' ';
+		text[(current%TOTAL_LINES)*LINE_WIDTH+i] = (idStr::ColorIndex(C_COLOR_CYAN)<<8) | ' ';
 	}
 }
 
@@ -929,12 +929,12 @@ void idConsoleLocal::Print( const char *txt ) {
 	}
 #endif
 
-	color = idStr::ColorIndex( C_COLOR_WHITE );
+	color = idStr::ColorIndex( C_COLOR_CYAN );
 
 	while ( (c = *(const unsigned char*)txt) != 0 ) {
 		if ( idStr::IsColor( txt ) ) {
 			if ( *(txt+1) == C_COLOR_DEFAULT ) {
-				color = idStr::ColorIndex( C_COLOR_WHITE );
+				color = idStr::ColorIndex( C_COLOR_CYAN );
 			} else {
 				color = idStr::ColorIndex( *(txt+1) );
 			}
@@ -1031,7 +1031,7 @@ void idConsoleLocal::DrawInput() {
 		}
 	}
 
-	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_WHITE ) );
+	renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_CYAN ) );
 
 	renderSystem->DrawSmallChar( 1 * SMALLCHAR_WIDTH, y, ']', localConsole.charSetShader );
 
@@ -1057,7 +1057,7 @@ void idConsoleLocal::DrawNotify() {
 		return;
 	}
 
-	currentColor = idStr::ColorIndex( C_COLOR_WHITE );
+	currentColor = idStr::ColorIndex( C_COLOR_CYAN );
 	renderSystem->SetColor( idStr::ColorForIndex( currentColor ) );
 
 	v = 0;
@@ -1089,7 +1089,7 @@ void idConsoleLocal::DrawNotify() {
 		v += SMALLCHAR_HEIGHT;
 	}
 
-	renderSystem->SetColor( colorWhite );
+	renderSystem->SetColor( colorCyan );
 }
 
 /*
@@ -1125,9 +1125,9 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, y, 0, 1.0f - displayFrac, 1, 1, consoleShader );
 	}
 
-	renderSystem->SetColor( colorRed );
+	renderSystem->SetColor( colorCyan );
 	renderSystem->DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, whiteShader );
-	renderSystem->SetColor( colorWhite );
+	renderSystem->SetColor( colorCyan );
 
 	// draw the version number
 #ifdef _MSC_VER
@@ -1173,7 +1173,7 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 	// draw from the bottom up
 	if ( display != current ) {
 		// draw arrows to show the buffer is backscrolled
-		renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_RED ) );
+		renderSystem->SetColor( idStr::ColorForIndex( C_COLOR_CYAN ) );
 		for ( x = 0; x < LINE_WIDTH; x += 4 ) {
 			renderSystem->DrawSmallChar( (x+1)*SMALLCHAR_WIDTH, idMath::FtoiFast( y ), '^', localConsole.charSetShader );
 		}
@@ -1187,7 +1187,7 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 		row--;
 	}
 
-	currentColor = idStr::ColorIndex( C_COLOR_WHITE );
+	currentColor = idStr::ColorIndex( C_COLOR_CYAN );
 	renderSystem->SetColor( idStr::ColorForIndex( currentColor ) );
 
 	for ( i = 0; i < rows; i++, y -= SMALLCHAR_HEIGHT, row-- ) {
@@ -1217,7 +1217,7 @@ void idConsoleLocal::DrawSolidConsole( float frac ) {
 	// draw the input prompt, user text, and cursor if desired
 	DrawInput();
 
-	renderSystem->SetColor( colorWhite );
+	renderSystem->SetColor( colorCyan );
 }
 
 
