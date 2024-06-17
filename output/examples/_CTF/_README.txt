@@ -1,0 +1,1 @@
+This is a minimal set of assets to add support CTF into your mod
