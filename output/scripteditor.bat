@@ -1,1 +1,1 @@
-start dhewm3.exe +editScripts
+start engine.exe +editScripts

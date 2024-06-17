@@ -1,0 +1,133 @@
+/*
+model model_player
+{
+	mesh                    "models/joint.md5mesh"
+}
+*/
+
+entityDef player_base
+{
+	"spawnclass"						"idPlayer"
+	"scriptobject"						"player"
+
+	"health"							"100"
+	"maxhealth"							"100"
+	"stamina"							"110"
+	"armor"								"0"
+	"maxarmor"							"100"
+
+	"bleed"								"0"
+	"gib"								"0"
+
+	"hud"								"guis/hud.gui"
+	"mphud"								"guis/mphud.gui"
+	"cursor"						    "guis/cursor.gui"
+
+	//"blink_min"							"2.5"
+	//"blink_max"							"8.0"
+
+	"def_weapon0"						"weapon_unarmed"
+	"weapon0_best"						"0"			
+	"weapon0_cycle"						"1"
+	"weapon0_toggle"					"0"
+	"weapon0_allowempty"				"1"				
+
+	"weapon"							"weapon_unarmed"
+	"weapon_nightmare"					"weapon_unarmed"
+	"current_weapon"					"0"
+
+	"pm_jumpheight"						"40"
+	"pm_stepsize"						"15"
+	"pm_crouchspeed"					"70"
+	"pm_walkspeed"						"130"
+	"pm_runspeed"						"210"
+	"pm_noclipspeed"					"220"
+	"pm_minviewpitch"					"-85"
+	"pm_maxviewpitch"					"85"
+	"pm_stamina"						"20"
+	"pm_staminathreshold"				"5"
+	"pm_staminarate"					"0.72"
+	"pm_crouchheight"					"35"
+	"pm_crouchviewheight"				"30"
+	"pm_normalheight"					"72"
+	"pm_normalviewheight"				"66"
+	"pm_deadheight"						"19"
+	"pm_deadviewheight"					"9"
+	"pm_crouchrate"						"0.85"
+	"pm_bboxwidth"						"31"
+	"pm_crouchbob"						"0.4"		
+	"pm_walkbob"						"0.25"		
+	"pm_runbob"							"0.37"		
+	"pm_modelview"						"0"
+
+	"pain_delay"						"0.4"
+	"respawn_delay"						"2"
+
+	//"model"							"model_player"
+
+	//"bone_focus"						"neck"
+	//"bone_hips"						"Legs"
+	//"bone_chest"						"Torso"	
+	//"bone_head"						"Head"	
+
+	//"damage_zone head"				"*neck"
+	//"damage_zone chest"				//"*chest -*neck *Luparm *Ruparm"
+	//"damage_zone left_arm"			"*Luparm"
+	//"damage_zone right_arm"			"*Ruparm"
+	//"damage_zone legs"				//"*origin -*spine"
+	//"damage_scale head"				"1.25"
+
+	"snd_stepladder"					"no_sound"
+	"snd_weapon_switch"					"no_sound"
+	"snd_footstep"						"player_sounds_footstep"
+	"snd_footstep_flesh"				"player_footstep_flesh"
+	"snd_footstep_metal"				"player_footstep_metal"
+	"snd_footstep_ricochet"				"player_footstep_metal2"
+	"snd_footstep_pipe"					"player_footstep_metal"
+	"snd_footstep_wood"					"player_footstep_wood"
+	"snd_footstep_stone"				"player_footstep_stone"
+	"snd_footstep_tile"					"player_footstep_tile"
+	"snd_footstep_glass"				"player_footstep_glass"
+	"snd_footstep_cardboard"			"player_footstep_wood"
+	"snd_footstep_liquid"				"player_footstep_liquid"
+	"snd_death"							"no_sound"
+	"snd_fall"							"no_sound"
+	"snd_pain_small"					"no_sound"
+	"snd_pain_medium"					"no_sound"
+	"snd_pain_large"					"no_sound"
+	"snd_pain_huge"						"no_sound"
+	"snd_land_soft"						"no_sound"
+	"snd_land_hard"						"no_sound"
+	"snd_objectiveup"					"no_sound"
+	"snd_objectivedown"					"no_sound"
+	"snd_doublevision"					"no_sound"
+	"snd_thud"							"no_sound"
+	"snd_heartbeat"						"no_sound"
+	"snd_heartbeat_dying"				"no_sound"
+	"snd_skipcinematic"					"no_sound"
+	"snd_guienter"						"no_sound"
+	"snd_guiexit"						"no_sound"
+	"snd_soulcube_ready"				"no_sound"
+	"snd_healthpulse"					"no_sound"
+	"snd_hitArmor"						"no_sound"
+	"snd_hitFlesh"						"no_sound"
+	"snd_airGasp"						"no_sound"
+	"snd_noAir"							"no_sound"
+	"snd_berserk_third"					"no_sound"
+	"snd_teleport_exit"					"no_sound"
+	"snd_teleport_start"				"no_sound"
+	"snd_burn"							"no_sound"
+	"snd_invisibility"					"no_sound"
+	"snd_megahealth"					"no_sound"
+	"snd_healthtake"					"no_sound"
+}
+
+entityDef player_sp 
+{
+	"inherit"							"player_base"
+	//"model"							"model_player"
+	"snd_decompress"					"no_sound"
+	"snd_recompress"					"no_sound"
+	"snd_airless"						"no_sound"
+	"text_infoTitle"					"#str_info"
+}

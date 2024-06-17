@@ -34,8 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "../comafx/DialogName.h"
 #include "../comafx/VectorCtl.h"
 #include "../comafx/DialogColorPicker.h"
-#include "../radiant/GLWidget.h"
-#include "../radiant/PreviewDlg.h"
+#include "../common/GLWidget.h"
 
 #include "DialogParticleEditor.h"
 
@@ -200,6 +199,7 @@ ParticleEditorShutdown
 void ParticleEditorShutdown( void ) {
 	delete g_ParticleDialog;
 	g_ParticleDialog = NULL;
+	com_editors &= ~EDITOR_PARTICLE;
 }
 
 
@@ -438,6 +438,7 @@ void CDialogParticleEditor::OnBnClickedButtonRemovestage() {
 }
 
 void CDialogParticleEditor::OnBnClickedButtonBrowsematerial() {
+	/*
 	CPreviewDlg matDlg( this );
 	matDlg.SetMode(CPreviewDlg::MATERIALS, "particles" );
 	matDlg.SetDisablePreview( true );
@@ -446,6 +447,7 @@ void CDialogParticleEditor::OnBnClickedButtonBrowsematerial() {
 		DlgVarsToCurStage();
 		CurStageToDlgVars();
 	}
+	*/
 }
 
 void CDialogParticleEditor::OnBnClickedButtonBrowsecolor() {
@@ -459,7 +461,7 @@ void CDialogParticleEditor::OnBnClickedButtonBrowsecolor() {
 	g = ps->color.y * 255.0f;
 	b = ps->color.z * 255.0f;
 	ob = 1.0f;
-	if ( DoNewColor( &r, &g, &b, &ob ) ) {
+	if ( DoColor( &r, &g, &b, &ob ) ) {
 		color.Format( "%f %f %f %f", (float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f );
 		DlgVarsToCurStage();
 		CurStageToDlgVars();
@@ -484,7 +486,7 @@ void CDialogParticleEditor::OnBnClickedButtonBrowseEntitycolor() {
 			g = clr.y * 255.0f;
 			b = clr.z * 255.0f;
 			ob = 1.0f;
-			if ( DoNewColor( &r, &g, &b, &ob ) ) {
+			if ( DoColor( &r, &g, &b, &ob ) ) {
 				for ( int i = 0; i < count; i++ ) {
 					dict = gameEdit->EntityGetSpawnArgs( list[i] );
 					const char *name = dict->GetString( "name" );
@@ -519,7 +521,7 @@ void CDialogParticleEditor::OnBnClickedButtonBrowsefadecolor() {
 	g = ps->fadeColor.y * 255.0f;
 	b = ps->fadeColor.z * 255.0f;
 	ob = 1.0f;
-	if ( DoNewColor( &r, &g, &b, &ob ) ) {
+	if ( DoColor( &r, &g, &b, &ob ) ) {
 		fadeColor.Format( "%f %f %f %f", (float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f );
 		DlgVarsToCurStage();
 		CurStageToDlgVars();

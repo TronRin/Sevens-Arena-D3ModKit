@@ -3,6 +3,6 @@
 
 # globs all the headers from ${PATHPREFIX}/ and adds them to ${SRCLIST}
 function( add_globbed_headers SRCLIST PATHPREFIX )
-	file( GLOB_RECURSE tmp_hdrs RELATIVE "${CMAKE_SOURCE_DIR}" "${PATHPREFIX}/*.h" )
+	file( GLOB tmp_hdrs "${CMAKE_SOURCE_DIR}/${PATHPREFIX}/*.h" )
 	set( ${SRCLIST} ${tmp_hdrs} ${${SRCLIST}} PARENT_SCOPE )
 endfunction()

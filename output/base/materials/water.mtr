@@ -1,0 +1,148 @@
+// Clear water
+textures/liquids/water_clear
+{
+	discrete
+	noSelfShadow
+	nonSolid
+	twosided
+	translucent
+	noshadows
+	forceoverlays
+	sort decal
+	water
+	
+	//deform turbulent sinTable 0.0175 (time*0.15) 10
+	qer_editorimage textures/liquids/water_clear_d
+
+	{
+		//vertexProgram			heatHazeWithMask.vfp
+		vertexProgram			heatHazeWithMaskAndVertex.vfp
+		vertexParm              0       time * 0.1 , time * 0.5				// texture scrolling
+		vertexParm              1       1.5									// magnitude of the distortion
+
+		//fragmentProgram		heatHazeWithMask.vfp
+		fragmentProgram			heatHazeWithMaskAndVertex.vfp
+		fragmentMap             0       _currentRender
+		fragmentMap             1       textures/liquids/water_clear_local					// the normal map for distortion
+		fragmentMap 			2		textures/liquids/water_clear_d
+    }
+	/*
+	{	
+		maskcolor				
+	    map	makealpha(textures/sfx/vp1)
+	}
+	*/
+	{
+		blend				gl_dst_alpha, gl_one
+	    maskalpha
+       	cameraCubeMap		env/cloudy
+        texgen				reflect
+	}
+	{
+		blend				blend
+		map					textures/liquids/water_clear_d
+		translate			time*.0,time*-.01	
+		alpha				0.8
+	}
+
+
+	specularmap textures/liquids/water_clear_spec
+}
+
+// Toxin water
+textures/liquids/water_dirt
+{
+	discrete
+	noSelfShadow
+	nonSolid
+	twosided
+	translucent
+	noshadows
+	forceoverlays
+	sort decal
+	water
+	
+	//deform turbulent sinTable 0.0175 (time*0.15) 10
+	qer_editorimage textures/liquids/water_dirt_d
+
+	{
+		//vertexProgram			heatHazeWithMask.vfp
+		vertexProgram			heatHazeWithMaskAndVertex.vfp
+		vertexParm              0       time * 0.1 , time * 0.5				// texture scrolling
+		vertexParm              1       1.5									// magnitude of the distortion
+
+		//fragmentProgram		heatHazeWithMask.vfp
+		fragmentProgram			heatHazeWithMaskAndVertex.vfp
+		fragmentMap             0       _currentRender
+		fragmentMap             1       textures/liquids/water_dirt_local					// the normal map for distortion
+		fragmentMap 			2		textures/liquids/water_dirt_d
+    }
+	/*
+	{	
+		maskcolor				
+	    map	makealpha(textures/sfx/vp1)
+	}
+	*/
+	{
+		blend				gl_dst_alpha, gl_one
+	    maskalpha
+       	cameraCubeMap		env/cloudy
+        texgen				reflect
+	}
+	{
+		blend				blend
+		map					textures/liquids/water_dirt_d
+		translate			time*.0,time*-.01	
+		alpha				0.8
+	}
+
+
+	specularmap textures/liquids/water_dirt_spec
+}
+
+// Lava
+textures/liquids/lava_rocky
+{
+	discrete
+	noSelfShadow
+	nonSolid
+	twosided
+	//translucent
+	noshadows
+	forceoverlays
+	sort decal
+	water
+	
+	//deform turbulent sinTable 0.0175 (time*0.15) 10
+	qer_editorimage textures/liquids/lava_rock_d
+	
+	diffusemap textures/liquids/lava_rock_d
+
+	{
+		blend				add
+		map					textures/liquids/lava_rock_e
+		shear				time*.0,time*-.02
+		rgb					0.6
+	}
+
+	bumpmap textures/liquids/lava_rock_local
+}
+
+textures/liquids/lava_liquid
+{
+	discrete
+	noSelfShadow
+	nonSolid
+	twosided
+	//translucent
+	noshadows
+	forceoverlays
+	sort decal
+	water
+	
+	//deform turbulent sinTable 0.0175 (time*0.15) 10
+	qer_editorimage textures/liquids/lava_liquid_d
+	
+	diffusemap textures/liquids/lava_liquid_d
+	bumpmap textures/liquids/lava_liquid_local
+}

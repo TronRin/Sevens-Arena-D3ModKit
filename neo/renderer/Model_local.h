@@ -92,7 +92,6 @@ public:
 
 	bool						LoadASE( const char *fileName );
 	bool						LoadLWO( const char *fileName );
-	bool						LoadFLT( const char *fileName );
 	bool						LoadMA( const char *filename );
 	bool						LoadOBJ( const char *filename );
 

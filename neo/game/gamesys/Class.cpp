@@ -974,6 +974,15 @@ bool idClass::ProcessEventArgPtr( const idEventDef *ev, intptr_t *data ) {
 	assert( ev );
 	assert( idEvent::initialized );
 
+#ifdef _D3XP
+	SetTimeState ts;
+
+	if ( IsType( idEntity::GetClassType() ) ) {
+		idEntity *ent = (idEntity*)this;
+		ts.PushState( ent->timeGroup );
+	}
+#endif
+
 	// jnewquist: Use accessor for static class type
 	if ( g_debugTriggers.GetBool() && ( ev == &EV_Activate ) && IsType( idEntity::GetClassType() ) ) {
 		const idEntity *ent = *reinterpret_cast<idEntity **>( data );

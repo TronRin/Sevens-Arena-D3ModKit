@@ -104,8 +104,6 @@
 #include "idlib/Timer.h"
 
 // framework
-#include "framework/BuildVersion.h"
-#include "framework/Licensee.h"
 #include "framework/CmdSystem.h"
 #include "framework/CVarSystem.h"
 #include "framework/Common.h"
@@ -121,7 +119,6 @@
 #include "framework/DeclFX.h"
 #include "framework/DeclParticle.h"
 #include "framework/DeclAF.h"
-#include "framework/DeclPDA.h"
 
 // We have expression parsing and evaluation code in multiple places:
 // materials, sound shaders, and guis. We should unify them.
@@ -156,8 +153,6 @@
 #include "framework/Game.h"
 
 //-----------------------------------------------------
-
-#include "framework/DemoChecksum.h"
 
 // framework
 #include "framework/Compressor.h"

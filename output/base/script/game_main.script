@@ -1,0 +1,18 @@
+#include "script/entity_physics.script"
+
+#include "script/game_defs.script"
+#include "script/game_events.script"
+#include "script/player.script"
+
+#include "script/weapon_base.script"
+#include "script/weapon_unarmed.script"
+
+void main() {
+	sys.print( "Entering main()\n");
+
+	//
+	// Do any script setup here
+	//
+	
+	sys.print( "Exiting main()\n" );
+}

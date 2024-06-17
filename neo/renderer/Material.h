@@ -44,7 +44,6 @@ If you have questions concerning this license or the applicable additional terms
 class idImage;
 class idCinematic;
 class idUserInterface;
-class idMegaTexture;
 
 // moved from image.h for default parm
 typedef enum {
@@ -200,8 +199,6 @@ typedef struct {
 	int					fragmentProgram;
 	int					numFragmentProgramImages;
 	idImage *			fragmentProgramImages[MAX_FRAGMENT_IMAGES];
-
-	idMegaTexture		*megaTexture;		// handles all the binding and parameter setting
 } newShaderStage_t;
 
 typedef struct {
@@ -269,7 +266,6 @@ typedef enum {
 	MF_FORCESHADOWS				= BIT(3),
 	MF_NOSELFSHADOW				= BIT(4),
 	MF_NOPORTALFOG				= BIT(5),	// this fog volume won't ever consider a portal fogged out
-	MF_EDITOR_VISIBLE			= BIT(6)	// in use (visible) per editor
 } materialFlags_t;
 
 // contents flags, NOTE: make sure to keep the defines in doom_defs.script up to date with these!
@@ -293,7 +289,7 @@ typedef enum {
 
 	// contents used by utils
 	CONTENTS_AREAPORTAL			= BIT(20),	// portal separating renderer areas
-	CONTENTS_NOCSG				= BIT(21),	// don't cut this brush with CSG operations in the editor
+	CONTENTS_NOCSG				= BIT(21),	// don't cut this brush with CSG operations
 
 	CONTENTS_REMOVE_UTIL		= ~(CONTENTS_AREAPORTAL|CONTENTS_NOCSG)
 } contentsFlags_t;
@@ -337,7 +333,7 @@ typedef enum {
 	SURF_NOSTEPS				= BIT(9),	// no footstep sounds
 	SURF_DISCRETE				= BIT(10),	// not clipped or merged by utilities
 	SURF_NOFRAGMENT				= BIT(11),	// dmap won't cut surface at each bsp boundary
-	SURF_NULLNORMAL				= BIT(12)	// renderbump will draw this surface as 0x80 0x80 0x80, which
+	SURF_NULLNORMAL				= BIT(12)	// normals will draw this surface as 0x80 0x80 0x80, which
 											// won't collect light from any angle
 } surfaceFlags_t;
 
@@ -415,17 +411,10 @@ public:
 						// with apropriate order reversal.
 	bool				ShouldCreateBackSides( void ) const { return shouldCreateBackSides; }
 
-						// characters and models that are created by a complete renderbump can use a faster
+						// characters and models that has already baked normals can use a faster
 						// method of tangent and normal vector generation than surfaces which have a flat
-						// renderbump wrapped over them.
+						// normal wrapped over them.
 	bool				UseUnsmoothedTangents( void ) const { return unsmoothedTangents; }
-
-	// RBMIKKT_TANGENT...
-	// characters and models that baked in Blender or Substance designer use the newer
-	// Mikkelsen tangent space standard.
-	// see: https://bgolus.medium.com/generating-perfect-normal-maps-for-unity-f929e673fc57
-	bool				UseMikkTSpace() const { return mikktspace; }
-	// ...RBMIKKT_TANGENT
 
 						// by default, monsters can have blood overlays placed on them, but this can
 						// be overrided on a per-material basis with the "noOverlays" material command.
@@ -492,9 +481,6 @@ public:
 
 	//------------------------------------------------------------------
 
-						// returns the renderbump command line for this shader, or an empty string if not present
-	const char *		GetRenderBump() const { return renderBump; };
-
 						// set specific material flag(s)
 	void				SetMaterialFlag( const int flag ) const { materialFlags |= flag; }
 
@@ -541,8 +527,6 @@ public:
 						// get cull type
 	const cullType_t	GetCullType( void ) const { return cullType; }
 
-	float				GetEditorAlpha( void ) const { return editorAlpha; }
-
 	int					GetEntityGui( void ) const { return entityGui; }
 
 	decalInfo_t			GetDecalInfo( void ) const { return decalInfo; }
@@ -570,8 +554,6 @@ public:
 
 	//------------------------------------------------------------------
 
-						// gets an image for the editor to use
-	idImage *			GetEditorImage( void ) const;
 	int					GetImageWidth( void ) const;
 	int					GetImageHeight( void ) const;
 
@@ -629,7 +611,6 @@ private:
 
 private:
 	idStr				desc;				// description
-	idStr				renderBump;			// renderbump command options, without the "renderbump" at the start
 
 	idImage	*			lightFalloffImage;
 
@@ -665,7 +646,6 @@ private:
 	bool				blendLight;
 	bool				ambientLight;
 	bool				unsmoothedTangents;
-	bool				mikktspace;			 // RBMIKKT_TANGENT use Mikkelsen tangent space standard for normal mapping
 	bool				hasSubview;			// mirror, remote render, etc
 	bool				allowOverlays;
 
@@ -685,13 +665,6 @@ private:
 	struct mtrParsingData_s	*pd;			// only used during parsing
 
 	float				surfaceArea;		// only for listSurfaceAreas
-
-	// we defer loading of the editor image until it is asked for, so the game doesn't load up
-	// all the invisible and uncompressed images.
-	// If editorImage is NULL, it will atempt to load editorImageName, and set editorImage to that or defaultImage
-	idStr				editorImageName;
-	mutable idImage *	editorImage;		// image used for non-shaded preview
-	float				editorAlpha;
 
 	bool				suppressInSubview;
 	bool				portalSky;

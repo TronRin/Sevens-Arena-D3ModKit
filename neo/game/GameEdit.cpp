@@ -595,6 +595,9 @@ void idEditEntities::DisplayEntities( void ) {
 	viewBounds.ExpandSelf( 512 );
 	viewTextBounds.ExpandSelf( 128 );
 
+	cvarSystem->SetCVarInteger( "r_singleLight", -1 );
+	cvarSystem->SetCVarInteger( "r_showLights", 0 );
+
 	idStr textKey;
 
 	for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
@@ -622,6 +625,41 @@ void idEditEntities::DisplayEntities( void ) {
 		} else if ( ent->GetType() == &idFuncEmitter::GetClassType() ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
+			}
+		} else if ( ent->GetType() == &idLight::Type ) {
+			// RB: use renderer backend to display light properties
+			if ( ent->fl.selected ) {
+				drawArrows = true;
+
+				idLight* light = static_cast<idLight*>( ent );
+
+				cvarSystem->SetCVarInteger( "r_singleLight", light->GetLightDefHandle() );
+				cvarSystem->SetCVarInteger( "r_showLights", 3 );
+
+				renderLight_t renderLight = light->GetRenderLight();
+
+				// draw arrow from entity origin to globalLightOrigin
+
+				idVec3 globalLightOrigin;
+				if ( renderLight.parallel ) {
+					idVec3 dir = renderLight.lightCenter;
+					if ( dir.Normalize() == 0.0f ) {
+						// make point straight up if not specified
+						dir[2] = 1.0f;
+					}
+					globalLightOrigin = renderLight.origin + dir * 100000.0f;
+				} else {
+					globalLightOrigin = renderLight.origin + renderLight.axis * renderLight.lightCenter;
+				}
+
+				idVec3 start = ent->GetPhysics()->GetOrigin();
+				idVec3 end = globalLightOrigin;
+
+				gameRenderWorld->DebugArrow( colorYellow, start, end, 2 );
+
+				if ( !renderLight.parallel ) {
+					gameRenderWorld->DrawText( "globalLightOrigin", end + idVec3( 4, 0, 0 ), 0.15f, colorYellow, axis );
+				}
 			}
 		}
 

@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include <SDL.h>
 
 #include "sys/platform.h"
-#include "framework/Licensee.h"
 
 #include "renderer/tr_local.h"
 
@@ -306,7 +305,7 @@ try_again:
 		}
 #endif
 
-		window = SDL_CreateWindow(ENGINE_VERSION,
+		window = SDL_CreateWindow(	BUILD_ENGINE_VERSION,
 									SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayIndex),
 									SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayIndex),
 									parms.width, parms.height, flags);

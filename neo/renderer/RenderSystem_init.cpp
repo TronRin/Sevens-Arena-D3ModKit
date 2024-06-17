@@ -28,7 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "sys/platform.h"
 #include "idlib/LangDict.h"
-#include "framework/Licensee.h"
 #include "framework/Console.h"
 #include "framework/Session.h"
 #include "renderer/VertexCache.h"
@@ -261,7 +260,7 @@ idCVar r_materialOverride( "r_materialOverride", "", CVAR_RENDERER, "overrides a
 idCVar r_debugRenderToTexture( "r_debugRenderToTexture", "0", CVAR_RENDERER | CVAR_INTEGER, "" );
 
 // DG: let users disable the "scale menus to 4:3" hack
-idCVar r_scaleMenusTo43( "r_scaleMenusTo43", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Scale menus, fullscreen videos and PDA to 4:3 aspect ratio" );
+idCVar r_scaleMenusTo43( "r_scaleMenusTo43", "0", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Scale menus, fullscreen videos and PDA to 4:3 aspect ratio" );
 // DG: the fscking patent has finally expired
 idCVar r_useCarmacksReverse( "r_useCarmacksReverse", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Use Z-Fail (Carmack's Reverse) when rendering shadows" );
 idCVar r_useStencilOpSeparate( "r_useStencilOpSeparate", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Use glStencilOpSeparate() (if available) when rendering shadows" );
@@ -503,7 +502,7 @@ static void R_CheckPortableExtensions( void ) {
 	// check for minimum set
 	if ( !glConfig.multitextureAvailable || !glConfig.textureEnvCombineAvailable || !glConfig.cubeMapAvailable
 		|| !glConfig.envDot3Available ) {
-			common->Error( "%s", common->GetLanguageDict()->GetString( "#str_06780" ) );
+			common->Error( "%s", common->GetLanguageDict()->GetString( "#str_hardware_not_supported" ) );
 	}
 
 	// GL_EXT_depth_bounds_test
@@ -812,7 +811,7 @@ void R_InitOpenGL( void ) {
 				cmdSystem->BufferCommandText( CMD_EXEC_NOW, "vid_restart partial windowed\n" );
 				Sys_GrabMouseCursor( false );
 			}
-			int ret = MessageBox( NULL, "Please install OpenGL drivers from your graphics hardware vendor to run " GAME_NAME ".\nYour OpenGL functionality is limited.",
+			int ret = MessageBox( NULL, "Please install OpenGL drivers from your graphics hardware vendor to run " BUILD_NAME ".\nYour OpenGL functionality is limited.",
 				"Insufficient OpenGL capabilities", MB_OKCANCEL | MB_ICONWARNING | MB_TASKMODAL );
 			if ( ret == IDCANCEL ) {
 				cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "quit\n" );
@@ -2159,7 +2158,6 @@ R_InitCommands
 =================
 */
 void R_InitCommands( void ) {
-	cmdSystem->AddCommand( "MakeMegaTexture", idMegaTexture::MakeMegaTexture_f, CMD_FL_RENDERER|CMD_FL_CHEAT, "processes giant images" );
 	cmdSystem->AddCommand( "sizeUp", R_SizeUp_f, CMD_FL_RENDERER, "makes the rendered view larger" );
 	cmdSystem->AddCommand( "sizeDown", R_SizeDown_f, CMD_FL_RENDERER, "makes the rendered view smaller" );
 	cmdSystem->AddCommand( "reloadGuis", R_ReloadGuis_f, CMD_FL_RENDERER, "reloads guis" );

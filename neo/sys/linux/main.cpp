@@ -35,7 +35,6 @@ If you have questions concerning this license or the applicable additional terms
 #include <SDL_main.h>
 
 #include "sys/platform.h"
-#include "framework/Licensee.h"
 #include "framework/FileSystem.h"
 #include "sys/posix/posix_public.h"
 #include "sys/sys_local.h"
@@ -89,9 +88,9 @@ static void SetSavePath()
 {
 	const char* s = getenv("XDG_DATA_HOME");
 	if (s)
-		D3_snprintfC99(save_path, sizeof(save_path), "%s/dhewm3", s);
+		D3_snprintfC99(save_path, sizeof(save_path), "%s/%s", s, BUILD_NAME);
 	else
-		D3_snprintfC99(save_path, sizeof(save_path), "%s/.local/share/dhewm3", getenv("HOME"));
+		D3_snprintfC99(save_path, sizeof(save_path), "%s/.local/share/%s", getenv("HOME"), BUILD_NAME);
 }
 
 const char* Posix_GetExePath()
@@ -193,38 +192,22 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 
 	switch(type) {
 	case PATH_BASE:
-		if (stat(BUILD_DATADIR, &st) != -1 && S_ISDIR(st.st_mode)) {
+		if ( stat( BUILD_DATADIR, &st ) != -1 && S_ISDIR( st.st_mode ) ) {
 			path = BUILD_DATADIR;
 			return true;
 		}
 
-		common->Warning("base path '" BUILD_DATADIR "' does not exist");
+		common->Warning( "base path '" BUILD_DATADIR "' does not exist" );
 
 		// try next to the executable..
-		if (Sys_GetPath(PATH_EXE, path)) {
+		if ( Sys_GetPath( PATH_EXE, path ) ) {
 			path = path.StripFilename();
 			// the path should have a base dir in it, otherwise it probably just contains the executable
 			idStr testPath = path + "/" BASE_GAMEDIR;
-			if (stat(testPath.c_str(), &st) != -1 && S_ISDIR(st.st_mode)) {
-				common->Warning("using path of executable: %s", path.c_str());
+			if ( stat( testPath.c_str(), &st ) != -1 && S_ISDIR( st.st_mode ) ) {
+				common->Warning( "using path of executable: %s", path.c_str() );
 				return true;
-			} else {
-				idStr testPath = path + "/demo/demo00.pk4";
-				if(stat(testPath.c_str(), &st) != -1 && S_ISREG(st.st_mode)) {
-					common->Warning("using path of executable (seems to contain demo game data): %s", path.c_str());
-					return true;
-				} else {
-					path.Clear();
-				}
 			}
-		}
-
-		// fallback to vanilla doom3 install
-		if (stat(LINUX_DEFAULT_PATH, &st) != -1 && S_ISDIR(st.st_mode)) {
-			common->Warning("using hardcoded default base path: " LINUX_DEFAULT_PATH);
-
-			path = LINUX_DEFAULT_PATH;
-			return true;
 		}
 
 		return false;
@@ -232,9 +215,9 @@ bool Sys_GetPath(sysPath_t type, idStr &path) {
 	case PATH_CONFIG:
 		s = getenv("XDG_CONFIG_HOME");
 		if (s)
-			idStr::snPrintf(buf, sizeof(buf), "%s/dhewm3", s);
+			idStr::snPrintf(buf, sizeof(buf), "%s/%s", s, BUILD_NAME);
 		else
-			idStr::snPrintf(buf, sizeof(buf), "%s/.config/dhewm3", getenv("HOME"));
+			idStr::snPrintf(buf, sizeof(buf), "%s/.config/%s", getenv("HOME"), BUILD_NAME);
 
 		path = buf;
 		return true;
@@ -411,9 +394,9 @@ int main(int argc, char **argv) {
 	// Prevent running Doom 3 as root
 	// Borrowed from Yamagi Quake II
 	if (getuid() == 0) {
-		printf("Doom 3 shouldn't be run as root! Backing out to save your ass. If\n");
+		printf("You shouldn't be running this as root! Backing out to save your ass. If\n");
 		printf("you really know what you're doing, edit neo/sys/linux/main.cpp and remove\n");
-		printf("this check. But don't complain if an imp kills your bunny afterwards!:)\n");
+		printf("this check. But don't complain if shit breaks yo!:)\n");
 
 		return 1;
 	}

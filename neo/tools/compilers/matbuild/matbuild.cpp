@@ -78,7 +78,6 @@ void MatBuildDir_f( const idCmdArgs &args ) {
 		mtrBuffer += va( "\n" );
 		mtrBuffer += va( "textures/%s/%s\n", args.Argv( 1 ), imagepath.c_str() );
 		mtrBuffer += va( "{\n" );
-		mtrBuffer += va( "\tqer_editorimage textures/%s/%s_d.%s\n", args.Argv( 1 ), args.Argv( 2 ), imagepath.c_str() );
 		mtrBuffer += va( "\tdiffusemap textures/%s/%s_d\n", args.Argv( 1 ), imagepath.c_str() );
 		mtrBuffer += va( "\tbumpmap addnormals ( textures/%s/%s_local, heightmap ( textures/%s/%s_h, 4 ) )\n", args.Argv( 1 ), imagepath.c_str(),  args.Argv( 1 ), imagepath.c_str() );
 		mtrBuffer += va( "\tspecularmap textures/%s/%s_spec\n", args.Argv( 1 ), imagepath.c_str() );

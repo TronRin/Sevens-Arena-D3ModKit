@@ -35,8 +35,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "cm/CollisionModel.h"
 #include "framework/async/AsyncNetwork.h"
 #include "framework/async/NetworkSystem.h"
-#include "framework/BuildVersion.h"
-#include "framework/Licensee.h"
 #include "framework/Console.h"
 #include "framework/Session.h"
 #include "framework/Game.h"
@@ -53,7 +51,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/Common.h"
 
 #include "GameCallbacks_local.h"
-#include "Session_local.h" // DG: For FT_IsDemo/isDemo() hack
 
 #define	MAX_PRINT_MSG_SIZE	4096
 #define MAX_WARNING_LIST	256
@@ -74,9 +71,9 @@ typedef enum {
 struct version_s {
 	version_s( void ) {
 #ifdef _MSC_VER
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUILD_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, D3_ARCH, ID__DATE__, ID__TIME__ );
 #else
-		sprintf( string, "%s.%d%s %s-%s %s %s", ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
+		sprintf( string, "%s.%d%s %s-%s %s %s", BUILD_ENGINE_VERSION, BUILD_NUMBER, BUILD_DEBUG, BUILD_OS, BUILD_CPU, ID__DATE__, ID__TIME__ );
 #endif // _MSC_VER
 	}
 	char	string[256];
@@ -131,12 +128,6 @@ int				com_editors;			// currently opened editor(s)
 bool			com_editorActive;		//  true if an editor has focus
 
 bool			com_debuggerSupported;	// only set to true when the updateDebugger function is set. see GetAdditionalFunction()
-
-#ifdef _WIN32
-HWND			com_hwndMsg = NULL;
-bool			com_outputMsg = false;
-unsigned int	com_msgID = -1;
-#endif
 
 #ifdef __DOOM_DLL__
 idGame *		game = NULL;
@@ -194,7 +185,7 @@ public:
 	// and userArg = NULL to remove a callback manually (e.g. if userArg refers to an object you deleted)
 	virtual bool				SetCallback(idCommon::CallbackType cbt, idCommon::FunctionPointer cb, void* userArg);
 
-	// returns true if that function is available in this version of dhewm3
+	// returns true if that function is available in this version of the engine
 	// *out_fnptr will be the function (you'll have to cast it probably)
 	// *out_userArg will be an argument you have to pass to the function, if appropriate (else NULL)
 	// NOTE: this doesn't do anything yet, but allows to add ugly mod-specific hacks without breaking the Game interface
@@ -321,37 +312,6 @@ void idCommonLocal::EndRedirect( void ) {
 	rd_flush = NULL;
 }
 
-#ifdef _WIN32
-
-/*
-==================
-EnumWindowsProc
-==================
-*/
-BOOL CALLBACK EnumWindowsProc( HWND hwnd, LPARAM lParam ) {
-	char buff[1024];
-
-	::GetWindowText( hwnd, buff, sizeof( buff ) );
-	if ( idStr::Icmpn( buff, EDITOR_WINDOWTEXT, strlen( EDITOR_WINDOWTEXT ) ) == 0 ) {
-		com_hwndMsg = hwnd;
-		return FALSE;
-	}
-	return TRUE;
-}
-
-/*
-==================
-FindEditor
-==================
-*/
-bool FindEditor( void ) {
-	com_hwndMsg = NULL;
-	EnumWindows( EnumWindowsProc, 0 );
-	return !( com_hwndMsg == NULL );
-}
-
-#endif
-
 /*
 ==================
 idCommonLocal::SetRefreshOnPrint
@@ -440,25 +400,6 @@ void idCommonLocal::VPrintf( const char *fmt, va_list args ) {
 		// let session redraw the animated loading screen if necessary
 		session->PacifierUpdate();
 	}
-
-#ifdef _WIN32
-
-	if ( com_outputMsg ) {
-		if ( com_msgID == -1 ) {
-			com_msgID = ::RegisterWindowMessage( DMAP_MSGID );
-			if ( !FindEditor() ) {
-				com_outputMsg = false;
-			} else {
-				Sys_ShowWindow( false );
-			}
-		}
-		if ( com_hwndMsg ) {
-			ATOM atom = ::GlobalAddAtom( msg );
-			::PostMessage( com_hwndMsg, com_msgID, 0, static_cast<LPARAM>(atom) );
-		}
-	}
-
-#endif
 }
 
 /*
@@ -663,12 +604,6 @@ void idCommonLocal::Error( const char *fmt, ... ) {
 	// always turn this off after an error
 	com_refreshOnPrint = false;
 
-	// when we are running automated scripts, make sure we
-	// know if anything failed
-	if ( cvarSystem->GetCVarInteger( "fs_copyfiles" ) ) {
-		code = ERP_FATAL;
-	}
-
 	// if we don't have GL running, make it a fatal error
 	if ( !renderSystem->IsOpenGLRunning() ) {
 		code = ERP_FATAL;
@@ -794,14 +729,6 @@ idCommonLocal::Quit
 ==================
 */
 void idCommonLocal::Quit( void ) {
-
-#ifdef ID_ALLOW_TOOLS
-	if ( com_editors & EDITOR_RADIANT ) {
-		RadiantInit();
-		return;
-	}
-#endif
-
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		Shutdown();
@@ -889,31 +816,18 @@ bool idCommonLocal::SafeMode( void ) {
 ==================
 idCommonLocal::CheckToolMode
 
-Check for "renderbump", "dmap", or "editor" on the command line,
+Check for "dmap", or "editor" on the command line,
 and force fullscreen off in those cases
 ==================
 */
 void idCommonLocal::CheckToolMode( void ) {
-	int			i;
-
-	for ( i = 0 ; i < com_numConsoleLines ; i++ ) {
+	for ( int i = 0 ; i < com_numConsoleLines ; i++ ) {
 		if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" ) ) {
 			com_editors |= EDITOR_GUI;
 		}
 		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "debugger" ) ) {
 			com_editors |= EDITOR_DEBUGGER;
-		}
-		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "editor" ) ) {
-			com_editors |= EDITOR_RADIANT;
-		}
-		// Nerve: Add support for the material editor
-		else if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "materialEditor" ) ) {
-			com_editors |= EDITOR_MATERIAL;
-		}
-
-		if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "renderbump" )
-			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "editor" )
-			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" )
+		} if ( !idStr::Icmp( com_consoleLines[ i ].Argv(0), "guieditor" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "debugger" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "dmap" )
 			|| !idStr::Icmp( com_consoleLines[ i ].Argv(0), "materialEditor" )
@@ -1107,7 +1021,6 @@ void idCommonLocal::WriteConfiguration( void ) {
 	com_developer.SetBool( false );
 
 	WriteConfigToFile( CONFIG_FILE );
-	session->WriteCDKey( );
 
 	// restore the developer cvar
 	com_developer.SetBool( developer );
@@ -1157,17 +1070,6 @@ int	idCommonLocal::KeyState( int key ) {
 
 #ifdef ID_ALLOW_TOOLS
 /*
-==================
-Com_Editor_f
-
-  we can start the editor dynamically, but we won't ever get back
-==================
-*/
-static void Com_Editor_f( const idCmdArgs &args ) {
-	RadiantInit();
-}
-
-/*
 =============
 Com_ScriptDebugger_f
 =============
@@ -1192,18 +1094,9 @@ Com_EditGUIs_f
 =============
 */
 static void Com_EditGUIs_f( const idCmdArgs &args ) {
-	GUIEditorInit();
-}
-
-/*
-=============
-Com_MaterialEditor_f
-=============
-*/
-static void Com_MaterialEditor_f( const idCmdArgs &args ) {
 	// Turn off sounds
 	soundSystem->SetMute( true );
-	MaterialEditorInit();
+	GUIEditorInit();
 }
 #endif // ID_ALLOW_TOOLS
 
@@ -1304,17 +1197,9 @@ Com_EditScripts_f
 static void Com_EditScripts_f( const idCmdArgs &args ) {
 	ScriptEditorInit( NULL );
 }
-
-/*
-==================
-Com_EditPDAs_f
-==================
-*/
-static void Com_EditPDAs_f( const idCmdArgs &args ) {
-	PDAEditorInit( NULL );
-}
 #endif // ID_ALLOW_TOOLS
 
+#ifdef _DEBUG
 /*
 ==================
 Com_Error_f
@@ -1387,6 +1272,7 @@ static void Com_Crash_f( const idCmdArgs &args ) {
 	* ( int * ) 0 = 0x12345678;
 #endif
 }
+#endif
 
 /*
 =================
@@ -2320,9 +2206,11 @@ idCommonLocal::InitCommands
 =================
 */
 void idCommonLocal::InitCommands( void ) {
+#ifdef _DEBUG
 	cmdSystem->AddCommand( "error", Com_Error_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes an error" );
 	cmdSystem->AddCommand( "crash", Com_Crash_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes a crash" );
 	cmdSystem->AddCommand( "freeze", Com_Freeze_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "freezes the game for a number of seconds" );
+#endif
 	cmdSystem->AddCommand( "quit", Com_Quit_f, CMD_FL_SYSTEM, "quits the game" );
 	cmdSystem->AddCommand( "exit", Com_Quit_f, CMD_FL_SYSTEM, "exits the game" );
 	cmdSystem->AddCommand( "writeConfig", Com_WriteConfig_f, CMD_FL_SYSTEM, "writes a config file" );
@@ -2333,8 +2221,6 @@ void idCommonLocal::InitCommands( void ) {
 #if	!defined( ID_DEDICATED )
 	// compilers
 	cmdSystem->AddCommand( "dmap", Dmap_f, CMD_FL_TOOL, "compiles a map", idCmdSystem::ArgCompletion_MapName );
-	cmdSystem->AddCommand( "renderbump", RenderBump_f, CMD_FL_TOOL, "renders a bump map", idCmdSystem::ArgCompletion_ModelName );
-	cmdSystem->AddCommand( "renderbumpFlat", RenderBumpFlat_f, CMD_FL_TOOL, "renders a flat bump map", idCmdSystem::ArgCompletion_ModelName );
 	cmdSystem->AddCommand( "runAAS", RunAAS_f, CMD_FL_TOOL, "compiles an AAS file for a map", idCmdSystem::ArgCompletion_MapName );
 	cmdSystem->AddCommand( "runAASDir", RunAASDir_f, CMD_FL_TOOL, "compiles AAS files for all maps in a folder", idCmdSystem::ArgCompletion_MapName );
 	cmdSystem->AddCommand( "runReach", RunReach_f, CMD_FL_TOOL, "calculates reachability for an AAS file", idCmdSystem::ArgCompletion_MapName );
@@ -2344,7 +2230,6 @@ void idCommonLocal::InitCommands( void ) {
 
 #ifdef ID_ALLOW_TOOLS
 	// editors
-	cmdSystem->AddCommand( "editor", Com_Editor_f, CMD_FL_TOOL, "launches the level editor Radiant" );
 	cmdSystem->AddCommand( "editLights", Com_EditLights_f, CMD_FL_TOOL, "launches the in-game Light Editor" );
 	cmdSystem->AddCommand( "editSounds", Com_EditSounds_f, CMD_FL_TOOL, "launches the in-game Sound Editor" );
 	cmdSystem->AddCommand( "editDecls", Com_EditDecls_f, CMD_FL_TOOL, "launches the in-game Declaration Editor" );
@@ -2352,11 +2237,7 @@ void idCommonLocal::InitCommands( void ) {
 	cmdSystem->AddCommand( "editParticles", Com_EditParticles_f, CMD_FL_TOOL, "launches the in-game Particle Editor" );
 	cmdSystem->AddCommand( "editScripts", Com_EditScripts_f, CMD_FL_TOOL, "launches the in-game Script Editor" );
 	cmdSystem->AddCommand( "editGUIs", Com_EditGUIs_f, CMD_FL_TOOL, "launches the GUI Editor" );
-	cmdSystem->AddCommand( "editPDAs", Com_EditPDAs_f, CMD_FL_TOOL, "launches the in-game PDA Editor" );
 	cmdSystem->AddCommand( "debugger", Com_ScriptDebugger_f, CMD_FL_TOOL, "launches the Script Debugger" );
-
-	//BSM Nerve: Add support for the material editor
-	cmdSystem->AddCommand( "materialEditor", Com_MaterialEditor_f, CMD_FL_TOOL, "launches the Material Editor" );
 #endif
 
 	cmdSystem->AddCommand( "printMemInfo", PrintMemInfo_f, CMD_FL_SYSTEM, "prints memory debugging data" );
@@ -2399,7 +2280,7 @@ void idCommonLocal::InitRenderSystem( void ) {
 	}
 
 	renderSystem->InitOpenGL();
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04343" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading" ) );
 }
 
 /*
@@ -2424,7 +2305,7 @@ idCommonLocal::InitSIMD
 =================
 */
 void idCommonLocal::InitSIMD( void ) {
-	idSIMD::InitProcessor( "doom", com_forceGenericSIMD.GetBool() );
+	idSIMD::InitProcessor( "engine", com_forceGenericSIMD.GetBool() );
 	com_forceGenericSIMD.ClearModified();
 }
 
@@ -2836,7 +2717,7 @@ static bool checkForHelp(int argc, char **argv)
 				// write it to stdout
 				#define WriteString(s) fputs(s, stdout);
 #endif // _WIN32
-				WriteString(ENGINE_VERSION " - http://dhewm3.org\n");
+				WriteString(BUILD_ENGINE_VERSION " - " BUILD_URL "\n");
 				WriteString("Commandline arguments:\n");
 				WriteString("-h or --help: Show this help\n");
 				WriteString("+<command> [command arguments]\n");
@@ -2844,15 +2725,15 @@ static bool checkForHelp(int argc, char **argv)
 
 				WriteString("\nSome interesting commands:\n");
 				WriteString("+map <map>\n");
-				WriteString("  directly loads the given level, e.g. +map game/hell1\n");
+				WriteString("  directly loads the given level, e.g. +map game/mymap\n");
 				WriteString("+exec <config>\n");
 				WriteString("  execute the given config (mainly relevant for dedicated servers)\n");
 				WriteString("+disconnect\n");
 				WriteString("  starts the game, goes directly into main menu without showing\n  logo video\n");
 				WriteString("+connect <host>[:port]\n");
 				WriteString("  directly connect to multiplayer server at given host/port\n");
-				WriteString("  e.g. +connect d3.example.com\n");
-				WriteString("  e.g. +connect d3.example.com:27667\n");
+				WriteString("  e.g. +connect example.com\n");
+				WriteString("  e.g. +connect example.com:27667\n");
 				WriteString("  e.g. +connect 192.168.0.42:27666\n");
 				WriteString("+set <cvarname> <value>\n");
 				WriteString("  Set the given cvar to the given value, e.g. +set r_fullscreen 0\n");
@@ -2861,9 +2742,9 @@ static bool checkForHelp(int argc, char **argv)
 
 				WriteString("\nSome interesting cvars:\n");
 				WriteString("+set fs_basepath <gamedata path>\n");
-				WriteString("  set path to your Doom3 game data (the directory base/ is in)\n");
+				WriteString("  set path to your Base game data (the directory " BASE_GAMEDIR "/ is in)\n");
 				WriteString("+set fs_game <modname>\n");
-				WriteString("  start the given addon/mod, e.g. +set fs_game d3xp\n");
+				WriteString("  start the given addon/mod, e.g. +set fs_game myaddon\n");
 #ifndef ID_DEDICATED
 				WriteString("+set r_fullscreen <0 or 1>\n");
 				WriteString("  start game in windowed (0) or fullscreen (1) mode\n");
@@ -2875,8 +2756,6 @@ static bool checkForHelp(int argc, char **argv)
 				WriteString("  if r_mode is set to -1, these cvars allow you to specify the\n");
 				WriteString("  width/height of your custom resolution\n");
 #endif // !ID_DEDICATED
-				WriteString("\nSee https://modwiki.dhewm3.org/CVars_%28Doom_3%29 for more cvars\n");
-				WriteString("See https://modwiki.dhewm3.org/Commands_%28Doom_3%29 for more commands\n");
 
 				#undef WriteString
 
@@ -2995,7 +2874,7 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		idLib::Init();
 
 		// clear warning buffer
-		ClearWarnings( GAME_NAME " initialization" );
+		ClearWarnings( BUILD_NAME " initialization" );
 
 		// parse command line options
 		ParseCommandLine( argc, argv );
@@ -3057,12 +2936,8 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		// game specific initialization
 		InitGame();
 
-		// don't add startup commands if no CD key is present
-#if ID_ENFORCE_KEY
-		if ( !session->CDKeysAreValid( false ) || !AddStartupCommands() ) {
-#else
+		// add startup commands eg: game.exe +r_fullscreen 0
 		if ( !AddStartupCommands() ) {
-#endif
 			// if the user didn't give any commands, run default action
 			session->StartMenu( true );
 		}
@@ -3132,15 +3007,17 @@ void idCommonLocal::Shutdown( void ) {
 #endif
 
 	// free any buffered warning messages
-	ClearWarnings( GAME_NAME " shutdown" );
+	ClearWarnings( BUILD_NAME " shutdown" );
 	warningCaption.Clear();
 	errorList.Clear();
 
 	// free language dictionary
 	languageDict.Clear();
 
+#ifdef ID_DEBUG_MEMORY
 	// enable leak test
-	Mem_EnableLeakTest( "doom" );
+	Mem_EnableLeakTest( "engine" );
+#endif
 
 	// shutdown idLib
 	idLib::ShutDown();
@@ -3186,7 +3063,7 @@ void idCommonLocal::InitGame( void ) {
 	// initialize string database right off so we can use it for loading messages
 	InitLanguageDict();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04344" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_events" ) );
 
 	// load the font, etc
 	console->LoadGraphics();
@@ -3194,10 +3071,9 @@ void idCommonLocal::InitGame( void ) {
 	// init journalling, etc
 	eventLoop->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04345" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_commands" ) );
 
 	// exec the startup scripts
-	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec editor.cfg\n" );
 	cmdSystem->BufferCommandText( CMD_EXEC_APPEND, "exec default.cfg\n" );
 
 	// skip the config file if "safe" is on the command line
@@ -3221,12 +3097,12 @@ void idCommonLocal::InitGame( void ) {
 	// init the user command input code
 	usercmdGen->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04346" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_sound" ) );
 
 	// start the sound system, but don't do any hardware operations yet
 	soundSystem->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04347" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_network" ) );
 
 	// init async network
 	idAsyncNetwork::Init();
@@ -3240,17 +3116,17 @@ void idCommonLocal::InitGame( void ) {
 		cvarSystem->SetCVarBool( "s_noSound", true );
 	} else {
 		// init OpenGL, which will open a window and connect sound and input hardware
-		PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04348" ) );
+		PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_render" ) );
 		InitRenderSystem();
 	}
 #endif
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04349" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_ui" ) );
 
 	// initialize the user interfaces
 	uiManager->Init();
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04350" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_game" ) );
 
 	// load the game dll
 	LoadGameDLL();
@@ -3259,7 +3135,7 @@ void idCommonLocal::InitGame( void ) {
 	if ( com_enableDebuggerServer.GetBool( ) )
 		DebuggerServerInit( );
 
-	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_04351" ) );
+	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_menu" ) );
 
 	// init the session
 	session->Init();
@@ -3381,11 +3257,6 @@ bool idCommonLocal::SetCallback(idCommon::CallbackType cbt, idCommon::FunctionPo
 	}
 }
 
-static bool isDemo( void )
-{
-	return sessLocal.IsDemoVersion();
-}
-
 static bool updateDebugger( idInterpreter *interpreter, idProgram *program, int instructionPointer )
 {
 	if (com_editors & EDITOR_DEBUGGER) 
@@ -3412,11 +3283,6 @@ bool idCommonLocal::GetAdditionalFunction(idCommon::FunctionType ft, idCommon::F
 
 	switch(ft)
 	{
-		case idCommon::FT_IsDemo:
-			*out_fnptr = (idCommon::FunctionPointer)isDemo;
-			// don't set *out_userArg, this function takes no arguments
-			return true;
-
 		case idCommon::FT_UpdateDebugger:
 			*out_fnptr = (idCommon::FunctionPointer)updateDebugger;
 			com_debuggerSupported = true;

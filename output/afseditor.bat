@@ -1,1 +1,1 @@
-start dhewm3.exe +editAFs
+start engine.exe +editAFs

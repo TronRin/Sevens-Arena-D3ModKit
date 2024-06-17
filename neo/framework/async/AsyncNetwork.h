@@ -34,7 +34,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "framework/async/AsyncClient.h"
 #include "framework/async/AsyncServer.h"
 #include "framework/Compressor.h"
-#include "framework/Licensee.h"
 #include "framework/CVarSystem.h"
 #include "framework/UsercmdGen.h"
 
@@ -166,9 +165,6 @@ public:
 	static idCVar			serverAllowServerMod;			// let a pure server start with a different game code than what is referenced in game code
 	static idCVar			idleServer;						// serverinfo reply, indicates all clients are idle
 	static idCVar			clientDownload;					// preferred download policy
-
-	// same message used for offline check and network reply
-	static void				BuildInvalidKeyMsg( idStr &msg, bool valid[ 2 ] );
 
 private:
 	static int				realTime;

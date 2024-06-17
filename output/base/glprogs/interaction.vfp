@@ -1,3 +1,26 @@
+# rebb's Doom3 Ambient Light Fix
+#
+# [ Cubemap Method ]
+# Suggestion by Orbweaver, based on Test-Implementation by Denton
+#
+# This is basically the default Doom3 interaction.vfp,
+# with some changes and additions that improve the way ambient lighting is handled in the Game.
+# I was wondering one day if the awful looks of the D3 ambient light can be helped, and after lots of experimentation and some luck,
+# it boiled down to very few additional Instructions that are needed.
+# This should make using Ambient Lights much more viable :).
+#
+# Huge thanks go out to the following people for testing and helping me find/squash some annoying bugs :
+#
+#    * New Horizon and the DarkMod Team
+#    * Neuling, chumbucket91, The Happy Friar, the TTLG and Doom3World Forums
+#
+# If you want to use it in your Mod, Map or some other way,
+# please remember to give credit ;).
+#
+# Should you find problems, or have suggestions/questions/etc, feel free to contact me.
+#
+# rebb /at/ trisoup /dot/ net
+
 !!ARBvp1.0 OPTION ARB_position_invariant ;
 
 # VPROG_INTERACTION
@@ -104,11 +127,12 @@ OPTION ARB_precision_hint_fastest;
 # env[0] is the diffuse modifier
 # env[1] is the specular modifier
 
-TEMP	light, color, R1, R2, localNormal, specular, lightDir, viewDir, lightDirRefl;
+TEMP	light, color, R1, R2, localNormal, specular, lightDir, viewDir, lightDirRefl, amb, ambR1, ambR2;
 
 PARAM	subOne = { -1.0, -1.0, -1.0, -1.0 };
 PARAM	scaleTwo = { 2.0, 2.0, 2.0, 2.0 };
 PARAM	consts = { 6.0, 12.0, 0.1, 0.0 };
+PARAM	cubeLookup = { 1.0, 1.0, 1.0 };
 
 # view dir normalized
 DP3		viewDir, fragment.texcoord[6], fragment.texcoord[6];
@@ -158,6 +182,14 @@ LRP light, 0.35, light, color;
 # modulate by the light projection
 TXP		R1, fragment.texcoord[3], texture[3], 2D;
 MUL		light, light, R1;
+
+# rebb > cubemap based ambient "detection"
+TEX	ambR1.x, cubeLookup, texture[0], CUBE;
+TEX	ambR2.x, -cubeLookup, texture[0], CUBE;
+SUB	amb.x, ambR2, ambR1;
+# super-simple ambient-shading ( localNormal.z ) being used here, modify as needed
+CMP light.xyz, amb.x, light, localNormal.z;
+#
 
 # modulate by the light falloff
 TXP		R1, fragment.texcoord[2], texture[2], 2D;

@@ -27,7 +27,6 @@ If you have questions concerning this license or the applicable additional terms
 */
 
 #include "sys/platform.h"
-#include "framework/BuildVersion.h"
 #include "framework/DeclSkin.h"
 #include "renderer/ModelManager.h"
 
@@ -548,6 +547,11 @@ void idSaveGame::WriteRenderEntity( const renderEntity_t &renderEntity ) {
 	WriteBool( renderEntity.weaponDepthHack );
 
 	WriteInt( renderEntity.forceUpdate );
+
+#ifdef _D3XP
+	WriteInt( renderEntity.timeGroup );
+	WriteInt( renderEntity.xrayIndex );
+#endif
 }
 
 /*
@@ -1326,6 +1330,11 @@ void idRestoreGame::ReadRenderEntity( renderEntity_t &renderEntity ) {
 	ReadBool( renderEntity.weaponDepthHack );
 
 	ReadInt( renderEntity.forceUpdate );
+
+#ifdef _D3XP
+	ReadInt( renderEntity.timeGroup );
+	ReadInt( renderEntity.xrayIndex );
+#endif
 }
 
 /*

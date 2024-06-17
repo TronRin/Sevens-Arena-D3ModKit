@@ -195,6 +195,7 @@ void SoundEditorRun( void ) {
 void SoundEditorShutdown( void ) {
 	delete g_SoundDialog;
 	g_SoundDialog = NULL;
+	com_editors &= ~EDITOR_SOUND;
 }
 
 void CDialogSound::OnActivate( UINT nState, CWnd *pWndOther, BOOL bMinimized ) {
@@ -503,7 +504,6 @@ void CDialogSound::AddSounds(bool rootItems) {
 void CDialogSound::AddGroups() {
 	comboGroups.ResetContent();
 	idStr work;
-	CWaitCursor cursor;
 
 	idList<const char*> list;
 	list.SetNum( 1024 );
@@ -545,7 +545,6 @@ void CDialogSound::AddSpeakers() {
 	UpdateData( TRUE );
 	comboSpeakers.ResetContent();
 
-	CWaitCursor cursor;
 	idList< const char *> list;
 	list.SetNum( 512 );
 
@@ -580,7 +579,6 @@ BOOL CDialogSound::OnInitDialog()
 
 void CDialogSound::OnBtnRefresh()
 {
-	CWaitCursor cursor;
 	treeSounds.DeleteAllItems();
 	quickTree.Clear();
 	declManager->Reload( false );

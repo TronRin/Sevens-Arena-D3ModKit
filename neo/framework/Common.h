@@ -41,18 +41,15 @@ If you have questions concerning this license or the applicable additional terms
 
 typedef enum {
 	EDITOR_NONE					= 0,
-	EDITOR_RADIANT				= BIT(1),
-	EDITOR_GUI					= BIT(2),
-	EDITOR_DEBUGGER				= BIT(3),
-	EDITOR_SCRIPT				= BIT(4),
-	EDITOR_LIGHT				= BIT(5),
-	EDITOR_SOUND				= BIT(6),
-	EDITOR_DECL					= BIT(7),
-	EDITOR_AF					= BIT(8),
-	EDITOR_PARTICLE				= BIT(9),
-	EDITOR_PDA					= BIT(10),
-	EDITOR_AAS					= BIT(11),
-	EDITOR_MATERIAL				= BIT(12)
+	EDITOR_GUI					= BIT(1),
+	EDITOR_DEBUGGER				= BIT(2),
+	EDITOR_SCRIPT				= BIT(3),
+	EDITOR_LIGHT				= BIT(4),
+	EDITOR_SOUND				= BIT(5),
+	EDITOR_DECL					= BIT(6),
+	EDITOR_AF					= BIT(7),
+	EDITOR_PARTICLE				= BIT(8),
+	EDITOR_AAS					= BIT(9)
 } toolFlag_t;
 
 #define STRTABLE_ID				"#str_"
@@ -88,12 +85,6 @@ extern int			com_editors;			// current active editor(s)
 extern bool			com_editorActive;		// true if an editor has focus
 
 extern bool			com_debuggerSupported;	// only set to true when the updateDebugger function is set. see GetAdditionalFunction()
-
-#ifdef _WIN32
-const char			DMAP_MSGID[] = "DMAPOutput";
-extern HWND			com_hwndMsg;
-extern bool			com_outputMsg;
-#endif
 
 struct MemInfo_t {
 	idStr			filebase;
@@ -269,15 +260,11 @@ public:
 	virtual bool				SetCallback(CallbackType cbt, FunctionPointer cb, void* userArg) = 0;
 
 	enum FunctionType {
-		// the function's signature is bool fn(void) - no arguments.
-		// it returns true if we're currently running the doom3 demo
-		// not relevant for mods, only for game/ aka base.dll/base.so/...
-		FT_IsDemo = 1,
 		// the function's signature is bool fn(idInterpreter,idProgram,int) with arguments:
 		// idInterpreter *interpreter, idProgram *program, int instructionPointer
 		// it returns true if the game debugger is active.
 		// relevant for mods.
-		FT_UpdateDebugger,
+		FT_UpdateDebugger = 1,
 	};
 
 	// returns true if that function is available in this version of dhewm3

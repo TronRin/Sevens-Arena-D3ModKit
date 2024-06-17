@@ -1887,18 +1887,16 @@ bool idInterpreter::Execute( void ) {
 
 bool idGameEditExt::CheckForBreakPointHit( const idInterpreter *interpreter, const function_t *function1, const function_t *function2, int depth ) const {
 	return ( ( interpreter->GetCurrentFunction() == function1 ||
-			   interpreter->GetCurrentFunction() == function2)&&
-			 ( interpreter->GetCallstackDepth()  <= depth) );
+			   interpreter->GetCurrentFunction() == function2 ) &&
+			 ( interpreter->GetCallstackDepth()  <= depth ) );
 }
 
 bool idGameEditExt::ReturnedFromFunction( const idProgram *program, const idInterpreter *interpreter, int index ) const {
-
 	return ( const_cast<idProgram *>( program )->GetStatement( index ).op == OP_RETURN && interpreter->GetCallstackDepth() <= 1 );
 }
 
-bool idGameEditExt::GetRegisterValue(const idInterpreter* interpreter, const char* name, idStr& out, int scopeDepth) const
-{
-	return const_cast<idInterpreter*>(interpreter)->GetRegisterValue(name, out, scopeDepth);
+bool idGameEditExt::GetRegisterValue( const idInterpreter *interpreter, const char *name, idStr &out, int scopeDepth ) const {
+	return const_cast<idInterpreter *>( interpreter )->GetRegisterValue( name, out, scopeDepth );
 }
 
 const idThread *idGameEditExt::GetThread( const idInterpreter *interpreter ) const {
@@ -1909,7 +1907,7 @@ void idGameEditExt::MSG_WriteCallstackFunc( idBitMsg *msg, const prstack_t *stac
 	const statement_t*	st;
 	const function_t*	func;
 
-	func  = stack->f;
+	func = stack->f;
 
 	// If the function is unknown then just fill in with default data.
 	if ( !func ) {
@@ -1921,10 +1919,10 @@ void idGameEditExt::MSG_WriteCallstackFunc( idBitMsg *msg, const prstack_t *stac
 		msg->WriteString ( va("%s(  )", func->Name() ) );
 	}
 
-	if (stack->s == -1) //this is a fake stack created by debugger, use intruction pointer for retrieval.
-		st = &const_cast<idProgram*>( program )->GetStatement( instructionPtr );
+	if ( stack->s == -1 ) //this is a fake stack created by debugger, use intruction pointer for retrieval.
+		st = &const_cast<idProgram *>( program )->GetStatement( instructionPtr );
 	else // Use the calling statement as the filename and linenumber where the call was made from		
-		st = &const_cast<idProgram*>( program )->GetStatement ( stack->s );
+		st = &const_cast<idProgram *>( program )->GetStatement( stack->s );
 
 	if ( st ) {
 		idStr qpath = const_cast<idProgram*>( program )->GetFilename( st->file );

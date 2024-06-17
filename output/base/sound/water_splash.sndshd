@@ -1,0 +1,17 @@
+
+
+sound water/water_splash {
+
+	minDistance		1
+	maxDistance		25
+		
+	sound/water/splash.wav
+	sound/water/watershark1.wav
+	sound/water/watersplash.wav
+}
+
+sound water/water_fall {
+	looping
+
+	sound/water/waterfall1.wav
+}

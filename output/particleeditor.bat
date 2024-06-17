@@ -1,1 +1,1 @@
-start dhewm3.exe +editParticles
+start engine.exe +editParticles

@@ -1,0 +1,13 @@
+{
+    "cmake.options.statusBarVisibility": "visible",
+    "cmake.sourceDirectory": "${workspaceRoot}/neo",
+    "search.exclude": {
+        "**/vcpkg": true,
+        "**/neo/libs": true
+    },
+    "files.associations": {
+        "random": "cpp",
+        "xiosbase": "cpp",
+        "condition_variable": "cpp"
+    }
+}

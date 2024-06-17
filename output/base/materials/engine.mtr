@@ -1,0 +1,34 @@
+_default
+{
+	{
+		map	_default
+	}
+}
+
+_tracemodel
+{
+	collision
+}
+
+//fade to black. length determined by com_wipeSeconds
+wipeMaterial
+{
+	{
+		blend		blend
+		alpha		parm3
+		map			_black
+		scale		1, -1
+		translate	0, -1
+	}
+}
+
+wipe2Material
+{
+	{
+		blend		blend
+		map			_black
+		scale		1, -1
+		translate	0, -1
+		alpha		1.0 - parm3
+	}
+}

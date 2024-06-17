@@ -44,14 +44,6 @@ If you have questions concerning this license or the applicable additional terms
 class	idProgram;
 class	idInterpreter;
 
-
-// Radiant Level Editor
-void	RadiantInit( void );
-void	RadiantShutdown( void );
-void	RadiantRun( void );
-void	RadiantPrint( const char *text );
-
-
 // in-game Light Editor
 void	LightEditorInit( const idDict *spawnArgs );
 void	LightEditorShutdown( void );
@@ -74,13 +66,6 @@ void	AFEditorRun( void );
 void	ParticleEditorInit( const idDict *spawnArgs );
 void	ParticleEditorShutdown( void );
 void	ParticleEditorRun( void );
-
-
-// in-game PDA Editor
-void	PDAEditorInit( const idDict *spawnArgs );
-void	PDAEditorShutdown( void );
-void	PDAEditorRun( void );
-
 
 // in-game Script Editor
 void	ScriptEditorInit( const idDict *spawnArgs );
@@ -109,11 +94,5 @@ bool	DebuggerServerInit( void );
 void	DebuggerServerShutdown( void );
 void	DebuggerServerPrint( const char *text );
 void	DebuggerServerCheckBreakpoint( idInterpreter *interpreter, idProgram *program, int instructionPointer );
-
-//Material Editor
-void	MaterialEditorInit( void );
-void	MaterialEditorRun( void );
-void	MaterialEditorShutdown( void );
-void	MaterialEditorPrintConsole( const char *msg );
 
 #endif /* !__EDIT_PUBLIC_H__ */

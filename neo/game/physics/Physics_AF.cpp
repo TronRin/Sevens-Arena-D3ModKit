@@ -59,8 +59,7 @@ const float MIN_MOVE_TIME					= -1.0f;
 const float MAX_MOVE_TIME					= -1.0f;
 // ishtvan test: move impulse threshold back to D3 default or below
 // const float IMPULSE_THRESHOLD			= 1500.0f;
-// const float IMPULSE_THRESHOLD				= 250.0f;
-const float IMPULSE_THRESHOLD				= 500.0f;
+const float IMPULSE_THRESHOLD				= 250.0f;
 const float SUSPEND_LINEAR_VELOCITY			= 10.0f;
 const float SUSPEND_ANGULAR_VELOCITY		= 15.0f;
 const float SUSPEND_LINEAR_ACCELERATION		= 20.0f;

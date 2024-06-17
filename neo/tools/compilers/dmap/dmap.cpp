@@ -305,10 +305,6 @@ void Dmap( const idCmdArgs &args ) {
 		} else if ( !idStr::Icmp( s, "noStats" ) ) {
 			dmapGlobals.noStats = true;
 			common->Printf( "noStats = true\n" );
-		} else if ( !idStr::Icmp( s, "editorOutput" ) ) {
-#ifdef _WIN32
-			com_outputMsg = true;
-#endif
 		} else {
 			break;
 		}

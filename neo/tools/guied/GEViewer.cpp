@@ -480,7 +480,7 @@ void rvGEViewer::Render	( HDC dc )
 	if (!qwglMakeCurrent( dc, win32.hGLRC ))
 	{
 		common->Printf("ERROR: wglMakeCurrent failed.. Error:%i\n", qglGetError());
-		common->Printf("Please restart " EDITOR_WINDOWTEXT " if the Map view is not working\n");
+		common->Printf("Please restart GUI Editor if the Map view is not working\n");
 		return;
 	}
 
