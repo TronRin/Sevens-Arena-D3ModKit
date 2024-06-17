@@ -35,6 +35,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "Player.h"
 #include "Mover.h"
 #include "SmokeParticles.h"
+#include "Misc.h"
 
 #include "Projectile.h"
 
@@ -832,6 +833,27 @@ void idProjectile::Explode( const trace_t &collision, idEntity *ignore ) {
 			fxname = spawnArgs.GetString( "model_ricochet" );
 		} else {
 			fxname = spawnArgs.GetString( "model_smoke" );
+		}
+	}
+
+	// If the explosion is in liquid, spawn a particle splash
+	idVec3 testOrg = GetPhysics()->GetOrigin();
+	int testC = gameLocal.clip.Contents( testOrg, NULL, mat3_identity, CONTENTS_WATER, this );
+	if ( testC & CONTENTS_WATER ) {
+		idFuncEmitter *splashEnt;
+		idDict splashArgs;
+
+		splashArgs.Set( "model", "water_bullet_impact.prt" );
+		splashArgs.Set( "start_off", "1" );
+		splashEnt = static_cast<idFuncEmitter *>( gameLocal.SpawnEntityType( idFuncEmitter::GetClassType(), &splashArgs ) );
+
+		splashEnt->GetPhysics()->SetOrigin( testOrg );
+		splashEnt->PostEventMS( &EV_Activate, 0, this );
+		splashEnt->PostEventMS( &EV_Remove, 1500 );
+
+		// HACK - if this is a chaingun bullet, don't do the normal effect
+		if ( !idStr::Cmp( spawnArgs.GetString( "def_damage" ), "damage_bullet_chaingun" ) ) {
+			fxname = NULL;
 		}
 	}
 
