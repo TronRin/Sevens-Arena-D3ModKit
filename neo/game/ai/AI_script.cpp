@@ -114,9 +114,6 @@ const idEventDef AI_TestAnimMove( "testAnimMove", "s", 'd' );
 const idEventDef AI_TestMeleeAttack( "testMeleeAttack", NULL, 'd' );
 const idEventDef AI_TestAnimAttack( "testAnimAttack", "s", 'd' );
 const idEventDef AI_Shrivel( "shrivel", "f" );
-const idEventDef AI_Burn( "burn" );
-const idEventDef AI_ClearBurn( "clearBurn" );
-const idEventDef AI_PreBurn( "preBurn" );
 const idEventDef AI_SetSmokeVisibility( "setSmokeVisibility", "dd" );
 const idEventDef AI_NumSmokeEmitters( "numSmokeEmitters", NULL, 'd' );
 const idEventDef AI_WaitAction( "waitAction", "s" );
@@ -254,11 +251,8 @@ CLASS_DECLARATION( idActor, idAI )
 	EVENT( AI_TestMeleeAttack,					idAI::Script_TestMeleeAttack )
 	EVENT( AI_TestAnimAttack,					idAI::Script_TestAnimAttack )
 	EVENT( AI_Shrivel,							idAI::Script_Shrivel )
-	EVENT( AI_Burn,								idAI::Script_Burn )
-	EVENT( AI_PreBurn,							idAI::Script_PreBurn )
 	EVENT( AI_SetSmokeVisibility,				idAI::Script_SetSmokeVisibility )
 	EVENT( AI_NumSmokeEmitters,					idAI::Script_NumSmokeEmitters )
-	EVENT( AI_ClearBurn,						idAI::Script_ClearBurn )
 	EVENT( AI_StopThinking,						idAI::Script_StopThinking )
 	EVENT( AI_GetTurnDelta,						idAI::Script_GetTurnDelta )
 	EVENT( AI_GetMoveType,						idAI::Script_GetMoveType )
@@ -1081,33 +1075,6 @@ void idAI::Script_Shrivel( float shrivel_time ) {
 
 	renderEntity.shaderParms[ SHADERPARM_MD5_SKINSCALE ] = 1.0f - t * 0.5f;
 	UpdateVisuals();
-}
-
-/*
-=====================
-idAI::Script_PreBurn
-=====================
-*/
-void idAI::Script_PreBurn( void ) {
-	PreBurn();
-}
-
-/*
-=====================
-idAI::Script_Burn
-=====================
-*/
-void idAI::Script_Burn( void ) {
-	Burn();
-}
-
-/*
-=====================
-idAI::Script_ClearBurn
-=====================
-*/
-void idAI::Script_ClearBurn( void ) {
-	ClearBurn();
 }
 
 /*

@@ -76,7 +76,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "idlib/math/Quat.h"
 #include "idlib/bv/Bounds.h"
-#include "framework/Licensee.h"
+#include "config.h"
 #include "renderer/Model.h"
 
 #include "MayaImport/exporter.h"
@@ -3173,7 +3173,7 @@ ID_MAYA_IMPORT_API bool dllEntry( int version, idCommon *common, idSys *sys ) {
 	if ( !initialized ) {
 		MStatus	status;
 
-		status = MLibrary::initialize( GAME_NAME, true );
+		status = MLibrary::initialize( BUILD_NAME, true );
 		if ( !status ) {
 			common->Printf( "Error calling MLibrary::initialize (%s)\n", status.errorString().asChar() );
 			return false;

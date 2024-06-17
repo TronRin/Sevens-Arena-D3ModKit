@@ -45,6 +45,15 @@ set( src_framework
 
 add_globbed_headers( src_framework "framework" )
 
+set( src_aas_file
+	${CMAKE_SOURCE_DIR}/libs/aasfile/AASFile.cpp
+	${CMAKE_SOURCE_DIR}/libs/aasfile/AASFile_optimize.cpp
+	${CMAKE_SOURCE_DIR}/libs/aasfile/AASFile_sample.cpp
+	${CMAKE_SOURCE_DIR}/libs/aasfile/AASFileManager.cpp
+)
+
+add_globbed_headers( src_aas_file "libs/aasfile" )
+
 set( src_renderer
 	${CMAKE_SOURCE_DIR}/renderer/Cinematic.cpp
 	${CMAKE_SOURCE_DIR}/renderer/GuiModel.cpp
@@ -66,6 +75,7 @@ set( src_renderer
 	${CMAKE_SOURCE_DIR}/renderer/Model_ma.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_md3.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_md5.cpp
+	${CMAKE_SOURCE_DIR}/renderer/Model_obj.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_prt.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_sprite.cpp
 	${CMAKE_SOURCE_DIR}/renderer/RenderEntity.cpp
@@ -115,6 +125,7 @@ set( src_sound
 	${CMAKE_SOURCE_DIR}/sound/snd_decoder.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_efxfile.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_emitter.cpp
+	${CMAKE_SOURCE_DIR}/sound/snd_reverb.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_shader.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_system.cpp
 	${CMAKE_SOURCE_DIR}/sound/snd_wavefile.cpp
@@ -168,18 +179,14 @@ set( src_aas
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASBuild_ledge.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASBuild_merge.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASCluster.cpp
-	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASFile.cpp
-	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASFile_optimize.cpp
-	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASFile_sample.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASReach.cpp
-	${CMAKE_SOURCE_DIR}/tools/compilers/aas/AASFileManager.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/Brush.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/aas/BrushBSP.cpp
 )
 
 add_globbed_headers( src_aas "tools/compilers/aas" )
 
-set(src_roq
+set( src_roq
 	${CMAKE_SOURCE_DIR}/tools/compilers/roqvq/NSBitmapImageRep.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/roqvq/codec.cpp
 	${CMAKE_SOURCE_DIR}/tools/compilers/roqvq/roq.cpp
@@ -208,6 +215,7 @@ set( src_debuggerServer
 set(src_core
 	${src_cm}
 	${src_framework}
+	${src_aas_file}
 	${src_renderer}
 	${src_mikktspace}
 	${src_sound}
@@ -420,7 +428,7 @@ if( ENGINE )
 		
 		target_sources( ${ENGINE_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
 		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX code FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools} )
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools} )
 	endif()
 
 	if( HARDLINK_GAME )
@@ -485,7 +493,7 @@ if( DEDICATED )
 	if ( MSVC )
 		target_sources( ${DEDICATED_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
 		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX code FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer} )
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer} )
 	endif()
 
 	if( HARDLINK_GAME )

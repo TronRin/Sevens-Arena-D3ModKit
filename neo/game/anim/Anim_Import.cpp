@@ -40,8 +40,6 @@ If you have questions concerning this license or the applicable additional terms
 
 ***********************************************************************/
 
-idCVar g_MayaImportVersion( "g_MayaImportVersion", "2019", CVAR_GAME | CVAR_INTEGER, "" );
-
 static idStr				Maya_Error;
 
 static exporterInterface_t	Maya_ConvertModel = NULL;
@@ -91,7 +89,7 @@ void idModelExport::LoadMayaDll( void ) {
 	exporterDLLEntry_t	dllEntry;
 	char				dllPath[ MAX_OSPATH ];
 
-	fileSystem->FindDLL( va( "MayaImport%d", g_MayaImportVersion.GetInteger() ), dllPath );
+	fileSystem->FindDLL( va( "MayaImport%d", MAYA_DLL_VERSION ), dllPath );
 	if ( !dllPath[ 0 ] ) {
 		return;
 	}

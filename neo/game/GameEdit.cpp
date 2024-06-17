@@ -626,7 +626,7 @@ void idEditEntities::DisplayEntities( void ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
 			}
-		} else if ( ent->GetType() == &idLight::Type ) {
+		} else if ( ent->GetType() == &idLight::GetClassType() ) {
 			// RB: use renderer backend to display light properties
 			if ( ent->fl.selected ) {
 				drawArrows = true;

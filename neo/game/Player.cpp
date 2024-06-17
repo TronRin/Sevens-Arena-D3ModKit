@@ -8878,22 +8878,6 @@ void idPlayer::Event_Gibbed( void ) {
 }
 
 /*
-==================
-idPlayer::Event_GetIdealWeapon
-==================
-*/
-void idPlayer::Event_GetIdealWeapon( void ) {
-	const char *weapon;
-
-	if ( idealWeapon >= 0 ) {
-		weapon = spawnArgs.GetString( va( "def_weapon%d", idealWeapon ) );
-		idThread::ReturnString( weapon );
-	} else {
-		idThread::ReturnString( "" );
-	}
-}
-
-/*
 ===============
 idPlayer::UpdatePlayerIcons
 ===============

@@ -4,8 +4,12 @@ set( src_game
 	AF.cpp
 	AFEntity.cpp
 	Actor.cpp
+	Actor_script.cpp
+	AnimatedEntity.cpp
+	AnimState.cpp
 	Camera.cpp
 	Entity.cpp
+	Entity_script.cpp
 	BrittleFracture.cpp
 	Fx.cpp
 	GameEdit.cpp
@@ -29,21 +33,23 @@ set( src_game
 	Target.cpp
 	Trigger.cpp
 	Weapon.cpp
+	Weapon_script.cpp
 	WorldSpawn.cpp
-	ai/AAS.cpp
-	ai/AAS_debug.cpp
-	ai/AAS_pathing.cpp
-	ai/AAS_routing.cpp
+	aas/AAS.cpp
+	aas/AAS_debug.cpp
+	aas/AAS_pathing.cpp
+	aas/AAS_routing.cpp
 	ai/AI.cpp
 	ai/AI_events.cpp
 	ai/AI_pathing.cpp
+	ai/AI_script.cpp
 	gamesys/DebugGraph.cpp
 	gamesys/Class.cpp
 	gamesys/Event.cpp
 	gamesys/SaveGame.cpp
+	gamesys/State.cpp
 	gamesys/SysCmds.cpp
 	gamesys/SysCvar.cpp
-	gamesys/TypeInfo.cpp
 	anim/Anim.cpp
 	anim/Anim_Blend.cpp
 	anim/Anim_Import.cpp
@@ -86,7 +92,7 @@ endif()# HARDLINK_GAME
 if ( MSVC )
 	target_sources( ${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/sys/win32/natvis/game.natvis" )
 	
-	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX code FILES ${src_game} )
+	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game} )
 
 	if( HARDLINK_GAME )
 		set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER "libs" )

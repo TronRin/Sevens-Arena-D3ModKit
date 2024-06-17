@@ -186,6 +186,11 @@ const int BUILD_NUMBER			= 1305;
 	#cmakedefine ID_ENABLE_CURL
 #endif
 
+/*!
+	MayaImport: Set the maximun supported version
+*/
+#define MAYA_DLL_VERSION 		@MAYA_VERSION@
+
 // async network
 #define ASYNC_PROTOCOL_MINOR	(42)
 #define ASYNC_PROTOCOL_VERSION	(( ASYNC_PROTOCOL_MAJOR << 16 ) + ASYNC_PROTOCOL_MINOR)

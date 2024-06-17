@@ -581,6 +581,7 @@ public:
 	idProjectile *			AttackMissile( const char *jointname );
 	idProjectile *			FireMissileAtTarget( const char *jointname, const char *targetname );
 	idEntity *				LaunchMissile( const idVec3 &org, const idAngles& ang );
+	void					LaunchProjectile( const char *entityDefName );
 	void					DirectDamage( idEntity *damageTarget, const char *damageDefName );
 	void					RadiusDamageFromJoint( const char *jointname, const char *damageDefName );
 	idPathCorner *			RandomPath( void );
@@ -765,9 +766,6 @@ protected:
 	void					Script_TestMeleeAttack( void );
 	void					Script_TestAnimAttack( const char *animname );
 	void					Script_Shrivel( float shrivel_time );
-	void					Script_PreBurn( void );
-	void					Script_Burn( void );
-	void					Script_ClearBurn( void );
 	void					Script_SetSmokeVisibility( int num, int on );
 	void					Script_NumSmokeEmitters( void );
 	void					Script_StopThinking( void );

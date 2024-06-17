@@ -4724,22 +4724,4 @@ void idEntity::DetermineTimeGroup( bool slowmo ) {
 		timeGroup = TIME_GROUP2;
 	}
 }
-
-/*
-================
-idEntity::SetGrabbedState
-================
-*/
-void idEntity::SetGrabbedState( bool grabbed ) {
-	fl.grabbed = grabbed;
-}
-
-/*
-================
-idEntity::IsGrabbed
-================
-*/
-bool idEntity::IsGrabbed() {
-	return fl.grabbed;
-}
 #endif

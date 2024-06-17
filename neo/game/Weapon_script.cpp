@@ -62,11 +62,6 @@ const idEventDef EV_Weapon_NetReload( "netReload" );
 const idEventDef EV_Weapon_IsInvisible( "isInvisible", NULL, 'f' );
 const idEventDef EV_Weapon_NetEndReload( "netEndReload" );
 #ifdef _D3XP
-const idEventDef EV_Weapon_GrabberHasTarget( "grabberHasTarget", NULL, 'd' );
-const idEventDef EV_Weapon_Grabber( "grabber", "d" );
-const idEventDef EV_Weapon_Grabber_SetGrabDistance( "grabberGrabDistance", "f" );
-const idEventDef EV_Weapon_LaunchProjectilesEllipse( "launchProjectilesEllipse", "dffff" );
-const idEventDef EV_Weapon_LaunchPowerup( "launchPowerup", "sfd" );
 const idEventDef EV_Weapon_StartWeaponSmoke( "startWeaponSmoke" );
 const idEventDef EV_Weapon_StopWeaponSmoke( "stopWeaponSmoke" );
 const idEventDef EV_Weapon_StartWeaponParticle( "startWeaponParticle", "s" );
@@ -116,11 +111,6 @@ CLASS_DECLARATION( idAnimatedEntity, idWeapon )
 	EVENT( EV_Weapon_IsInvisible,				idWeapon::Script_IsInvisible )
 	EVENT( EV_Weapon_NetEndReload,				idWeapon::Script_NetEndReload )
 #ifdef _D3XP
-	EVENT( EV_Weapon_Grabber,					idWeapon::Script_Grabber )
-	EVENT( EV_Weapon_GrabberHasTarget,			idWeapon::Script_GrabberHasTarget )
-	EVENT( EV_Weapon_Grabber_SetGrabDistance,	idWeapon::Script_GrabberSetGrabDistance )
-	EVENT( EV_Weapon_LaunchProjectilesEllipse,	idWeapon::Script_LaunchProjectilesEllipse )
-	EVENT( EV_Weapon_LaunchPowerup,				idWeapon::Script_LaunchPowerup )
 	EVENT( EV_Weapon_StartWeaponSmoke,			idWeapon::Script_StartWeaponSmoke )
 	EVENT( EV_Weapon_StopWeaponSmoke,			idWeapon::Script_StopWeaponSmoke )
 	EVENT( EV_Weapon_StartWeaponParticle,		idWeapon::Script_StartWeaponParticle )
@@ -337,36 +327,6 @@ void idWeapon::Script_SetLightParms( float parm0, float parm1, float parm2, floa
 	SetLightParms( parm0, parm1, parm2, parm3 );
 }
 
-#ifdef _D3XP
-/*
-================
-idWeapon::Script_Grabber
-================
-*/
-void idWeapon::Script_Grabber( int enable ) {
-	SetGrabberState( enable );
-}
-
-/*
-================
-idWeapon::Script_GrabberHasTarget
-================
-*/
-void idWeapon::Script_GrabberHasTarget() {
-	idThread::ReturnInt( GrabberHasTarget() );
-}
-
-/*
-================
-idWeapon::Script_GrabberSetGrabDistance
-================
-*/
-void idWeapon::Script_GrabberSetGrabDistance( float dist ) {
-
-	GrabberSetGrabDistance( dist );
-}
-#endif
-
 /*
 ================
 idWeapon::Script_CreateProjectile
@@ -386,24 +346,6 @@ void idWeapon::Script_LaunchProjectiles( int num_projectiles, float spread, floa
 }
 
 #ifdef _D3XP
-/*
-================
-idWeapon::Script_LaunchProjectilesEllipse
-================
-*/
-void idWeapon::Script_LaunchProjectilesEllipse( int num_projectiles, float spreada, float spreadb, float fuseOffset, float power ) {
-	LaunchProjectilesEllipse( num_projectiles, spreada, spreadb, fuseOffset, power );
-}
-
-/*
-================
-idWeapon::Script_LaunchPowerup
-================
-*/
-void idWeapon::Script_LaunchPowerup( const char *powerup, float duration, int useAmmo ) {
-	LaunchPowerup( powerup, duration, useAmmo );
-}
-
 /*
 ================
 idWeapon::Script_StartWeaponSmoke

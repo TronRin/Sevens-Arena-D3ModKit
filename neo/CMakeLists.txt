@@ -126,7 +126,10 @@ if( TOOLS )
 		# These ones are from 2019 make sure to generate one for newer releases!
 		set( MAYASDK_HASH "2332C6C79B8C7974A5645523E395962BBB19901289AAAEE129D3BF2B630829C7" CACHE STRING "" )
 		set( MAYASDK_MD5 "6BC28A0047709DEECC3DBB0D4A0B4D14" CACHE STRING "" )
-	
+
+		# Set the maya version (mainly for the project creation + reference)
+		set( MAYA_VERSION 2019 )
+
 		ExternalProject_Add( MayaDevKit
 			URL ${MAYASDK_URL}
 			URL_HASH SHA256=${MAYASDK_HASH}
@@ -137,6 +140,8 @@ if( TOOLS )
 			BUILD_COMMAND ""
 			INSTALL_COMMAND ""
 		)
+		
+		set_target_properties( MayaDevKit PROPERTIES FOLDER "libs" )
 	endif()
 
 	if( MSVC )
