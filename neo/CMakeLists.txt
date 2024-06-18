@@ -102,15 +102,9 @@ endif()
 
 # ImGUI
 if ( IMGUI )
-	if( SDL2 )
-		# we need C++11 for ImGui
-		set ( CMAKE_CXX_STANDARD 11 )
-		message( STATUS "Dear ImGui integration enabled" )
-	else()
-		message( WARNING "Disabling IMGUI because SDL1.2 is used - it needs SDL2!" )
-		set( IMGUI OFF )
-		add_definitions( -DIMGUI_DISABLE )
-	endif()
+	# we need C++11 for ImGui
+	set ( CMAKE_CXX_STANDARD 11 )
+	message( STATUS "Dear ImGui integration enabled" )
 else()
 	message( STATUS "Dear ImGui integration disabled" )
 	add_definitions( -DIMGUI_DISABLE )
