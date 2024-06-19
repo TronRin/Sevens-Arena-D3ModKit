@@ -3,66 +3,24 @@
 # input:
 # 
 # texcoord[0] TEX0	texcoords
-# attrib[9] TEX1	tangent[0]
-# attrib[10] TEX2	tangent[1]
-# attrib[2] TEX3	normal
-#
-# c[5]	localViewOrigin
-# c[6]	modelMatrix[0]
-# c[7]	modelMatrix[1]
-# c[8]	modelMatrix[2]
 #
 # local[0]	scroll
 # local[1]	deform magnitude (1.0 is reasonable, 2.0 is twice as wavy, 0.5 is half as wavy, etc)
-# local[2]	refract color
-# local[3]	reflect color
-# 
-# output:
 #
-# texCoord[0] is the normal map texcoord
-# texCoord[1] is the vector to the eye in global space
-# texCoord[2] is the surface tangent to global coordiantes
-# texCoord[3] is the surface bitangent to global coordiantes
-# texCoord[4] is the surface normal to global coordiantes
-# texCoord[6] is the copied deform magnitude
-# texCoord[7] is the copied scroll
-
-PARAM	scale = { 2, 2, 2, 2 };
-#PARAM	scroll = program.local[0];
+# output:
+# 
+# texture 0 is _currentRender
+# texture 1 is a normal map that we will use to deform texture 0
+#
+# texCoord[1] is the model surface texture coords
+# texCoord[2] is the copied deform magnitude
 
 TEMP	R0, R1, R2;
 
-# texture 1 is the vector to the eye in global coordinates
-SUB		R0, program.env[5], vertex.position;
-DP3		result.texcoord[1].x, R0, program.env[6];
-DP3		result.texcoord[1].y, R0, program.env[7];
-DP3		result.texcoord[1].z, R0, program.env[8];
+# texture 1 takes the texture coordinates and adds a scroll
+ADD		result.texcoord[1], vertex.texcoord[0], program.local[0];
 
-# texture 2 gets the transformed tangent
-DP3		result.texcoord[2].x, vertex.attrib[9], program.env[6];
-DP3		result.texcoord[3].x, vertex.attrib[9], program.env[7];
-DP3		result.texcoord[4].x, vertex.attrib[9], program.env[8];
-
-# texture 3 gets the transformed bitangent
-DP3		result.texcoord[2].y, vertex.attrib[10], program.env[6];
-DP3		result.texcoord[3].y, vertex.attrib[10], program.env[7];
-DP3		result.texcoord[4].y, vertex.attrib[10], program.env[8];
-
-# texture 4 gets the transformed normal
-DP3		result.texcoord[2].z, vertex.normal, program.env[6];
-DP3		result.texcoord[3].z, vertex.normal, program.env[7];
-DP3		result.texcoord[4].z, vertex.normal,program.env[8];
-
-################
-
-# take the texture coordinates and add a scroll
-#MAD	result.texcoord[0].xy, scroll, 2.0, vertex.texcoord[0];
-#MAD	result.texcoord[0].zw, vertex.texcoord[0].xyxy, 0.75, -scroll.xyxy;
-#MAD	result.texcoord[0].zw, vertex.texcoord[0], 0.5, -scroll;
-#ADD		result.texcoord[0], vertex.texcoord[0], scroll;
-MOV		result.texcoord[0], vertex.texcoord[0];
-
-# texture 6 takes the deform magnitude and scales it by the projection distance
+# texture 2 takes the deform magnitude and scales it by the projection distance
 PARAM	vec = { 1, 0, 0, 1 };
 
 MOV		R0, vec;
@@ -80,114 +38,42 @@ MUL		R1, R1, R2;
 # clamp the distance so the the deformations don't get too wacky near the view
 MIN		R1, R1, 0.02;
 
-MUL		result.texcoord[6], R1, program.local[1];
-
-#MOV		result.texcoord[7], scroll;
+MUL		result.texcoord[2], R1, program.local[1];
 
 END
 
-#==================================================================================
+#======================================================================
 
 !!ARBfp1.0 
 OPTION ARB_precision_hint_fastest;
 
-# per-pixel reflection-refraction liquid
-
-# texture 0 is the environment cube map
-# texture 1 is the normal map
-# texture 2 is _currentRender
+# texture 0 is _currentRender
+# texture 1 is a normal map that we will use to deform texture 0
 #
 # env[0] is the 1.0 to _currentRender conversion
 # env[1] is the fragment.position to 0.0 - 1.0 conversion
-#
-# texCoord[0] is the normal map texcoord
-# texCoord[1] is the vector to the eye in global space
-# texCoord[2] is the surface tangent to global coordiantes
-# texCoord[3] is the surface bitangent to global coordiantes
-# texCoord[4] is the surface normal to global coordiantes
-# texCoord[6] is the copied deform magnitude
-# texCoord[7] is the copied scroll
 
-TEMP	globalEye, localNormal, globalNormal, R0, R1;
-
-ALIAS	fresnel = globalEye;
-
-PARAM	scroll = program.local[3];
+TEMP	localNormal, R0;
 
 PARAM	subOne = { -1, -1, -1, -1 };
 PARAM	scaleTwo = { 2, 2, 2, 2 };
 
-# load the filtered normal map, then normalize to full scale,
-MAD		R0, 0.02, scroll, fragment.texcoord[0];
-MUL		R0, 0.9, R0;
-TEX		localNormal, R0, texture[1], 2D;
-
-MAD		R0, 0.1, scroll.zyxy, fragment.texcoord[0];
-MUL		R0, 0.125, R0;
-TEX		R0, R0, texture[1], 2D;
-ADD		localNormal, R0, localNormal;
-
-MAD		R0, -0.17, scroll.wxxy, fragment.texcoord[0];
-MUL		R0, 0.5, R0;
-TEX		R0, R0, texture[1], 2D;
-ADD		localNormal, R0, localNormal;
-
-MAD		R0, 0.2, scroll.wwxy, fragment.texcoord[0];
-MUL		R0, 0.25, R0;
-TEX		R0, R0, texture[1], 2D;
-ADD		localNormal, R0, localNormal;
-
-MAD		localNormal, localNormal.agbr, scaleTwo, -4.0;
-MUL		localNormal.xy, localNormal, 1.5;
-
-# transform the surface normal by the local tangent space 
-DP3		globalNormal.x, localNormal, fragment.texcoord[2];
-DP3		globalNormal.y, localNormal, fragment.texcoord[3];
-DP3		globalNormal.z, localNormal, fragment.texcoord[4];
-
-# normalize
-DP3		R1, globalNormal,globalNormal;
-RSQ		R1, R1.x;
-MUL		globalNormal.xyz, globalNormal, R1;
-
-#MAD		result.color, globalNormal, 0.5, 0.5;
-
-# normalize vector to eye
-DP3		R0, fragment.texcoord[1], fragment.texcoord[1];
-RSQ		R0, R0.x;
-MUL		globalEye, fragment.texcoord[1], R0;
-
-# calculate reflection vector
-DP3		R1, globalEye, globalNormal;
-MUL		R0, R1, globalNormal;
-MAD		R0, R0, scaleTwo, -globalEye;
-
-# read the environment map with the reflection vector
-TEX		R0, R0, texture[0], CUBE;
-
-########
-
-# calculate fresnel
-SUB		fresnel, 1.0, R1;		# 1 - V dot N
-POW		fresnel, fresnel.x, program.local[0].x;	# assume index is 1
-MAD		fresnel, fresnel, program.local[0].y, program.local[0].z;
+# load the filtered normal map and convert to -1 to 1 range
+TEX		localNormal, fragment.texcoord[1], texture[1], 2D;
+MOV		localNormal.x, localNormal.a;
+MAD		localNormal, localNormal, scaleTwo, subOne;
 
 # calculate the screen texcoord in the 0.0 to 1.0 range
-MUL		R1, fragment.position, program.env[1];
+MUL		R0, fragment.position, program.env[1];
 
-# offset by the scaled globalNormal and clamp it to 0.0 - 1.0
-MAD_SAT	R1, globalNormal, fragment.texcoord[6], R1;
+# offset by the scaled localNormal and clamp it to 0.0 - 1.0
+MAD_SAT	R0, localNormal, fragment.texcoord[2], R0;
 
 # scale by the screen non-power-of-two-adjust
-MUL		R1, R1, program.env[0];
+MUL		R0, R0, program.env[0];
 
 # load the screen render
-TEX		R1, R1, texture[2], 2D;
-
-MUL		R1, R1, program.local[1];
-MUL		R0, R0, program.local[2];
-
-LRP		result.color.xyz, fresnel, R0, R1;		# lerp refract and reflect
+TEX		result.color.xyz, R0, texture[0], 2D;
 
 END
 
