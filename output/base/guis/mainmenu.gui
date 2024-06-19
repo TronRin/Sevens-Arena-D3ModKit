@@ -48,7 +48,7 @@ windowDef Desktop
 		}
 
 		onAction {
-			set "cmd" "echo TODO" ;
+			set "cmd" "options" ;
 		}
 
 	}

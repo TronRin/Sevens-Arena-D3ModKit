@@ -37,6 +37,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "framework/Session_local.h"
 
+#include "sys/sys_imgui.h"
+
 idCVar	idSessionLocal::gui_configServerRate( "gui_configServerRate", "0", CVAR_GUI | CVAR_ARCHIVE | CVAR_ROM | CVAR_INTEGER, "" );
 
 extern idCVar joy_gamepadLayout; // DG: used here to update bindings window when cvar is changed
@@ -990,6 +992,11 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 
 		if ( !idStr::Icmp( cmd, "CheckUpdate2" ) ) {
 			idAsyncNetwork::client.SendVersionCheck( true );
+			continue;
+		}
+
+		if ( !idStr::Icmp( cmd, "options" ) ) {
+			D3::ImGuiHooks::OpenWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings );
 			continue;
 		}
 	}
