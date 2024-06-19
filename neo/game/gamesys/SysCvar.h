@@ -259,14 +259,6 @@ extern idCVar	g_testBloomIntensity;
 extern idCVar	g_testBloomNumPasses;
 #endif
 
-#ifdef _D3XP
-extern idCVar	g_grabberHoldSeconds;
-extern idCVar	g_grabberEnableShake;
-extern idCVar	g_grabberRandomMotion;
-extern idCVar	g_grabberHardStop;
-extern idCVar	g_grabberDamping;
-#endif
-
 extern idCVar	aas_test;
 extern idCVar	aas_showAreas;
 extern idCVar	aas_showPath;

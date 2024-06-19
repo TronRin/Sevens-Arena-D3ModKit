@@ -406,15 +406,6 @@ idCVar mod_validSkins(				"mod_validSkins",			"skins/characters/player/marine_mp
 idCVar mod_validSkins(				"mod_validSkins",			"skins/characters/player/marine_mp;skins/characters/player/marine_mp_green;skins/characters/player/marine_mp_blue;skins/characters/player/marine_mp_red;skins/characters/player/marine_mp_yellow",		CVAR_GAME | CVAR_ARCHIVE, "valid skins for the game" );
 #endif
 
-
-#ifdef _D3XP
-idCVar g_grabberHoldSeconds(		"g_grabberHoldSeconds",		"3",			CVAR_GAME | CVAR_FLOAT | CVAR_CHEAT, "number of seconds to hold object" );
-idCVar g_grabberEnableShake(		"g_grabberEnableShake",		"1",			CVAR_GAME | CVAR_BOOL | CVAR_CHEAT, "enable the grabber shake" );
-idCVar g_grabberRandomMotion(		"g_grabberRandomMotion",	"1",			CVAR_GAME | CVAR_BOOL | CVAR_CHEAT, "enable random motion on the grabbed object" );
-idCVar g_grabberHardStop(			"g_grabberHardStop",		"1",			CVAR_GAME | CVAR_BOOL | CVAR_CHEAT, "hard stops object if too fast" );
-idCVar g_grabberDamping(			"g_grabberDamping",			"0.5",			CVAR_GAME | CVAR_FLOAT | CVAR_CHEAT, "damping of grabber" );
-#endif
-
 idCVar r_bloom(							"r_bloom",							"1",		CVAR_GAME | CVAR_INTEGER, "activates bloom with gaussian blur ( Requires DX9 compliant Hardware ). \n 1: Bloom with shift sensitivity and variable blurring \n 2: Bloom with shift sensitivity \n 3: Normal Bloom " );
 idCVar r_bloom_blur_mult(				"r_bloom_blur_mult",				"0.5",		CVAR_GAME | CVAR_FLOAT, "blurred image multiplier for bloom" );
 idCVar r_bloom_src_mult(				"r_bloom_src_mult",					"1.0",		CVAR_GAME | CVAR_FLOAT, "source image multiplier for bloom" );
