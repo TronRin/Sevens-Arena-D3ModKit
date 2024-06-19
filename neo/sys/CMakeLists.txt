@@ -452,7 +452,7 @@ if( ENGINE )
 		
 		target_sources( ${ENGINE_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
 		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_editor_tools} )
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_engine} )
 	endif()
 	
 	target_include_directories( ${ENGINE_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/libs/imgui" )
@@ -518,7 +518,7 @@ if( DEDICATED )
 	if ( MSVC )
 		target_sources( ${DEDICATED_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
 		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer} )
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_engine} )
 	endif()
 
 	if( HARDLINK_GAME )
