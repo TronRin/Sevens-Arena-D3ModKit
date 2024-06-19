@@ -477,11 +477,7 @@ set(src_renderer
 	renderer/tr_trace.cpp
 	renderer/tr_trisurf.cpp
 	renderer/tr_turboshadow.cpp
-
-	renderer/stblib_impls.c
 )
-
-always_optimize_sourcefile(renderer/stblib_impls.c)
 
 add_globbed_headers(src_renderer "renderer")
 
@@ -601,11 +597,7 @@ set(src_snd
 	sound/snd_system.cpp
 	sound/snd_wavefile.cpp
 	sound/snd_world.cpp
-
-	sound/stbvorbis_impl.c
 )
-
-always_optimize_sourcefile(sound/stbvorbis_impl.c)
 
 add_globbed_headers(src_snd "sound")
 
