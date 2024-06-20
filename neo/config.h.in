@@ -16,4 +16,6 @@
 	#cmakedefine ID_ENABLE_CURL
 #endif
 
+#define MAYA_DLL_VERSION 		@MAYA_VERSION@
+
 #endif

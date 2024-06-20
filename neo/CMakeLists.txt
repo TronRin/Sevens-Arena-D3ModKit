@@ -128,6 +128,9 @@ if( TOOLS )
 		# These ones are from 2019 make sure to generate one for newer releases!
 		set( MAYASDK_HASH "2332C6C79B8C7974A5645523E395962BBB19901289AAAEE129D3BF2B630829C7" CACHE STRING "" )
 		set( MAYASDK_MD5 "6BC28A0047709DEECC3DBB0D4A0B4D14" CACHE STRING "" )
+
+		# Set the maya version (mainly for the project creation + reference)
+		set( MAYA_VERSION 2019 )
 	
 		ExternalProject_Add( MayaDevKit
 			URL ${MAYASDK_URL}
@@ -139,6 +142,8 @@ if( TOOLS )
 			BUILD_COMMAND ""
 			INSTALL_COMMAND ""
 		)
+
+		set_target_properties( MayaDevKit PROPERTIES FOLDER "libs" )
 	endif()
 
 	if( MSVC )
@@ -1153,6 +1158,8 @@ if( ENGINE )
 
 	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_imgui} ${src_editor_tools} )
 
+	target_include_directories( ${DHEWM3BINARY} PRIVATE "${CMAKE_SOURCE_DIR}/libs/imgui" )
+
 	if( HARDLINK_GAME )
 		set_target_properties( ${DHEWM3BINARY} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}" )
 		target_include_directories( ${DHEWM3BINARY} PRIVATE ${game_includes} )
@@ -1254,6 +1261,7 @@ if( TOOLS AND MAYA_IMPORT )
 		framework/CVarSystem.cpp
 		framework/File.cpp
 		framework/FileSystem.cpp
+		framework/miniz/miniz.c
 		framework/minizip/ioapi.c
 		framework/minizip/ioapi.h
 		framework/minizip/MiniZip64_info.txt
@@ -1265,39 +1273,38 @@ if( TOOLS AND MAYA_IMPORT )
 		tools/tool_idcommon_stub.cpp
 	)
 
-	add_library( MayaImport SHARED
+	add_library( MayaImport${MAYA_VERSION} SHARED
 		${src_mayaimport}
 		${src_toolsupportsrc}
 		${src_enginestub}
 	)
 
-	add_dependencies( MayaImport MayaDevKit )
+	add_dependencies( MayaImport${MAYA_VERSION} MayaDevKit )
 	
 	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_mayaimport} ${src_toolsupportsrc} ${src_enginestub} )
 
 	if( HARDLINK_GAME )
 		if ( MSVC )
-			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
+			set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
 		else()
-			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
+			set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
 		endif()
-		target_include_directories( MayaImport PRIVATE ${game_includes} )
+		target_include_directories( MayaImport${MAYA_VERSION} PRIVATE ${game_includes} )
 	else()
 		if ( MSVC )
-			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
+			set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__declspec(dllexport)" )
 		else()
-			set_target_properties( MayaImport PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
+			set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES COMPILE_DEFINITIONS "ID_MAYA_IMPORT;__DOOM_DLL__;ID_MAYA_IMPORT_API=__attribute__ ((visibility (\"default\")))" )
 		endif()
 	endif()
-	set_target_properties( MayaImport PROPERTIES LINK_FLAGS "${ldflags}" )
-	target_link_libraries( MayaImport idlib ZLIB::ZLIB )
-	target_include_directories( MayaImport PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/include" )
-	target_link_directories( MayaImport PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/lib" )
-	target_link_libraries( MayaImport idlib Foundation OpenMaya OpenMayaAnim )
-	set_target_properties( MayaImport PROPERTIES FOLDER "dlls" )
+	set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES LINK_FLAGS "${ldflags}" )
+	target_include_directories( MayaImport${MAYA_VERSION} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/include" )
+	target_link_directories( MayaImport${MAYA_VERSION} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/lib" )
+	target_link_libraries( MayaImport${MAYA_VERSION} idlib Foundation OpenMaya OpenMayaAnim )
+	set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES FOLDER "dlls" )
 
 	if( NOT APPLE AND NOT WIN32 )
-		install( TARGETS MayaImport
+		install( TARGETS MayaImport${MAYA_VERSION}
 				RUNTIME DESTINATION "${bindir}"
 				LIBRARY DESTINATION "${libdir}"
 				ARCHIVE DESTINATION "${libdir}"
