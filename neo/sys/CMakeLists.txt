@@ -45,6 +45,10 @@ set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp
 )
 
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c )
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c )
+always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp )
+
 add_globbed_headers( src_framework "framework" )
 
 set( src_aas_file

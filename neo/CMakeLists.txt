@@ -382,6 +382,9 @@ endif()
 get_git_branch( branch )
 message( STATUS "Setting project on git branch: ${branch}" )
 
+# Include our function to optmize sources.
+include( OptimizedSources )
+
 set( bindir		"${CMAKE_INSTALL_FULL_BINDIR}" )
 set( libdir		"${CMAKE_INSTALL_FULL_LIBDIR}/${GAME_CONFG_NAME}" )
 set( datadir	"${CMAKE_INSTALL_FULL_DATADIR}/${GAME_CONFG_NAME}" )
