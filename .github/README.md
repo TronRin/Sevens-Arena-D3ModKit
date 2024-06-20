@@ -73,8 +73,9 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Re-Added MayaImport:
     * Supports Maya SDK 2019 up to 2025 (2019 Below is untested)
   - Gamesys integration from Quake 4/Quake Wars. Prevents dead stripping, and new state management code.
+- com.n0n3m4.diii4a:
+  - Quake 4's map base .reverb config files for maps + default .efx for maps that lacks it.
 - Original Changes:
-  - Restore Quake 3 Style console base on left overs in the files.
   - Support for source engine skyboxes base on StormEngine2 Changes.
   - fixed noSpecular flag for lights Base on a dhewn3 rejected PR.
   - Enable Common Controls theme engine for the tools.
@@ -87,6 +88,16 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Added .guide Support from Quake 4.
   - Refactored MFC Tools.
   - Backported fixes from d3xp and merge missed changes in d3xp/ from base/
+  - Backported Water bullet impact from RoE ( see Examples/ folder for the water particle)
+  - Made the player be in thirdperson when they die in multiplayer.
+  - Rename g_showPlayerShadow to g_showExtraShadows and make it default.
+  - Added decl_warn_duplicates so warnings about duplicated entries are hide.
+  - Removed TakeNotes system.
+  - Added doxygen support.
+  - Improved GUIEditor base on the idtech4sdk project.
+  - Restored "mphud" keyvalue in player.def
+  - Remove unused game over gui file.
+  - Added blender model I/O scripts.
 
 See [Changelog](./CHANGELOG.md) for the original dhewn3 changelog.
 
