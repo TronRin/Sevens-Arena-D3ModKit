@@ -43,10 +43,36 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
     - Restore Command List windows.
   - Added Background music support for maps.
   - Added More Console Information.
-  - Quake 1 Style ligth styles.
   - Ambient Music for maps.
 - The Dark Mod / Hardcorps
   - Re-implemented water system
+- IcedTech3:
+  - Removed legacy lighttris generation code.
+  - Deprecated legacy async thread.
+  - Fixed a bug were DoomEdit would have slow performance.
+  - IceTech3: Fixed Particle Editor crashing when creating a new particle.
+  - Fixed Multiplayer Not working after Async Removal.
+  - Moved sound async to a separate thread.
+  - Added OBJ support.
+  - Moved AASfile to libs to match QuakeWars.
+  - brush_t renamed to idEditorBrush and entity_t idEditorEntity.
+  - Brushes will now be a single idRenderModel rather then each side of a brush also having its own render model.
+  - Varius Changes for DoomEdit:
+    * Added Proper Camera look for camera preview.
+    * Surface properties are now accessed from the M key.
+    * Camera movement is now based on delta time, and controled by radiant_cameraMoveSpeed.
+    * Added grid lines.
+  - Fixed a performance were idInteraction would allocate and link for objects that weren't in the light views frustum.
+  - Fixed a bug were timing would be incorrect in loading screens.
+  - Created native versions of all AI_events and then new script functions to call the new native events.
+  - Moved Weapon DoomScript native functions so they can be called in native and just in doomscript.
+  - Added AnimatedEntity.cpp/h moved that from Entity.cpp/h
+  - idAnimState moved to AnimState.cpp/h
+  - Seperated idEntity doomscript functions so they can be called in native.
+  - Seperated DoomScript from idActor so it can be used with native.
+  - Re-Added MayaImport:
+    * Supports Maya SDK 2019 up to 2025 (2019 Below is untested)
+  - Gamesys integration from Quake 4/Quake Wars. Prevents dead stripping, and new state management code.
 - Original Changes:
   - Restore Quake 3 Style console base on left overs in the files.
   - Support for source engine skyboxes base on StormEngine2 Changes.
@@ -59,7 +85,8 @@ Compared to the original _dhewm 3_, the changes of _D3Modding Kit_ worth mention
   - Set gui_mediumFontLimit and gui_smallFontLimit to "0"
   - Added Missing Material Editor models.
   - Added .guide Support from Quake 4.
-  - Refactored MFC Tools
+  - Refactored MFC Tools.
+  - Backported fixes from d3xp and merge missed changes in d3xp/ from base/
 
 See [Changelog](./CHANGELOG.md) for the original dhewn3 changelog.
 
