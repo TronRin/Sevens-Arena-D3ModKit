@@ -44,44 +44,6 @@ idInteraction implementation
 // FIXME: use private allocator for srfCullInfo_t
 
 /*
-================
-R_CalcInteractionFacing
-
-Determines which triangles of the surface are facing towards the light origin.
-
-The facing array should be allocated with one extra index than
-the number of surface triangles, which will be used to handle dangling
-edge silhouettes.
-================
-*/
-void R_CalcInteractionFacing( const idRenderEntityLocal *ent, const srfTriangles_t *tri, const idRenderLightLocal *light, srfCullInfo_t &cullInfo ) {
-	idVec3 localLightOrigin;
-
-	if ( cullInfo.facing != NULL ) {
-		return;
-	}
-
-	R_GlobalPointToLocal( ent->modelMatrix, light->globalLightOrigin, localLightOrigin );
-
-	int numFaces = tri->numIndexes / 3;
-
-	if ( !tri->facePlanes || !tri->facePlanesCalculated ) {
-		R_DeriveFacePlanes( const_cast<srfTriangles_t *>(tri) );
-	}
-
-	cullInfo.facing = (byte *) R_StaticAlloc( ( numFaces + 1 ) * sizeof( cullInfo.facing[0] ) );
-
-	// calculate back face culling
-	float *planeSide = (float *) _alloca16( numFaces * sizeof( float ) );
-
-	// exact geometric cull against face
-	SIMDProcessor->Dot( planeSide, localLightOrigin, tri->facePlanes, numFaces );
-	SIMDProcessor->CmpGE( cullInfo.facing, planeSide, 0.0f, numFaces );
-
-	cullInfo.facing[ numFaces ] = 1;	// for dangling edges to reference
-}
-
-/*
 =====================
 R_CalcInteractionCullBits
 
@@ -504,7 +466,6 @@ int idInteraction::MemoryUsed( void ) {
 	for ( int i = 0 ; i < numSurfaces ; i++ ) {
 		surfaceInteraction_t *inter = &surfaces[i];
 
-		total += R_TriSurfMemory( inter->lightTris );
 		total += R_TriSurfMemory( inter->shadowTris );
 	}
 
@@ -732,12 +693,6 @@ void idInteraction::CreateInteraction( const idRenderModel *model ) {
 
 		// generate a lighted surface and add it
 		if ( shader->ReceivesLighting() ) {
-			if ( tri->ambientViewCount == tr.viewCount ) {
-				sint->lightTris = tri;
-			} else {
-				// this will be calculated when sint->ambientTris is actually in view
-				sint->lightTris = LIGHT_TRIS_DEFERRED;
-			}
 			interactionGenerated = true;
 		}
 
@@ -763,9 +718,7 @@ void idInteraction::CreateInteraction( const idRenderModel *model ) {
 		}
 
 		// free the cull information when it's no longer needed
-		if ( sint->lightTris != LIGHT_TRIS_DEFERRED ) {
-			R_FreeInteractionCullInfo( sint->cullInfo );
-		}
+		R_FreeInteractionCullInfo( sint->cullInfo );
 	}
 
 	// if none of the surfaces generated anything, don't even bother checking?
@@ -937,13 +890,9 @@ void idInteraction::AddActiveInteraction( void ) {
 
 			// make sure we have created this interaction, which may have been deferred
 			// on a previous use that only needed the shadow
-			if ( sint->lightTris == LIGHT_TRIS_DEFERRED ) {
-				//sint->lightTris = R_CreateLightTris( vEntity->entityDef, sint->ambientTris, vLight->lightDef, sint->shader, sint->cullInfo );
-				sint->lightTris = sint->ambientTris;
-				R_FreeInteractionCullInfo( sint->cullInfo );
-			}
+			R_FreeInteractionCullInfo( sint->cullInfo );
 
-			srfTriangles_t *lightTris = sint->lightTris;
+			srfTriangles_t *lightTris = sint->ambientTris;
 
 			if ( lightTris ) {
 
@@ -1125,10 +1074,10 @@ void R_ShowInteractionMemory_f( const idCmdArgs &args ) {
 			for ( int j = 0; j < inter->numSurfaces; j++ ) {
 				surfaceInteraction_t *srf = &inter->surfaces[j];
 
-				if ( srf->lightTris && srf->lightTris != LIGHT_TRIS_DEFERRED ) {
+				if ( srf->ambientTris ) {
 					lightTris++;
-					lightTriVerts += srf->lightTris->numVerts;
-					lightTriIndexes += srf->lightTris->numIndexes;
+					lightTriVerts += srf->ambientTris->numVerts;
+					lightTriIndexes += srf->ambientTris->numIndexes;
 				}
 				if ( srf->shadowTris ) {
 					shadowTris++;
