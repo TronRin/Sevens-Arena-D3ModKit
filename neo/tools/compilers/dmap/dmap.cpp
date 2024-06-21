@@ -130,19 +130,22 @@ ProcessModels
 ============
 */
 bool ProcessModels( void ) {
-	bool	oldVerbose;
-	uEntity_t	*entity;
-
-	oldVerbose = dmapGlobals.verbose;
+	bool	oldVerbose = dmapGlobals.verbose;
 
 	for ( dmapGlobals.entityNum = 0 ; dmapGlobals.entityNum < dmapGlobals.num_entities ; dmapGlobals.entityNum++ ) {
 
-		entity = &dmapGlobals.uEntities[dmapGlobals.entityNum];
+		uEntity_t* entity = &dmapGlobals.uEntities[dmapGlobals.entityNum];
 		if ( !entity->primitives ) {
 			continue;
 		}
 
-		common->Printf( "############### entity %i ###############\n", dmapGlobals.entityNum );
+		if( dmapGlobals.entityNum == 0 )	{
+			common->Printf( "Current entity : worldspawn\n" );
+		} else {
+			common->Printf( "Current entity : %s\n", entity->mapEntity->epairs.GetString( "name" ) );
+		}
+
+		common->VerbosePrintf( "############### entity %i ###############\n", dmapGlobals.entityNum );
 
 		// if we leaked, stop without any more processing
 		if ( !ProcessModel( entity, (bool)(dmapGlobals.entityNum == 0 ) ) ) {
@@ -253,7 +256,7 @@ void Dmap( const idCmdArgs &args ) {
 			}
 		}
 
-		if ( !idStr::Icmp( s, "v" ) ) {
+		if ( !idStr::Icmp( s, "v" ) || !idStr::Icmp( s, "verbose" ) ) {
 			common->Printf( "verbose = true\n" );
 			dmapGlobals.verbose = true;
 		} else if ( !idStr::Icmp( s, "draw" ) ) {

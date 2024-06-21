@@ -171,6 +171,9 @@ public:
 								// and NEVER forces a screen update, which could cause reentrancy problems.
 	virtual void				DPrintf( VERIFY_FORMAT_STRING const char *fmt, ... ) = 0;
 
+								// Same as Printf but tool specific to discard most of dmap's and runaas's output
+	virtual void				VerbosePrintf( VERIFY_FORMAT_STRING const char* fmt, ... ) = 0;
+
 								// Prints WARNING %s message and adds the warning message to a queue for printing later on.
 	virtual void				Warning( VERIFY_FORMAT_STRING const char *fmt, ... ) = 0;
 

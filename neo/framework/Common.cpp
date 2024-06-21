@@ -47,7 +47,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "tools/compilers/compiler_public.h"
 #include "libs/aasfile/AASFileManager.h"
 #include "tools/edit_public.h"
-
+#include "tools/compilers/dmap/dmap.h"
 #include "sys/sys_imgui.h"
 
 #include "framework/Common.h"
@@ -160,6 +160,7 @@ public:
 	virtual void				SetRefreshOnPrint( bool set );
 	virtual void                Printf( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
 	virtual void				VPrintf( const char *fmt, va_list arg );
+	virtual void				VerbosePrintf( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
 	virtual void                DPrintf( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
 	virtual void                Warning( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
 	virtual void                DWarning( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
@@ -415,6 +416,23 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 ==================
 */
 void idCommonLocal::Printf( const char *fmt, ... ) {
+	va_list argptr;
+	va_start( argptr, fmt );
+	VPrintf( fmt, argptr );
+	va_end( argptr );
+}
+
+/*
+==================
+idCommonLocal::VerbosePrintf
+==================
+*/
+void idCommonLocal::VerbosePrintf( const char* fmt, ... )
+{
+	if( !dmapGlobals.verbose ) {
+		return;
+	}
+
 	va_list argptr;
 	va_start( argptr, fmt );
 	VPrintf( fmt, argptr );
