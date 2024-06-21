@@ -327,7 +327,7 @@ void ClipSidesByTree( uEntity_t *e ) {
 	side_t			*side;
 	primitive_t		*prim;
 
-	common->Printf( "----- ClipSidesByTree -----\n");
+	common->VerbosePrintf( "----- ClipSidesByTree -----\n");
 
 	for ( prim = e->primitives ; prim ; prim = prim->next ) {
 		b = prim->brush;
@@ -592,7 +592,7 @@ void PutPrimitivesInAreas( uEntity_t *e ) {
 	primitive_t		*prim;
 	mapTri_t		*tri;
 
-	common->Printf( "----- PutPrimitivesInAreas -----\n");
+	common->VerbosePrintf( "----- PutPrimitivesInAreas -----\n");
 
 	// allocate space for surface chains for each area
 	e->areas = (uArea_t *)Mem_Alloc( e->numAreas * sizeof( e->areas[0] ) );
@@ -1003,7 +1003,7 @@ void Prelight( uEntity_t *e ) {
 	}
 
 	if ( dmapGlobals.shadowOptLevel > 0 ) {
-		common->Printf( "----- BuildLightShadows -----\n" );
+		common->VerbosePrintf( "----- BuildLightShadows -----\n" );
 		start = Sys_Milliseconds();
 
 		// calc bounds for all the groups to speed things up
@@ -1021,12 +1021,12 @@ void Prelight( uEntity_t *e ) {
 		}
 
 		end = Sys_Milliseconds();
-		common->Printf( "%5.1f seconds for BuildLightShadows\n", ( end - start ) / 1000.0 );
+		common->VerbosePrintf( "%5.1f seconds for BuildLightShadows\n", ( end - start ) / 1000.0 );
 	}
 
 
 	if ( !dmapGlobals.noLightCarve ) {
-		common->Printf( "----- CarveGroupsByLight -----\n" );
+		common->VerbosePrintf( "----- CarveGroupsByLight -----\n" );
 		start = Sys_Milliseconds();
 		// now subdivide the optimize groups into additional groups for
 		// each light that illuminates them
@@ -1036,7 +1036,7 @@ void Prelight( uEntity_t *e ) {
 		}
 
 		end = Sys_Milliseconds();
-		common->Printf( "%5.1f seconds for CarveGroupsByLight\n", ( end - start ) / 1000.0 );
+		common->VerbosePrintf( "%5.1f seconds for CarveGroupsByLight\n", ( end - start ) / 1000.0 );
 	}
 
 }
