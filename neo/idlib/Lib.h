@@ -63,8 +63,8 @@ public:
 	static void					ShutDown( void );
 
 	// wrapper to idCommon functions
-	static void					Error( const char *fmt, ... );
-	static void					Warning( const char *fmt, ... );
+	NO_RETURN static void       Error( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_STATIC_ATTRIBUTE_PRINTF( 1, 2 );
+	static void       			Warning( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_STATIC_ATTRIBUTE_PRINTF( 1, 2 );
 };
 
 

@@ -41,8 +41,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "tools/edit_public.h"
 
-void SCR_DrawTextLeftAlign( float &y, const char *text, ... ) id_attribute((format(printf,2,3)));
-void SCR_DrawTextRightAlign( float &y, const char *text, ... ) id_attribute((format(printf,2,3)));
+void SCR_DrawTextLeftAlign( float &y, VERIFY_FORMAT_STRING const char *text, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
+void SCR_DrawTextRightAlign( float &y, VERIFY_FORMAT_STRING const char *text, ... ) ID_INSTANCE_ATTRIBUTE_PRINTF( 1, 2 );
 
 #define	LINE_WIDTH				78
 #define	NUM_CON_TIMES			4
@@ -160,7 +160,7 @@ idCVar idConsoleLocal::con_size( "con_size", "0.5", CVAR_SYSTEM|CVAR_FLOAT|CVAR_
 SCR_DrawTextLeftAlign
 ==================
 */
-void SCR_DrawTextLeftAlign( float &y, const char *text, ... ) {
+void SCR_DrawTextLeftAlign( float &y, VERIFY_FORMAT_STRING const char *text, ... ) {
 	char string[MAX_STRING_CHARS];
 	va_list argptr;
 	va_start( argptr, text );
@@ -175,7 +175,7 @@ void SCR_DrawTextLeftAlign( float &y, const char *text, ... ) {
 SCR_DrawTextRightAlign
 ==================
 */
-void SCR_DrawTextRightAlign( float &y, const char *text, ... ) {
+void SCR_DrawTextRightAlign( float &y, VERIFY_FORMAT_STRING const char *text, ... ) {
 	char string[MAX_STRING_CHARS];
 	va_list argptr;
 	va_start( argptr, text );

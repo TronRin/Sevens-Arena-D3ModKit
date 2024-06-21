@@ -240,6 +240,11 @@ void idLib::Error( const char *fmt, ... ) {
 	va_end( argptr );
 
 	common->Error( "%s", text );
+
+#if !defined( _WIN32 )
+	// SRS - Added exit to silence build warning since FatalError has attribute noreturn
+	exit( EXIT_FAILURE );
+#endif
 }
 
 /*
@@ -275,7 +280,7 @@ ID_INLINE static float FloatSwap( float f ) {
 	union {
 		float	f;
 		unsigned int u;
-	} id_attribute((may_alias)) dat;
+	} dat;
 
 	dat.f = f;
 	dat.u = SDL_Swap32(dat.u);
