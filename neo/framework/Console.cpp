@@ -835,6 +835,10 @@ bool	idConsoleLocal::ProcessEvent( const sysEvent_t *event, bool forceAccept ) {
 				// if the shift key is down, don't open the console as much
 				// except we used shift+esc.
 				SetDisplayFraction( 0.2f );
+			} else if ( idKeyInput::IsDown( K_CTRL ) && event->evValue != K_ESCAPE ) {
+				// if the ctrl key is down, open the console as much
+				// except we used shift+esc.
+				SetDisplayFraction( 1.0f );
 			} else {
 				float consoleSize = con_size.GetFloat();
 				if( consoleSize < 0.1f )
