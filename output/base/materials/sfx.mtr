@@ -1,3 +1,72 @@
+table tunnelVisionSolidAlpha { clamp { 1, 0 } }
+
+//	Dentomod's Bloom
+
+textures/AFX/AFXweight 
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		vertexProgram 	afxweight.vfp
+		fragmentProgram	afxweight.vfp
+
+		fragmentMap 0 _currentRender
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXmodulate
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		rgba 1
+		vertexProgram 	afxmodulate.vfp
+		vertexParm		0 parm0
+		vertexParm		1 parm1
+		fragmentProgram	afxmodulate.vfp
+
+		fragmentMap 0 _fsfx_input
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXmodulate2
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	{	
+		rgba 1
+		vertexProgram 	afxmodulate2.vfp
+		fragmentProgram	afxmodulate2.vfp
+
+		fragmentMap 0 _fsfx_input
+		fragmentMap 1 _afxweight
+	}
+}
+
+textures/AFX/AFXadd
+{
+	noshadows
+	noimpact
+	sort	postProcess
+	
+	{	
+		rgba 1
+		vertexProgram 	afxadd.vfp
+		vertexParm		0 parm0
+		vertexParm		1 parm1
+		fragmentProgram	afxadd.vfp
+
+		fragmentMap 0 _currentRender 
+		fragmentMap 1 _fsfx_input
+	}
+
+}
+
 textures/fsfx/blur
 {
 	noshadows
@@ -264,5 +333,36 @@ textures/fsfx/add_color
 		colored
 		map _white
 		blend add
+	}
+}
+
+// Normal view effects
+
+/*
+	Player tunel vision aka Damage view effect.
+	parm3 will range from 0.0 to 1.0 based on health, 1.0 is full health
+	parm0 will be the time that damage was last taken, allowing an accentuation and fade out
+	
+	when health is near 0, the density will be greater
+*/
+textures/decals/tunnel
+{
+	noshadows
+	translucent
+	{
+		alpha		tunnelVisionSolidAlpha[ parm3 ] - (time-parm0)*0.25
+		blend		blend
+		centerscale	0.65+0.05*sinTable[time], 0.65+0.05*sinTable[time]
+		rotate		time * -.01
+		map			textures/sfx/tunnel.tga
+		clamp
+	}
+	{
+		alpha		tunnelVisionSolidAlpha[ parm3 ] - (time-parm0)*0.25
+		blend		blend
+		centerscale	0.65+0.05*sinTable[time], 0.65+0.05*sinTable[time]
+		rotate 		time * .006
+		map			textures/sfx/tunnel.tga
+		clamp
 	}
 }
