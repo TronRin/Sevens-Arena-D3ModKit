@@ -76,7 +76,6 @@ idPlayerView::idPlayerView() {
 	player = NULL;
 	dvMaterial = declManager->FindMaterial( "_scratch" );
 	tunnelMaterial = declManager->FindMaterial( "textures/decals/tunnel" );
-	armorMaterial = declManager->FindMaterial( "armorViewEffect" );
 	berserkMaterial = declManager->FindMaterial( "textures/decals/berserk" );
 	lagoMaterial = declManager->FindMaterial( LAGO_MATERIAL, false );
 	dvFinishTime = 0;
@@ -132,7 +131,6 @@ void idPlayerView::Save( idSaveGame *savefile ) const {
 	savefile->WriteAngles( kickAngles );
 
 	savefile->WriteMaterial( tunnelMaterial );
-	savefile->WriteMaterial( armorMaterial );
 	savefile->WriteMaterial( berserkMaterial );
 	savefile->WriteFloat( lastDamageTime );
 
@@ -185,7 +183,6 @@ void idPlayerView::Restore( idRestoreGame *savefile ) {
 	savefile->ReadAngles( kickAngles );
 
 	savefile->ReadMaterial( tunnelMaterial );
-	savefile->ReadMaterial( armorMaterial );
 	savefile->ReadMaterial( berserkMaterial );
 	savefile->ReadFloat( lastDamageTime );
 
@@ -499,15 +496,6 @@ void idPlayerView::SingleView( idUserInterface *hud, const renderView_t *view ) 
 				renderSystem->DrawStretchPic( blob->x, blob->y, blob->w, blob->h,blob->s1, blob->t1, blob->s2, blob->t2, blob->material );
 			}
 		}
-
-		// armor impulse feedback
-		float	armorPulse = ( gameLocal.fast.time - player->lastArmorPulse ) / 250.0f;
-
-		if ( armorPulse > 0.0f && armorPulse < 1.0f ) {
-			renderSystem->SetColor4( 1, 1, 1, 1.0 - armorPulse );
-			renderSystem->DrawStretchPic( 0, 0, 640, 480, 0, 0, 1, 1, armorMaterial );
-		}
-
 
 		// tunnel vision
 		float	health = 0.0f;

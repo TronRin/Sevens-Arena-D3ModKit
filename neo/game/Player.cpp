@@ -7098,7 +7098,7 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 		physicsObj.SetKnockBack( idMath::ClampInt( 50, 200, knockback * 2 ) );
 	}
 
-	// give feedback on the player view and audibly when armor is helping
+	// give feedback on the player audibly when armor is helping
 	if ( armorSave ) {
 		inventory.armor -= armorSave;
 

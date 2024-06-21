@@ -374,7 +374,6 @@ public:
 	idAngles			kickAngles;
 
 	const idMaterial *	tunnelMaterial;		// health tunnel vision
-	const idMaterial *	armorMaterial;		// armor damage view effect
 	const idMaterial *	berserkMaterial;	// berserk effect
 	const idMaterial *	lagoMaterial;		// lagometer drawing
 	float				lastDamageTime;		// accentuate the tunnel effect for a while
