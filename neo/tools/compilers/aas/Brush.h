@@ -49,7 +49,7 @@ If you have questions concerning this license or the applicable additional terms
 class idBrush;
 class idBrushList;
 
-void DisplayRealTimeString( const char *string, ... ) id_attribute((format(printf,1,2)));
+void DisplayRealTimeString( const char *string, ... );
 
 
 //===============================================================

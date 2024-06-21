@@ -112,7 +112,7 @@ public:
 	void					RestoreObjects( void );
 	void					DeleteObjects( void );
 
-	void					Error( const char *fmt, ... ) id_attribute((format(printf,2,3)));
+	void					Error( VERIFY_FORMAT_STRING const char *fmt, ... );
 
 	void					Read( void *buffer, int len );
 	void					ReadInt( int &value );

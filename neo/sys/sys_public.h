@@ -149,10 +149,10 @@ void			Sys_SetClipboardData( const char *string );
 
 // will go to the various text consoles
 // NOT thread safe - never use in the async paths
-void			Sys_Printf( const char *msg, ... )id_attribute((format(printf,1,2)));
+void			Sys_Printf( VERIFY_FORMAT_STRING const char *msg, ... );
 
 // guaranteed to be thread-safe
-void			Sys_DebugPrintf( const char *fmt, ... )id_attribute((format(printf,1,2)));
+void			Sys_DebugPrintf( VERIFY_FORMAT_STRING const char *fmt, ... );
 void			Sys_DebugVPrintf( const char *fmt, va_list arg );
 
 // allow game to yield CPU time
@@ -424,7 +424,7 @@ void				Sys_TriggerEvent( int index = TRIGGER_EVENT_ZERO );
 
 class idSys {
 public:
-	virtual void			DebugPrintf( const char *fmt, ... )id_attribute((format(printf,2,3))) = 0;
+	virtual void			DebugPrintf( VERIFY_FORMAT_STRING const char *fmt, ... ) = 0;
 	virtual void			DebugVPrintf( const char *fmt, va_list arg ) = 0;
 
 	virtual unsigned int	GetMilliseconds( void ) = 0;

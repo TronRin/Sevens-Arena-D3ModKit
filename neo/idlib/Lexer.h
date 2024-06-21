@@ -234,9 +234,9 @@ public:
 					// returns the current line number
 	const int		GetLineNum( void );
 					// print an error message
-	void			Error( const char *str, ... ) id_attribute((format(printf,2,3)));
+	void			Error( VERIFY_FORMAT_STRING const char *str, ... );
 					// print a warning message
-	void			Warning( const char *str, ... ) id_attribute((format(printf,2,3)));
+	void			Warning( VERIFY_FORMAT_STRING const char *str, ... );
 					// returns true if Error() was called with LEXFL_NOFATALERRORS or LEXFL_NOERRORS set
 	bool			HadError( void ) const;
 

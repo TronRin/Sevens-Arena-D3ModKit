@@ -278,7 +278,7 @@ public:
 	static int			IcmpnPath( const char *s1, const char *s2, int n );	// compares paths and makes sure folders come first
 	static void			Append( char *dest, int size, const char *src );
 	static void			Copynz( char *dest, const char *src, int destsize );
-	static int			snPrintf( char *dest, int size, const char *fmt, ... ) id_attribute((format(printf,3,4)));
+	static int			snPrintf( char *dest, int size, VERIFY_FORMAT_STRING const char *fmt, ... );
 	static int			vsnPrintf( char *dest, int size, const char *fmt, va_list argptr );
 	static int			FindChar( const char *str, const char c, int start = 0, int end = -1 );
 	static int			FindText( const char *str, const char *text, bool casesensitive = true, int start = 0, int end = -1 );
@@ -325,7 +325,7 @@ public:
 	int					DynamicMemoryUsed() const;
 	static idStr		FormatNumber( int number );
 
-	static idStr		Format( const char *format, ... )  id_attribute( ( format( printf, 1, 2 ) ) );
+	static idStr		Format( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_STATIC_ATTRIBUTE_PRINTF( 1, 2 );
 	static idStr		VFormat( const char *format, va_list argptr );
 
 	void				StripLeadingWhitespace( void );
@@ -341,7 +341,7 @@ protected:
 	void				EnsureAlloced( int amount, bool keepold = true );	// ensure string data buffer is large anough
 };
 
-char *					va( const char *fmt, ... ) id_attribute((format(printf,1,2)));
+char *					va( VERIFY_FORMAT_STRING const char *fmt, ... ) ID_STATIC_ATTRIBUTE_PRINTF( 1, 2 );
 
 
 ID_INLINE void idStr::EnsureAlloced( int amount, bool keepold ) {
@@ -1078,12 +1078,12 @@ ID_INLINE int idStr::DynamicMemoryUsed() const {
 // *would* have been written into a big enough buffer, even if that's > size
 // unlike idStr::snPrintf() which returns the written bytes in that case
 // and also calls common->Warning() in case of overflows
-int D3_snprintfC99(char *dst, size_t size, const char *format, ...) id_attribute((format(printf,3,4)));
+int D3_snprintfC99( char *dst, size_t size, VERIFY_FORMAT_STRING const char *format, ...) ID_STATIC_ATTRIBUTE_PRINTF( 1, 2 );
 
 // behaves like C99's vsnprintf() by returning the amount of bytes that
 // *would* have been written into a big enough buffer, even if that's > size
 // unlike idStr::vsnPrintf() which returns -1 in that case
-int D3_vsnprintfC99(char *dst, size_t size, const char *format, va_list ap);
+int D3_vsnprintfC99( char *dst, size_t size, const char *format, va_list ap );
 
 // convert UTF-8 to ISU8859-1 (the "High ASCII" 8-bit encoding Doom3 uses)
 // invalidChar is inserted into the output buffer for unicode characters that can't be
