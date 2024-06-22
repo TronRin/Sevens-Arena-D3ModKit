@@ -201,9 +201,6 @@ int Sys_GetProcessorId( void ) {
 	if (SDL_HasMMX())
 		flags |= CPUID_MMX;
 
-	if (SDL_Has3DNow())
-		flags |= CPUID_3DNOW;
-
 	if (SDL_HasSSE())
 		flags |= CPUID_SSE;
 
@@ -215,9 +212,6 @@ int Sys_GetProcessorId( void ) {
 	if (HasSSE3())
 		flags |= CPUID_SSE3;
 #endif
-
-	if (SDL_HasAltiVec())
-		flags |= CPUID_ALTIVEC;
 
 	return flags;
 }
