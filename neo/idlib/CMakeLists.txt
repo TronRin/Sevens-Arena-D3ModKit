@@ -28,9 +28,7 @@ set( src_idlib
 	math/Rotation.cpp
 	math/Simd.cpp
 	math/Simd_Generic.cpp
-	math/Simd_AltiVec.cpp
 	math/Simd_MMX.cpp
-	math/Simd_3DNow.cpp
 	math/Simd_SSE.cpp
 	math/Simd_SSE2.cpp
 	math/Simd_SSE3.cpp
