@@ -797,6 +797,8 @@ if ( NOT MAYA_IMPORT )
 		game/anim/Anim_Import.cpp
 		game/anim/Anim_Import.h
 	)
+else()	
+	add_definitions( -DID_MAYA_IMPORT_TOOL )
 endif()
 
 set(src_d3xp
@@ -887,6 +889,8 @@ if ( NOT MAYA_IMPORT )
 		d3xp/anim/Anim_Import.cpp
 		d3xp/anim/Anim_Import.h
 	)
+else()
+	add_definitions( -DID_MAYA_IMPORT_TOOL )
 endif()
 
 set(src_debuggerServer
