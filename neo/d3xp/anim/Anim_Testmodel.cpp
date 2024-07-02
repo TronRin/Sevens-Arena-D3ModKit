@@ -771,7 +771,7 @@ void idTestModel::TestModel_f( const idCmdArgs &args ) {
 				name.DefaultFileExtension( ".ase" );
 			}
 
-#ifndef _D3XP
+#ifdef ID_MAYA_IMPORT_TOOL
 			// Maya ascii format is supported natively now
 			if ( strstr( name, ".ma" ) || strstr( name, ".mb" ) ) {
 				idModelExport exporter;

@@ -792,6 +792,13 @@ set(src_game
 
 add_globbed_headers(src_game "game")
 
+if ( NOT MAYA_IMPORT )
+	list( REMOVE_ITEM src_game
+		game/anim/Anim_Import.cpp
+		game/anim/Anim_Import.h
+	)
+endif()
+
 set(src_d3xp
 	d3xp/AF.cpp
 	d3xp/AFEntity.cpp
@@ -874,6 +881,13 @@ set(src_d3xp
 )
 
 add_globbed_headers(src_d3xp "d3xp")
+
+if ( NOT MAYA_IMPORT )
+	list( REMOVE_ITEM src_d3xp
+		d3xp/anim/Anim_Import.cpp
+		d3xp/anim/Anim_Import.h
+	)
+endif()
 
 set(src_debuggerServer
 	tools/debugger/DebuggerBreakpoint.h

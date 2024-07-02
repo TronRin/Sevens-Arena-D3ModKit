@@ -14,6 +14,8 @@
 
 #ifndef ID_MAYA_IMPORT
 	#cmakedefine ID_ENABLE_CURL
+#else
+	#define ID_MAYA_IMPORT_TOOL
 #endif
 
 #define MAYA_DLL_VERSION 		@MAYA_VERSION@

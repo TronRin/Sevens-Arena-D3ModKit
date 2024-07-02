@@ -186,6 +186,7 @@ typedef struct {
 } animFlags_t;
 
 
+#ifdef ID_MAYA_IMPORT_TOOL
 /*
 ==============================================================================================
 
@@ -220,6 +221,7 @@ public:
 	bool					ExportAnim( const char *anim );
 	int						ExportModels( const char *pathname, const char *extension );
 };
+#endif
 
 /*
 ==============================================================================================

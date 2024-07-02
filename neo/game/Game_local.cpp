@@ -396,8 +396,10 @@ void idGameLocal::Shutdown( void ) {
 
 	idAI::FreeObstacleAvoidanceNodes();
 
+#ifdef ID_MAYA_IMPORT_TOOL
 	// shutdown the model exporter
 	idModelExport::Shutdown();
+#endif
 
 	idEvent::Shutdown();
 
