@@ -1,8 +1,8 @@
-![Logo](branding/logo.png "The logo, what else do you expected?")
----
+<p align="center">
+  <img src="https://github.com/FriskTheFallenHuman/D3ModdingKit/blob/master/.github/branding/logo.png?raw=true" alt="The logo, what else do you expected?"/>
+</p>
 
 ![Discord](https://img.shields.io/discord/1251620682899390545?style=social&logo=discord)
-
 
 # About
 
