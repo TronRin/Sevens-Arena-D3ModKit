@@ -125,6 +125,7 @@ If you have questions concerning this license or the applicable additional terms
 		#define ID_INLINE					inline
 		#define ID_STATIC_TEMPLATE
 		#define assertmem( x, y )
+		#define strtok_s	strtok_r
 	#endif
 #endif
 
@@ -153,6 +154,8 @@ If you have questions concerning this license or the applicable additional terms
 	#define ID_STATIC_TEMPLATE
 
 	#define assertmem( x, y )
+
+	#define strtok_s	strtok_r
 #endif
 
 
@@ -186,6 +189,8 @@ If you have questions concerning this license or the applicable additional terms
 	#define ID_STATIC_TEMPLATE
 
 	#define assertmem( x, y )
+
+	#define strtok_s	strtok_r
 #endif
 
 #ifndef ID_MAYBE_INLINE

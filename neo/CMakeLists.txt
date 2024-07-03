@@ -116,6 +116,11 @@ else()
 	set( CURL_LIBRARY "" )
 endif()
 
+# MayaImport currently doesn't work in Linux/Mac
+if ( NOT WIN32 )
+	set( MAYA_IMPORT OFF )
+endif()
+
 if( TOOLS )
 	if ( MAYA_IMPORT )
 		include( ExternalProject )
@@ -162,7 +167,7 @@ set( D3_COMPILER_IS_CLANG FALSE )
 set( D3_COMPILER_IS_GCC_OR_CLANG FALSE )
 
 if( NOT MSVC )
-	#if( NOT WIN32 )
+	if( NOT WIN32 )
 		# libbacktrace support - TODO: might work with MinGW? we don't have a crash handler for win32 though..
 		include( CheckCSourceCompiles )
 		set( CMAKE_REQUIRED_LIBRARIES backtrace )
@@ -177,7 +182,7 @@ if( NOT MSVC )
 		else()
 			message( WARNING "libbacktrace wasn't found. It's not required but recommended, because it provides useful backtraces if engine/game crashes" )
 		endif()
-	#endif() # NOT WIN32
+	endif() # NOT WIN32
 
 	# check if our SDL2 supports X11 in SDL_syswm so we can use it for DPI scaling ImGui
 	set( CMAKE_REQUIRED_LIBRARIES SDL2 )
@@ -317,10 +322,10 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
 		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608" )
 	elseif( os STREQUAL "linux" )
-		set( sys_libs ${sys_libs} dl )
+		set( sys_libs ${sys_libs} dl ssl crypto rt )
 	elseif( os STREQUAL "freebsd" )
 		find_library( EXECINFO_LIBRARIES execinfo /usr/lib /usr/local/lib )
-		set( sys_libs ${sys_libs} ${EXECINFO_LIBRARIES} )
+		set( sys_libs ${sys_libs} ssl crypto rt ${EXECINFO_LIBRARIES} )
 	endif()
 elseif( MSVC )
 	add_compile_options( /MP ) # parallel build (use all cores, or as many as configured in VS)

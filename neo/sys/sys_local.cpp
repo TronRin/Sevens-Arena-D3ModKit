@@ -42,7 +42,11 @@ idSysLocal			sysLocal;
 idSys *				sys = &sysLocal;
 
 bool idSysLocal::IsGameWindowVisible( void ) {
+#ifdef _WIN32
 	return Sys_IsWindowVisible();
+#else
+	return true;
+#endif // _WIN32
 }
 
 void idSysLocal::DebugPrintf( const char *fmt, ... ) {

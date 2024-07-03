@@ -2526,7 +2526,7 @@ void idCommonLocal::Frame( void ) {
 
 				// if there was a large gap in time since the last frame, or the frame
 				// rate is very very low, limit the number of frames we will run
-				const int clampedDeltaMilliseconds = min( deltaMilliseconds, com_deltaTimeClamp.GetInteger() );
+				const int clampedDeltaMilliseconds = Min( deltaMilliseconds, com_deltaTimeClamp.GetInteger() );
 
 				gameTimeResidual += clampedDeltaMilliseconds * com_timescale.GetFloat();
 
@@ -2948,7 +2948,7 @@ void idSoundThread( void ) {
 	while ( !commonLocal.IsShuttingDown() ) {
 		// Call the AsyncUpdate method with the current milliseconds
 		soundSystem->AsyncUpdate( Sys_Milliseconds() );
-		Sleep( 0 );
+		Sys_Sleep( 0 );
 	}
 }
 

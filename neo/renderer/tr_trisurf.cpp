@@ -30,7 +30,7 @@ If you have questions concerning this license or the applicable additional terms
 #include "renderer/VertexCache.h"
 
 #include "renderer/tr_local.h"
-#include <libs\mikktspace\mikktspace.h> // RBMIKKT_TANGENT
+#include <libs/mikktspace/mikktspace.h> // RBMIKKT_TANGENT
 
 /*
 ==============================================================================
