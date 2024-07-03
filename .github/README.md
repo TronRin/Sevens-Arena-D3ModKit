@@ -2,7 +2,8 @@
   <img src="https://github.com/FriskTheFallenHuman/D3ModdingKit/blob/master/.github/branding/logo.png?raw=true" alt="The logo, what else do you expected?"/>
 </p>
 
-![Discord](https://img.shields.io/discord/1251620682899390545?style=social&logo=discord)
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/fEehA3hCTg?style=flat)](https://discord.gg/fEehA3hCTg) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=flat&logo=c%2B%2B&logoColor=white) ![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?flat&logo=linux&logoColor=black) ![macOS](https://img.shields.io/badge/mac%20os-000000?style=flat&logo=macos&logoColor=F0F0F0) ![GitHub Repo stars](https://img.shields.io/github/stars/FriskTheFallenHuman/D3ModdingKit?style=flat&logo=Github)
+
 
 # About
 
@@ -118,3 +119,13 @@ Additionally to the [Compiling instructions](./COMPILING.md) we use vcpkg for th
 ## License
 
 The GNU License can be see here [GNU License](./LICENSE.md) the same goes for the original [DOOM 3 License](./LICENSE_DOOM3.md).
+
+## Special thanks
+
+Special thanks to everybody who did previous help on the making of Dhewm3 and D3Modding Kit:
+
+<p align="center">
+  <a href="https://github.com/FriskTheFallenHuman/D3ModdingKit/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=FriskTheFallenHuman/D3ModdingKit" />
+  </a>
+</p>
