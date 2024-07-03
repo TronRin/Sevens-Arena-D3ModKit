@@ -34,13 +34,7 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
-#if defined(__AROS__)
-	#define GAME_NAME						"ADoom3"		// appears in errors
-	#define CONFIG_FILE						"adoom3.cfg"
-#else
-	#define GAME_NAME						"dhewm 3"		// appears in errors
-#endif
-
+#define GAME_NAME						"dhewm 3"		// appears in errors
 #define ENGINE_VERSION					"dhewm3 1.5.4pre"	// printed in console, used for window title
 
 #ifdef ID_REPRODUCIBLE_BUILD
