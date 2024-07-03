@@ -1,4 +1,10 @@
-# DOOM 3 Modding Kit
+![Logo](branding/logo.png "The logo, what else do you expected?")
+---
+
+![Discord](https://img.shields.io/discord/1251620682899390545?style=social&logo=discord)
+
+
+# About
 
 Doom 3 Modding Kit is basically a kit oriented for modders and people that wants to make total conversion mods.
 
