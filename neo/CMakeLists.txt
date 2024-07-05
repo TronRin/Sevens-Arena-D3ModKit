@@ -56,7 +56,7 @@ if ( LINUX_RELEASE_BINS )
 	set( CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE )
 	set( CMAKE_BUILD_WITH_INSTALL_RPATH TRUE )
 	set( CMAKE_INSTALL_RPATH "$ORIGIN/libs" )
-	set( ldflags "${ldflags} -Wl,-z,origin" ) # not sure this is even needed, but shouldn't hurt
+	set( ldflags "${ldflags} -Wl,--large-address-aware,-z,origin" ) # not sure this is even needed, but shouldn't hurt
 else()
 	set( CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE )
 endif()
@@ -319,7 +319,7 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		set( sys_libs ${sys_libs} "-framework Carbon -framework Cocoa -framework IOKit" )
 	elseif( WIN32 )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
-		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608" )
+		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl, --large-address-aware --stack,8388608" )
 	elseif( os STREQUAL "linux" )
 		set( sys_libs ${sys_libs} dl OpenSSL::SSL OpenSSL::Crypto rt )
 	elseif( os STREQUAL "freebsd" )
@@ -342,6 +342,14 @@ elseif( MSVC )
 	add_compile_options( /wd4996 ) # 'function': was declared deprecated
 	add_compile_options( /wd4068 ) # unknown pragma
 	add_compile_options( /wd4458 ) # declaration of 'variable' hides class member
+	add_compile_options( /wd4018 ) # 'math symbol': signed/unsigned mismatch
+	add_compile_options( /wd4018 ) # 'math symbol': signed/unsigned mismatch
+	add_compile_options( /wd26495 ) # variable 'variable' is uninitialized. Always initialize a member variable (type.6).
+	add_compile_options( /wd4146 ) # unary minus operator applied to unsigned type, result still unsigned
+	add_compile_options( /wd4805 ) # 'symbol' unsafe mix of type 'type a' and type 'type b' in operation
+	add_compile_options( /wd4273 ) # 'function': inconsistent dll linkage
+	add_compile_options( /wd4838 ) # conversion from 'type' to 'type' requires a narrowing conversion
+
 	
 	add_definitions( -D_ALLOW_KEYWORD_MACROS ) # because of the "#define private public" and "#define protected public" in TypeInfo.cpp
 	
@@ -352,6 +360,12 @@ elseif( MSVC )
 	
 	# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
 	set( ldflags "${ldflags} /STACK:8388608" )
+	
+	# let the 32bit app use more than 2gb of ram
+	set( ldflags "${ldflags} /LARGEADDRESSAWARE" )
+	
+	# Don't let the linker generate manifest files for shared dlls
+	set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO" )
 else()
 	message( FATAL_ERROR "Unsupported compiler" )
 endif()
@@ -370,10 +384,6 @@ set( CMAKE_CXX_FLAGS_MINSIZEREL "-DNDEBUG ${CMAKE_C_FLAGS_MINSIZEREL}" )
 if( WIN32 )
 	add_definitions( -DWINVER=0x0501 )
 	add_definitions( -D_WIN32_WINNT=0x0501 )
-
-	set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO" )
-	#set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO" )
-	#set( CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /MANIFEST:NO" )
 
 	set( sys_libs ${sys_libs}
 		winmm
