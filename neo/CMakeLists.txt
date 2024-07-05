@@ -7,11 +7,6 @@ else()
 	message( FATAL_ERROR "Vcpkg wasn't not found, aborting, make sure to git clone this with all submodules!")
 endif()
 
-# Drop the binaries in the output/ folder
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../output" )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/../output" )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/../output" )
-
 # Enable folder groups
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER  "" )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
@@ -285,6 +280,10 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 	if( cxx_has_Wno-cpp20-compat )
 		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++20-compat" )
 	endif()
+	
+	if ( NOT MSVC )
+		find_package( OpenSSL REQUIRED )
+	endif()
 
 	if(APPLE)
 		add_definitions(-DMACOS_X=1)
@@ -322,10 +321,10 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
 		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608" )
 	elseif( os STREQUAL "linux" )
-		set( sys_libs ${sys_libs} dl ssl crypto rt )
+		set( sys_libs ${sys_libs} dl OpenSSL::SSL OpenSSL::Crypto rt )
 	elseif( os STREQUAL "freebsd" )
 		find_library( EXECINFO_LIBRARIES execinfo /usr/lib /usr/local/lib )
-		set( sys_libs ${sys_libs} ssl crypto rt ${EXECINFO_LIBRARIES} )
+		set( sys_libs ${sys_libs} OpenSSL::SSL OpenSSL::Crypto rt ${EXECINFO_LIBRARIES} )
 	endif()
 elseif( MSVC )
 	add_compile_options( /MP ) # parallel build (use all cores, or as many as configured in VS)
@@ -357,6 +356,9 @@ else()
 	message( FATAL_ERROR "Unsupported compiler" )
 endif()
 
+# Drop the binaries in the output/${os} folder
+set( OUTPUT_FOLDER ${CMAKE_SOURCE_DIR}/../output/${os} )
+
 set( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} )
 
@@ -368,6 +370,10 @@ set( CMAKE_CXX_FLAGS_MINSIZEREL "-DNDEBUG ${CMAKE_C_FLAGS_MINSIZEREL}" )
 if( WIN32 )
 	add_definitions( -DWINVER=0x0501 )
 	add_definitions( -D_WIN32_WINNT=0x0501 )
+
+	set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO" )
+	#set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO" )
+	#set( CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /MANIFEST:NO" )
 
 	set( sys_libs ${sys_libs}
 		winmm
@@ -1066,15 +1072,28 @@ elseif(WIN32)
 
 	set(src_sys_core
 		sys/glimp.cpp
+		"sys/win32/rc/windows_default.manifest"
+		"sys/win32/rc/windows_dpiaware.manifest"
+		"sys/win32/rc/windows_visualstyles.manifest"
 	)
 
 	if(TOOLS)
 		file(GLOB src_sys_tools_images "sys/win32/rc/res/*.bmp" "sys/win32/rc/res/*.ico" "sys/win32/rc/res/*.cur")
-		set(src_sys_core ${src_sys_core} ${src_sys_tools_images}  "sys/win32/rc/doom.rc")
+		set(src_sys_core
+			${src_sys_core}
+			${src_sys_tools_images}
+			"sys/win32/rc/doom.rc"
+			"sys/win32/rc/resource.h"
+		)
 	else()
 		# adding both .rc files breaks the build, but I think it only contains the icon
 		# and doom.rc also contains that (+icons for editor etc, AFAIK), so this is fine
-		set(src_sys_core ${src_sys_core} "${CMAKE_SOURCE_DIR}/sys/win32/rc/dhewm3.rc" )
+		set(src_sys_core
+			${src_sys_core}
+			"sys/win32/rc/res/doom3.ico"
+			"sys/win32/rc/dhewm3.rc"
+			"sys/win32/rc/dhewm3_resource.h"
+		)
 	endif()
 
 else()
@@ -1161,6 +1180,7 @@ if( ENGINE )
 
 	set_target_properties( ${DHEWM3BINARY} PROPERTIES LINK_FLAGS "${ldflags}" )
 	set_target_properties( ${DHEWM3BINARY} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist )
+	set_target_properties( ${DHEWM3BINARY} PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( ${DHEWM3BINARY} PROPERTIES FOLDER "exes" )
 
 	target_link_libraries( ${DHEWM3BINARY}
@@ -1211,6 +1231,7 @@ if( DEDICATED )
 	endif()
 
 	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES FOLDER "exes" )
 
 	target_link_libraries( ${DHEWM3BINARY}ded
@@ -1285,6 +1306,7 @@ if( TOOLS AND MAYA_IMPORT )
 	target_link_directories( MayaImport${MAYA_VERSION} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/MayaSDKDevKit/lib" )
 	target_link_libraries( MayaImport${MAYA_VERSION} idlib Foundation OpenMaya OpenMayaAnim )
 	set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES FOLDER "dlls" )
+	set_target_properties( MayaImport${MAYA_VERSION} PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} LIBRARY_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 
 	if( NOT APPLE AND NOT WIN32 )
 		install( TARGETS MayaImport${MAYA_VERSION}
@@ -1312,7 +1334,7 @@ if( BASE AND NOT HARDLINK_GAME )
 	set_target_properties( base PROPERTIES LINK_FLAGS "${ldflags}" )
 	set_target_properties( base PROPERTIES INSTALL_NAME_DIR "@executable_path" )
 	target_link_libraries( base idlib )
-
+	set_target_properties( base PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} LIBRARY_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( base PROPERTIES FOLDER "dlls" )
 
 	if( NOT APPLE AND NOT WIN32 )
@@ -1341,7 +1363,7 @@ if( D3XP AND NOT HARDLINK_GAME )
 	set_target_properties( d3xp PROPERTIES LINK_FLAGS "${ldflags}" )
 	set_target_properties( d3xp PROPERTIES INSTALL_NAME_DIR "@executable_path" )
 	target_link_libraries( d3xp idlib )
-
+	set_target_properties( d3xp PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} LIBRARY_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( d3xp PROPERTIES FOLDER "dlls" )
 
 	if( NOT APPLE AND NOT WIN32 )
