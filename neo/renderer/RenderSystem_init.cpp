@@ -74,8 +74,6 @@ static unsigned char* compress_for_stbiw(unsigned char* data, int data_len, int*
 
 glconfig_t	glConfig;
 
-const char *r_rendererArgs[] = { "best", "arb2", NULL };
-
 idCVar r_inhibitFragmentProgram( "r_inhibitFragmentProgram", "0", CVAR_RENDERER | CVAR_BOOL, "ignore the fragment program extension" );
 idCVar r_useLightPortalFlow( "r_useLightPortalFlow", "1", CVAR_RENDERER | CVAR_BOOL, "use a more precise area reference determination" );
 idCVar r_multiSamples( "r_multiSamples", "0", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "number of antialiasing samples" );
@@ -115,8 +113,6 @@ idCVar r_swapInterval( "r_swapInterval", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVA
 idCVar r_gamma( "r_gamma", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_FLOAT, "changes gamma tables", 0.5f, 3.0f );
 idCVar r_brightness( "r_brightness", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_FLOAT, "changes gamma tables", 0.5f, 2.0f );
 idCVar r_gammaInShader( "r_gammaInShader", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Set gamma and brightness in shaders instead using hardware gamma" );
-
-idCVar r_renderer( "r_renderer", "best", CVAR_RENDERER | CVAR_ARCHIVE, "hardware specific renderer path to use", r_rendererArgs, idCmdSystem::ArgCompletion_String<r_rendererArgs> );
 
 idCVar r_jitter( "r_jitter", "0", CVAR_RENDERER | CVAR_BOOL, "randomly subpixel jitter the projection matrix" );
 
@@ -789,10 +785,6 @@ void R_InitOpenGL( void ) {
 
 	// allocate the vertex array range or vertex objects
 	vertexCache.Init();
-
-	// select which renderSystem we are going to use
-	r_renderer.SetModified();
-	tr.SetBackEndRenderer();
 
 	// allocate the frame data, which may be more if smp is enabled
 	R_InitFrameData();
@@ -1951,14 +1943,6 @@ static void GfxInfo_f( const idCmdArgs &args ) {
 	}
 	common->Printf( "Logical Window size: %g x %g\n", glConfig.winWidth, glConfig.winHeight );
 
-	const char *active[2] = { "", " (ACTIVE)" };
-
-	if ( glConfig.allowARB2Path ) {
-		common->Printf( "ARB2 path ENABLED%s\n", active[tr.backEndRenderer == BE_ARB2] );
-	} else {
-		common->Printf( "ARB2 path disabled\n" );
-	}
-
 	if ( r_finish.GetBool() ) {
 		common->Printf( "Forcing glFinish\n" );
 	} else {
@@ -2222,9 +2206,6 @@ void idRenderSystemLocal::Clear( void ) {
 	viewportOffset[1] = 0;
 	tiledViewport[0] = 0;
 	tiledViewport[1] = 0;
-	backEndRenderer = BE_BAD;
-	backEndRendererHasVertexPrograms = false;
-	backEndRendererMaxLight = 1.0f;
 	ambientLightVector.Zero();
 	sortOffset = 0;
 	worlds.Clear();

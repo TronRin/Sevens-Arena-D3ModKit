@@ -680,11 +680,6 @@ typedef struct {
 const int MAX_GUI_SURFACES	= 1024;		// default size of the drawSurfs list for guis, will
 										// be automatically expanded as needed
 
-typedef enum {
-	BE_ARB2,
-	BE_BAD
-} backEndName_t;
-
 typedef struct {
 	int		x, y, width, height;	// these are in physical, OpenGL Y-at-bottom pixels
 } renderCrop_t;
@@ -744,7 +739,6 @@ public:
 							~idRenderSystemLocal( void );
 
 	void					Clear( void );
-	void					SetBackEndRenderer();			// sets tr.backEndRenderer based on cvars
 	void					RenderViewToViewport( const renderView_t *renderView, idScreenRect *viewport );
 
 public:
@@ -765,9 +759,7 @@ public:
 	int						tiledViewport[2];
 
 	// determines which back end to use, and if vertex programs are in use
-	backEndName_t			backEndRenderer;
-	bool					backEndRendererHasVertexPrograms;
-	float					backEndRendererMaxLight;	// 1.0 for standard, unlimited for floats
+	const float				backEndRendererMaxLight;	// 1.0 for standard, unlimited for floats
 														// determines how much overbrighting needs
 														// to be done post-process
 
@@ -849,8 +841,6 @@ extern idCVar r_flareSize;				// scale the flare deforms from the material def
 extern idCVar r_gamma;					// changes gamma tables
 extern idCVar r_brightness;				// changes gamma tables
 extern idCVar r_gammaInShader;			// set gamma+brightness in shader instead of modifying system gamma tables
-
-extern idCVar r_renderer;				// arb2, etc
 
 extern idCVar r_checkBounds;			// compare all surface bounds with precalculated ones
 
