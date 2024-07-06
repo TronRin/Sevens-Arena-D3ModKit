@@ -128,7 +128,7 @@ BOOL CRadiantApp::InitInstance()
 
 	g_PrefsDlg.LoadPrefs();
 
-	qglEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_VERTEX_ARRAY );
 
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame->LoadFrame(IDR_MAINFRAME)) {

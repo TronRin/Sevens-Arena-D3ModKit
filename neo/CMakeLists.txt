@@ -83,6 +83,9 @@ find_package( SDL2 REQUIRED )
 include_directories( ${SDL2_INCLUDE_DIR} )
 set( SDL2_LIBRARY SDL2::SDL2 )
 
+find_package( GLEW REQUIRED )
+include_directories( ${GLEW_INCLUDE_DIRS} )
+
 if ( FREETYPE )
 	find_package(Freetype REQUIRED)
 	find_path( FREETYPE_INCLUDE_DIR "fttypes.h" PATH_SUFFIXES "freetype" )
@@ -349,6 +352,11 @@ elseif( MSVC )
 	add_compile_options( /wd4805 ) # 'symbol' unsafe mix of type 'type a' and type 'type b' in operation
 	add_compile_options( /wd4273 ) # 'function': inconsistent dll linkage
 	add_compile_options( /wd4838 ) # conversion from 'type' to 'type' requires a narrowing conversion
+
+	# Ignore warnings for Dedicate server build
+	set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
+	set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
+	set( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
 
 	
 	add_definitions( -D_ALLOW_KEYWORD_MACROS ) # because of the "#define private public" and "#define protected public" in TypeInfo.cpp
@@ -1196,6 +1204,7 @@ if( ENGINE )
 	target_link_libraries( ${DHEWM3BINARY}
 		idlib
 		$<$<BOOL:FREETYPE>:Freetype::Freetype>
+		GLEW::GLEW
 		${OPENAL_LIBRARY}
 		${CURL_LIBRARY}
 		${SDL2_LIBRARY}

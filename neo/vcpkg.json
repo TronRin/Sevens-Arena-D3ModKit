@@ -9,7 +9,8 @@
 			"name": "libbacktrace",
 			"platform": "!windows"
 		},
-	"stb",
-	"freetype"
+		"stb",
+		"freetype",
+		"glew"
 	]
 }

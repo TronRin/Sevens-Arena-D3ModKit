@@ -125,18 +125,18 @@ void Pointfile_Check (void)
 
 void Pointfile_Draw( void )
 {
-	qglColor3f( 1.0F, 0.0F, 0.0F );
-	qglDisable(GL_TEXTURE_2D);
-	qglDisable(GL_TEXTURE_1D);
-	qglLineWidth (2);
-	qglBegin(GL_LINE_STRIP);
+	glColor3f( 1.0F, 0.0F, 0.0F );
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_1D);
+	glLineWidth (2);
+	glBegin(GL_LINE_STRIP);
 
 	for ( int i = 0; i < s_num_points; i++ ) {
-		qglVertex3fv( s_pointvecs[i].ToFloatPtr() );
+		glVertex3fv( s_pointvecs[i].ToFloatPtr() );
 	}
 
-	qglEnd();
-	qglLineWidth( 0.5 );
+	glEnd();
+	glLineWidth( 0.5 );
 }
 
 void Pointfile_Clear (void)
