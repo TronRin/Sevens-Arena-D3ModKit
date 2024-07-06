@@ -316,7 +316,7 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 			message( FATAL_ERROR "Unsupported CPU architecture for OSX" )
 		endif()
 
-		set( sys_libs ${sys_libs} "-framework Carbon -framework Cocoa -framework IOKit" )
+		set( sys_libs ${sys_libs} "OpenSSL::SSL OpenSSL::Crypto -framework Carbon -framework Cocoa -framework IOKit" )
 	elseif( WIN32 )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
 		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl, --large-address-aware --stack,8388608" )

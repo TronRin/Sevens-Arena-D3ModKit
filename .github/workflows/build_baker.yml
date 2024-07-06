@@ -59,6 +59,7 @@ jobs:
           Copy-Item -Path ".github/README.md" -Destination "output/${{steps.runner_os.outputs.lowercase}}"
 
       - name: Copy windows only files ( hacky :( )
+        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           cd ${{github.workspace}}
@@ -83,15 +84,23 @@ jobs:
           Copy-Item -Path "output/scripteditor.bat" -Destination "output/windows"
           Copy-Item -Path "output/soundeditor.bat" -Destination "output/windows"
 
-      - name: Generate archives for ${{runner.os}}
-        if: matrix.os != 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: d3moddingkit-${{runner.os}}
-          path: output/${{steps.runner_os.outputs.lowercase}}/ # This is where our binaries lives
-
-      - name: Generate archives for Windows ( Again Hacky :( )
+      - name: Artifacts for Windows
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: d3moddingkit-windows
-          path: output/windows/ # This is where our binaries lives
+          path: output/windows/
+
+      - name: Artifacts for Linux
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d3moddingkit-linux
+          path: output/linux/
+
+      - name: Artifacts for MacOs
+        if: matrix.os == 'macos-13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: d3moddingkit-macos
+          path: output/macos/
