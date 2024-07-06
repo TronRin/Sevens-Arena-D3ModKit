@@ -654,12 +654,9 @@ void R_ReloadARBPrograms_f( const idCmdArgs &args ) {
 /*
 ==================
 R_ARB2_Init
-
 ==================
 */
 void R_ARB2_Init( void ) {
-	glConfig.allowARB2Path = false;
-
 	common->Printf( "ARB2 renderer: " );
 
 	if ( !glConfig.ARBVertexProgramAvailable || !glConfig.ARBFragmentProgramAvailable ) {
@@ -668,6 +665,4 @@ void R_ARB2_Init( void ) {
 	}
 
 	common->Printf( "Available.\n" );
-
-	glConfig.allowARB2Path = true;
 }
