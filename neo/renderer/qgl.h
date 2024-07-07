@@ -43,7 +43,11 @@ If you have questions concerning this license or the applicable additional terms
 #endif
 
 #include <GL/glew.h>
+#if defined( _WIN32 )
 #include <GL/wglew.h>
+#else
+#define APIENTRY
+#endif
 
 #if defined( ID_DEDICATED ) && defined( _WIN32 )
 // restore WINGDIAPI

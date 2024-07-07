@@ -70,9 +70,7 @@
 
 #else // DG: use gl
 
-// Glew
-#include "GL/glew.h"
-#include "GL/wglew.h"
+#include "renderer/qgl.h"
 
 #endif // DG: use gl
 
