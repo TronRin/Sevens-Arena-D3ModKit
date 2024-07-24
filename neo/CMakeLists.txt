@@ -1261,7 +1261,7 @@ if( DEDICATED )
 	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( ${DHEWM3BINARY}ded PROPERTIES FOLDER "exes" )
 	
-	list( REMOVE_ITEM sys_thirdparty_libs ${OPENAL_LIBRARY} )
+	list( REMOVE_ITEM sys_thirdparty_libs ${OPENAL_LIBRARY} GLEW::GLEW )
 
 	target_link_libraries( ${DHEWM3BINARY}ded
 		idlib
