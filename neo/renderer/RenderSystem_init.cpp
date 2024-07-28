@@ -266,6 +266,14 @@ idCVar r_screenshotJpgQuality("r_screenshotJpgQuality", "75", CVAR_RENDERER | CV
 idCVar r_screenshotPngCompression("r_screenshotPngCompression", "3", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_INTEGER, "Compression level when using PNG screenshots (0-9). Higher levels generate smaller files, but take noticeably longer");
 // DG: allow freely resizing the window
 idCVar r_windowResizable("r_windowResizable", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Allow resizing (and maximizing) the window (needs SDL2; with 2.0.5 or newer it's applied immediately)" );
+idCVar r_vidRestartAlwaysFull( "r_vidRestartAlwaysFull", 0, CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Always do a full vid_restart (ignore 'partial' argument), e.g. when changing window size" );
+
+// DG: for soft particles (ported from TDM)
+idCVar r_enableDepthCapture( "r_enableDepthCapture", "-1", CVAR_RENDERER | CVAR_INTEGER,
+		"enable capturing depth buffer to texture. -1: enable automatically (if soft particles are enabled), 0: disable, 1: enable", -1, 1 ); // #3877
+idCVar r_useSoftParticles( "r_useSoftParticles", "1", CVAR_RENDERER | CVAR_ARCHIVE | CVAR_BOOL, "Soften particle transitions when player walks through them or they cross solid geometry. Needs r_enableDepthCapture. Can slow down rendering!" ); // #3878
+
+idCVar r_glDebugContext( "r_glDebugContext", "0", CVAR_RENDERER | CVAR_BOOL, "Enable OpenGL Debug context - requires vid_restart, needs SDL2" );
 
 // eez: This is a slight hack for letting us select the desired screenshot format in other functions
 //  This is a hack to avoid adding another function parameter to idRenderSystem::TakeScreenshot(),
@@ -274,6 +282,60 @@ idCVar r_windowResizable("r_windowResizable", "1", CVAR_RENDERER | CVAR_ARCHIVE 
 //  idRenderSystemLocal::TakeScreenshot(), so if your code wants to enforce a specific format,
 //  it must set g_screenshotFormat accordingly before each call to TakeScreenshot().
 int g_screenshotFormat = -1;
+
+enum {
+	// Not all GL.h header know about GL_DEBUG_SEVERITY_NOTIFICATION_*.
+	QGL_DEBUG_SEVERITY_NOTIFICATION = 0x826B
+};
+
+/*
+ * Callback function for debug output.
+ */
+static void APIENTRY
+DebugCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+              const GLchar *message, const void *userParam )
+{
+	const char* sourceStr = "Source: Unknown";
+	const char* typeStr = "Type: Unknown";
+	const char* severityStr = "Severity: Unknown";
+
+	switch (severity)
+	{
+#define SVRCASE(X, STR)  case GL_DEBUG_SEVERITY_ ## X ## _ARB : severityStr = STR; break;
+		case QGL_DEBUG_SEVERITY_NOTIFICATION: return;
+		SVRCASE(HIGH, "Severity: High")
+		SVRCASE(MEDIUM, "Severity: Medium")
+		SVRCASE(LOW, "Severity: Low")
+#undef SVRCASE
+	}
+
+	switch (source)
+	{
+#define SRCCASE(X)  case GL_DEBUG_SOURCE_ ## X ## _ARB: sourceStr = "Source: " #X; break;
+		SRCCASE(API);
+		SRCCASE(WINDOW_SYSTEM);
+		SRCCASE(SHADER_COMPILER);
+		SRCCASE(THIRD_PARTY);
+		SRCCASE(APPLICATION);
+		SRCCASE(OTHER);
+#undef SRCCASE
+	}
+
+	switch(type)
+	{
+#define TYPECASE(X)  case GL_DEBUG_TYPE_ ## X ## _ARB: typeStr = "Type: " #X; break;
+		TYPECASE(ERROR);
+		TYPECASE(DEPRECATED_BEHAVIOR);
+		TYPECASE(UNDEFINED_BEHAVIOR);
+		TYPECASE(PORTABILITY);
+		TYPECASE(PERFORMANCE);
+		TYPECASE(OTHER);
+#undef TYPECASE
+	}
+
+	common->Warning( "GLDBG %s %s %s: %s\n", sourceStr, typeStr, severityStr, message );
+
+}
 
 /*
 =================
@@ -431,6 +493,38 @@ static void R_CheckPortableExtensions( void ) {
 
 	// GL_EXT_depth_bounds_test
 	glConfig.depthBoundsTestAvailable = R_DoubleCheckExtension( "EXT_depth_bounds_test" );
+
+	// GL_ARB_debug_output
+	glConfig.glDebugOutputAvailable = false;
+	if ( glConfig.haveDebugContext ) {
+		if ( strstr( glConfig.extensions_string, "GL_ARB_debug_output" ) ) {
+			glConfig.glDebugOutputAvailable = true;
+			//glDebugMessageCallbackARB = (PFNGLDEBUGMESSAGECALLBACKARBPROC)GLimp_ExtensionPointer( "glDebugMessageCallbackARB" );
+			if ( r_glDebugContext.GetBool() ) {
+				common->Printf( "...using GL_ARB_debug_output (r_glDebugContext is set)\n" );
+				glDebugMessageCallbackARB(DebugCallback, NULL);
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			} else {
+				common->Printf( "...found GL_ARB_debug_output, but not using it (r_glDebugContext is not set)\n" );
+			}
+		} else {
+			common->Printf( "X..GL_ARB_debug_output not found\n" );
+			glDebugMessageCallbackARB = NULL;
+			if ( r_glDebugContext.GetBool() ) {
+				common->Warning( "r_glDebugContext is set, but can't be used because GL_ARB_debug_output is not supported" );
+			}
+		}
+	} else {
+		if ( strstr( glConfig.extensions_string, "GL_ARB_debug_output" ) ) {
+			if ( r_glDebugContext.GetBool() ) {
+				common->Printf( "...found GL_ARB_debug_output, but not using it (no debug context)\n" );
+			} else {
+				common->Printf( "...found GL_ARB_debug_output, but not using it (r_glDebugContext is not set)\n" );
+			}
+		} else {
+			common->Printf( "X..GL_ARB_debug_output not found\n" );
+		}
+	}
 }
 
 
@@ -1197,8 +1291,22 @@ void R_ReadTiledPixels( int width, int height, byte *buffer, renderView_t *ref =
 				h = height - yo;
 			}
 
-			glReadBuffer( GL_FRONT );
-			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, temp );
+			if ( glConfig.isWayland ) {
+				// DG: Native Wayland (=> not XWayland) doesn't seem to support reading
+				//     from the front buffer - screenshot is black then..
+				//     So just read from the default (probably back-) buffer
+				glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, temp );
+			} else {
+				// DG: It's probably better to restore the glReadBuffer mode after reading the pixels..
+				//     (at least with XWayland on GNOME changing resolutions is wonky when not doing this)
+				GLint oldReadBuf = GL_BACK;
+				glGetIntegerv( GL_READ_BUFFER, &oldReadBuf );
+				glReadBuffer( GL_FRONT );
+
+				glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, temp );
+
+				glReadBuffer( oldReadBuf );
+			}
 
 			int	row = ( w * 3 + 3 ) & ~3;		// OpenGL pads to dword boundaries
 
@@ -1911,6 +2019,13 @@ void R_VidRestart_f( const idCmdArgs &args ) {
 			forceWindow = true;
 			continue;
 		}
+	}
+
+	// DG: allow enforcing full vid restarts (when vid_restart is called from the menu or whatever)
+	//     to let users work around driver bugs or whatever, like
+	//     https://github.com/dhewm/dhewm3/issues/587#issuecomment-2206937752
+	if ( r_vidRestartAlwaysFull.GetBool() ) {
+		full = true;
 	}
 
 	// DG: in partial mode, try to just resize the window (and make it fullscreen or windowed)

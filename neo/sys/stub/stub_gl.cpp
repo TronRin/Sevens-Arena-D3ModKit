@@ -412,6 +412,7 @@ typedef void (*PFNGLBLENDEQUATIONPROC)(GLenum mode);
 typedef void (*PFNGLCLIENTACTIVETEXTUREARBPROC)(GLenum texture);
 typedef void (*PFNGLSTENCILOPSEPARATEPROC)(GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass);
 typedef void (*PFNGLDEPTHBOUNDSEXTPROC)(GLclampd zmin, GLclampd zmax);
+typedef void (*PFNGLDEBUGMESSAGECALLBACKARBPROC)(GLDEBUGPROCARB callback, const void *userParam);
 
 PFNGLBINDPROGRAMARBPROC glBindProgramARB = NULL;
 PFNGLACTIVETEXTUREARBPROC __glewActiveTextureARB = NULL;
@@ -434,6 +435,7 @@ PFNGLBLENDEQUATIONPROC __glewBlendEquation = NULL;
 PFNGLCLIENTACTIVETEXTUREARBPROC __glewClientActiveTextureARB = NULL;
 PFNGLSTENCILOPSEPARATEPROC __glewStencilOpSeparate = NULL;
 PFNGLDEPTHBOUNDSEXTPROC __glewDepthBoundsEXT = NULL;
+PFNGLDEBUGMESSAGECALLBACKARBPROC __glewDebugMessageCallbackARB = NULL;
 
 bool GLimp_Init(glimpParms_t a) {return true;};
 void GLimp_SetGamma(unsigned short*a, unsigned short*b, unsigned short*c) {};
