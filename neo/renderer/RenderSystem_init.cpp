@@ -26,28 +26,17 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/LangDict.h"
-#include "framework/Licensee.h"
-#include "framework/Console.h"
-#include "framework/Session.h"
-#include "renderer/VertexCache.h"
-#include "renderer/ModelManager.h"
-#include "renderer/RenderWorld_local.h"
-#include "renderer/GuiModel.h"
-#include "sound/sound.h"
-#include "ui/UserInterface.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
-
-#include "framework/GameCallbacks_local.h"
+#include "tr_local.h"
 
 // Vista OpenGL wrapper check
 #ifdef _WIN32
-#include "sys/win32/win_local.h"
+#include "../sys/win32/win_local.h"
 #endif
 
-#include "framework/miniz/miniz.h"
+#include "../framework/miniz/miniz.h"
 
 static unsigned char* compress_for_stbiw(unsigned char* data, int data_len, int* out_len, int quality)
 {
@@ -293,7 +282,7 @@ enum {
  */
 static void APIENTRY
 DebugCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-              const GLchar *message, const void *userParam )
+			  const GLchar *message, const void *userParam )
 {
 	const char* sourceStr = "Source: Unknown";
 	const char* typeStr = "Type: Unknown";

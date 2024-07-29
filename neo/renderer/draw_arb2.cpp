@@ -26,10 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "renderer/VertexCache.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 // DG: if this is defined, the soft particle shaders will be compiled into the executable
 //  otherwise soft_particle.vfp will be opened as a file just like the other shaders
