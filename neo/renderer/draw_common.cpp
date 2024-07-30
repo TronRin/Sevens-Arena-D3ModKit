@@ -996,8 +996,8 @@ void RB_STD_T_RenderShaderPasses( const drawSurf_t *surf ) {
 				texMatrix[0].Set( 1, 0, 0, 0 );
 				texMatrix[1].Set( 0, 1, 0, 0 );
 			}
-			qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_S, texMatrix[0].ToFloatPtr() );
-			qglProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_T, texMatrix[1].ToFloatPtr() );
+			glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_S, texMatrix[0].ToFloatPtr() );
+			glProgramEnvParameter4fvARB( GL_VERTEX_PROGRAM_ARB, PP_DIFFUSE_MATRIX_T, texMatrix[1].ToFloatPtr() );
 
 			// program.env[23] is the particle radius, given as { radius, 1/(faderange), 1/radius }
 			float fadeRange = 1.0f;
