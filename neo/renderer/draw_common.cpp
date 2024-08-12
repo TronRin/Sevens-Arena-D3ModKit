@@ -191,7 +191,7 @@ void RB_PrepareStageTexturing( const shaderStage_t *pStage,  const drawSurf_t *s
 		GL_SelectTexture( 0 );
 	}
 
-	if ( pStage->texture.texgen == TG_REFLECT_CUBE ) {		
+	if ( pStage->texture.texgen == TG_REFLECT_CUBE ) {
 		// see if there is also a bump map specified
 		const shaderStage_t *bumpStage = surf->material->GetBumpStage();
 		if ( bumpStage ) {
@@ -267,7 +267,7 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 		glDisable( GL_TEXTURE_GEN_Q );
 		glDisable( GL_FRAGMENT_PROGRAM_ARB );
 		globalImages->BindNull();
-		GL_SelectTexture( 0 );		
+		GL_SelectTexture( 0 );
 	}
 
 	if ( pStage->texture.texgen == TG_REFLECT_CUBE ) {
@@ -289,7 +289,7 @@ void RB_FinishStageTexturing( const shaderStage_t *pStage, const drawSurf_t *sur
 		glDisable( GL_FRAGMENT_PROGRAM_ARB );
 		glDisable( GL_VERTEX_PROGRAM_ARB );
 		// Fixme: Hack to get around an apparent bug in ATI drivers.  Should remove as soon as it gets fixed.
-		glBindProgramARB( GL_VERTEX_PROGRAM_ARB, 0 );		
+		glBindProgramARB( GL_VERTEX_PROGRAM_ARB, 0 );
 	}
 
 	if ( pStage->texture.hasMatrix ) {
