@@ -969,8 +969,6 @@ void CCamWnd::SetProjectionMatrix() {
 void CCamWnd::DrawGrid() {
 	const float GRID_SPACING = 64.0f;
 	const int GRID_LINES = 100;
-	const float GRID_COLOR[4] = { 0.0f, 0.0f, 0.5f, 1.0f }; // Blue color for regular lines
-	const float DARKER_LINE_COLOR[4] = { 0.0f, 0.0f, 0.25f, 1.0f }; // Darker blue color for center lines
 
 	// Calculate the grid bounds based on the camera position
 	float startX = floor(m_Camera.origin.x / GRID_SPACING) * GRID_SPACING - GRID_LINES * GRID_SPACING;
@@ -981,22 +979,22 @@ void CCamWnd::DrawGrid() {
 	// Draw vertical grid lines
 	glBegin(GL_LINES);
 	for (float x = startX; x <= endX; x += GRID_SPACING) {
-		if (fabs(x) < 0.01f) {
-			glColor4fv(GRID_COLOR); // Center line color
+		if (idMath::Fabs(x) < 0.01f) {
+			glColor4f( g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][0],g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][1],g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][2], 1.0f ); // Center line color
 		}
 		else {
-			glColor4fv(DARKER_LINE_COLOR); // Regular grid line color
+			glColor4f( g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][0],g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][1],g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][2], 1.0f ); // Regular grid line color
 		}
 		glVertex3f(x, startY, 0);
 		glVertex3f(x, endY, 0);
 	}
 	// Draw horizontal grid lines
 	for (float y = startY; y <= endY; y += GRID_SPACING) {
-		if (fabs(y) < 0.01f) {
-			glColor4fv(GRID_COLOR); // Center line color
+		if (idMath::Fabs(y) < 0.01f) {
+			glColor4f( g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][0],g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][1],g_qeglobals.d_savedinfo.colors[COLOR_GRIDMAJOR][2], 1.0f ); // Center line color
 		}
 		else {
-			glColor4fv(DARKER_LINE_COLOR); // Regular grid line color
+			glColor4f(g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][0], g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][1], g_qeglobals.d_savedinfo.colors[COLOR_GRIDBACK][2], 1.0f); // Regular grid line color
 		}
 		glVertex3f(startX, y, 0);
 		glVertex3f(endX, y, 0);
@@ -2050,7 +2048,7 @@ void CCamWnd::Cam_Render() {
 
 	// DG: from SteelStorm2
 	// Jmarshal23 recommended to disable this to fix lighting render in the Cam window
-	/* if (!qwglMakeCurrent(dc.m_hDC, win32.hGLRC)) {
+	/* if (!wglMakeCurrent(dc.m_hDC, win32.hGLRC)) {
 		common->Printf("ERROR: wglMakeCurrent failed..\n ");
 		common->Printf("Please restart " EDITOR_WINDOWTEXT " if the camera view is not working\n");
 		return;
@@ -2062,7 +2060,7 @@ void CCamWnd::Cam_Render() {
 	glScissor( 0, 0, m_Camera.width, m_Camera.height );
 	glClear( GL_COLOR_BUFFER_BIT );
 
-	//	qwglSwapBuffers(dc.m_hDC);
+	//	wglSwapBuffers(dc.m_hDC);
 
 	// create the model, using explicit normals
 	if ( rebuildMode && worldDirty ) {
@@ -2098,7 +2096,7 @@ void CCamWnd::Cam_Render() {
 	//glPopAttrib();
 	//DrawEntityData();
 
-	//qwglSwapBuffers(dc.m_hDC);
+	//wglSwapBuffers(dc.m_hDC);
 	// get back to the editor state
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
