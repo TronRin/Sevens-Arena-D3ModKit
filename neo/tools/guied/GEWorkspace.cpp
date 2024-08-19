@@ -33,7 +33,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "../../sys/win32/rc/resource.h"
 #include "../../renderer/tr_local.h"
 #include "../../sys/win32/win_local.h"
-#include "../../ui/DeviceContext.h"
 #include "../../ui/EditWindow.h"
 #include "../../ui/ListWindow.h"
 #include "../../ui/BindWindow.h"
@@ -325,7 +324,7 @@ void rvGEWorkspace::Render ( HDC hdc )
 	idWindow::SetDebugDraw();
 
 	// Draw the gui
-	mInterface->Redraw ( 0 ); // eventLoop->Milliseconds() );
+	mInterface->Redraw ( 0, false ); // eventLoop->Milliseconds() );
 
 	// disable debug draw
 	idWindow::DisableDebugDraw();
@@ -1488,7 +1487,7 @@ Create a new window
 */
 idWindow* rvGEWorkspace::NewWindow ( idDict* state, rvGEWindowWrapper::EWindowType type )
 {
-	idWindow*			window = new idWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+	idWindow*			window = new idWindow ( mInterface );
 	rvGEWindowWrapper*	wrapper;
 	int					count;
 	idStr				baseName;
@@ -1496,23 +1495,23 @@ idWindow* rvGEWorkspace::NewWindow ( idDict* state, rvGEWindowWrapper::EWindowTy
 	switch ( type )
 	{
 		case rvGEWindowWrapper::WT_NORMAL:
-			window = new idWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_BIND:
-			window = new idBindWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idBindWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_RENDER:
-			window = new idRenderWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idRenderWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_CHOICE:
-			window = new idChoiceWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idChoiceWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_EDIT:
-			window = new idEditWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idEditWindow ( mInterface );
 			break;
 
 		default:

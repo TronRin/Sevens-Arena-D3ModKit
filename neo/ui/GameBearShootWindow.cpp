@@ -30,7 +30,6 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "../framework/Session_local.h"
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "GameBearShootWindow.h"
@@ -198,12 +197,6 @@ void BSEntity::Draw(idDeviceContext *dc) {
 * idGameBearShootWindow
 ****************************************************************************
 */
-idGameBearShootWindow::idGameBearShootWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
-}
-
 idGameBearShootWindow::idGameBearShootWindow(idUserInterfaceLocal *g) : idWindow(g) {
 	gui = g;
 	CommonInit();

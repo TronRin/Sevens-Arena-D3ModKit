@@ -32,7 +32,6 @@ If you have questions concerning this license or the applicable additional terms
 // included for image uploading for player stat graph
 #include "../renderer/Image.h"
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "MarkerWindow.h"
@@ -46,12 +45,6 @@ void idMarkerWindow::CommonInit() {
 	imageBuff = NULL;
 	markerMat = NULL;
 	markerStop = NULL;
-}
-
-idMarkerWindow::idMarkerWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idMarkerWindow::idMarkerWindow(idUserInterfaceLocal *g) : idWindow(g) {

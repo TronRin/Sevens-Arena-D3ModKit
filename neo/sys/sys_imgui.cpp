@@ -16,7 +16,6 @@ typedef char* (*MY_XGETDEFAULTFUN)(Display*, const char*, const char*);
 
 #include "../framework/Session_local.h" // sessLocal.GetActiveMenu()
 #include "../renderer/tr_local.h" // glconfig
-#include "../ui/DeviceContext.h"
 
 extern void Com_DrawDhewm3SettingsMenu(); // in framework/dhewm3SettingsMenu.cpp
 extern void Com_OpenCloseDhewm3SettingsMenu( bool open ); // ditto

@@ -29,8 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __WINDOW_H__
 #define __WINDOW_H__
 
-#include "Rectangle.h"
-#include "DeviceContext.h"
 #include "RegExp.h"
 #include "Winvar.h"
 #include "GuiScript.h"
@@ -211,10 +209,6 @@ public:
 	static const idRegEntry RegisterVars[];
 	static const int		NumRegisterVars;
 
-	void SetDC(idDeviceContext *d);
-
-	idDeviceContext*	GetDC ( void ) { return dc; }
-
 	idWindow *SetFocus(idWindow *w, bool scripts = true);
 
 	idWindow *SetCapture(idWindow *w);
@@ -259,7 +253,7 @@ public:
 	virtual bool Parse(idParser *src, bool rebuild = true);
 	virtual const char *HandleEvent(const sysEvent_t *event, bool *updateVisuals);
 	void	CalcRects(float x, float y);
-	virtual void Redraw(float x, float y);
+	virtual void Redraw(float x, float y, bool hud);
 
 	virtual void ArchiveToDictionary(idDict *dict, bool useNames = true);
 	virtual void InitFromDictionary(idDict *dict, bool byName = true);
@@ -431,8 +425,6 @@ protected:
 	idWindow *captureChild;			// if a child window has mouse capture
 	idWindow *overChild;			// if a child window has mouse capture
 	bool hover;
-
-	idDeviceContext *dc;
 
 	idUserInterfaceLocal *gui;
 

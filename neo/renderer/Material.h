@@ -562,6 +562,8 @@ public:
 
 	void				ResetCinematicTime( int time ) const;
 
+	int					GetCinematicStartTime( void ) const;
+
 	void				UpdateCinematic( int time ) const;
 
 	//------------------------------------------------------------------

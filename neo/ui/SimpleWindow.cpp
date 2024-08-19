@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "SimpleWindow.h"
@@ -37,7 +36,6 @@ If you have questions concerning this license or the applicable additional terms
 
 idSimpleWindow::idSimpleWindow(idWindow *win) {
 	gui = win->GetGui();
-	dc = win->dc;
 	drawRect = win->drawRect;
 	clientRect = win->clientRect;
 	textRect = win->textRect;

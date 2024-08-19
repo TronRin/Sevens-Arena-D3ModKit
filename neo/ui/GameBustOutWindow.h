@@ -111,7 +111,6 @@ private:
 class idGameBustOutWindow : public idWindow {
 public:
 	idGameBustOutWindow(idUserInterfaceLocal *gui);
-	idGameBustOutWindow(idDeviceContext *d, idUserInterfaceLocal *gui);
 	~idGameBustOutWindow();
 
 	virtual void		WriteToSaveGame( idFile *savefile );

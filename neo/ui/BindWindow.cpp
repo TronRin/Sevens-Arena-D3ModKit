@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "BindWindow.h"
@@ -38,12 +37,6 @@ If you have questions concerning this license or the applicable additional terms
 void idBindWindow::CommonInit() {
 	bindName = "";
 	waitingOnKey = false;
-}
-
-idBindWindow::idBindWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idBindWindow::idBindWindow(idUserInterfaceLocal *g) : idWindow(g) {

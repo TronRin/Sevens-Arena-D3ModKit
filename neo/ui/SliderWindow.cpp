@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "SliderWindow.h"
@@ -55,12 +54,6 @@ void idSliderWindow::CommonInit() {
 	scrollbar = false;
 
 	verticalFlip = false;
-}
-
-idSliderWindow::idSliderWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idSliderWindow::idSliderWindow(idUserInterfaceLocal *g) : idWindow(g) {

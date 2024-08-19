@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "ChoiceWindow.h"
@@ -67,12 +66,6 @@ void idChoiceWindow::CommonInit() {
 	cvar = NULL;
 	liveUpdate = true;
 	choices.Clear();
-}
-
-idChoiceWindow::idChoiceWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idChoiceWindow::idChoiceWindow(idUserInterfaceLocal *g) : idWindow(g) {

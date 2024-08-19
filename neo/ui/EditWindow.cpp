@@ -29,7 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
-#include "DeviceContext.h"
 #include "Window.h"
 #include "UserInterfaceLocal.h"
 #include "SliderWindow.h"
@@ -107,15 +106,9 @@ void idEditWindow::CommonInit() {
 	liveUpdate = true;
 	readonly = false;
 
-	scroller = new idSliderWindow(dc, gui);
+	scroller = new idSliderWindow(gui);
 }
 
-
-idEditWindow::idEditWindow( idDeviceContext *d, idUserInterfaceLocal *g ) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
-}
 
 idEditWindow::idEditWindow( idUserInterfaceLocal *g ) : idWindow(g) {
 	gui = g;

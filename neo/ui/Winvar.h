@@ -29,8 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __WINVAR_H__
 #define __WINVAR_H__
 
-#include "Rectangle.h"
-
 static const char *VAR_GUIPREFIX = "gui::";
 static const int VAR_GUIPREFIX_LEN = strlen(VAR_GUIPREFIX);
 
@@ -156,7 +154,12 @@ public:
 	virtual void Init(const char *_name, idWindow *win) {
 		idWinVar::Init(_name, win);
 		if (guiDict) {
-			data = guiDict->GetString(GetName());
+			const char * name = GetName();
+			if ( name[0] == 0 ) {
+				data = "";
+			} else {
+				data = guiDict->GetString( name );
+			}
 		}
 	}
 	int	operator==(	const idStr &other ) const {
