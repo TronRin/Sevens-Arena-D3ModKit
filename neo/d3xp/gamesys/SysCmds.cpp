@@ -1372,6 +1372,7 @@ Cmd_CollisionModelInfo_f
 ==================
 */
 static void Cmd_CollisionModelInfo_f( const idCmdArgs &args ) {
+	/*
 	const char *value;
 
 	if ( !gameLocal.CheatsOk() ) {
@@ -1390,6 +1391,7 @@ static void Cmd_CollisionModelInfo_f( const idCmdArgs &args ) {
 	} else {
 		collisionModelManager->ModelInfo( atoi(value) );
 	}
+	*/
 }
 
 #ifdef ID_MAYA_IMPORT_TOOL

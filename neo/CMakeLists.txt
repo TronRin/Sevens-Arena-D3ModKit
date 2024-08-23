@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.27.8 )
+cmake_minimum_required( VERSION 3.20 )
 
 # Check if vcpkg exist in our source folder
 if ( EXISTS "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" )
@@ -13,7 +13,7 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" )
 
-project( dhewm3 CXX C)
+project( D3ModdingKit CXX C)
 
 # build type
 if( NOT CMAKE_BUILD_TYPE )
@@ -580,6 +580,7 @@ always_optimize_sourcefile(framework/minizip/unzip.cpp)
 add_globbed_headers(src_framework "framework")
 
 set(src_cm
+	cm/CollisionModel.cpp
 	cm/CollisionModel_contacts.cpp
 	cm/CollisionModel_contents.cpp
 	cm/CollisionModel_debug.cpp
