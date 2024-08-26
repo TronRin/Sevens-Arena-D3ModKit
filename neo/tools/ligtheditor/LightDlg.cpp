@@ -26,7 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "tools/edit_gui_common.h"
+#include "precompiled.h"
+#pragma hdrstop
+
 #include "renderer/tr_local.h"
 #include "../../sys/win32/rc/resource.h"
 #include "../comafx/DialogColorPicker.h"
@@ -55,31 +57,27 @@ void CLightInfo::Defaults() {
 	//lightStyle = -1;
 }
 
-void CLightInfo::DefaultPoint()
-{
+
+void CLightInfo::DefaultPoint() {
 	idVec3 oldColor = color;
 	Defaults();
 	color = oldColor;
-
 	pointLight = true;
 	lightRadius[0] = lightRadius[1] = lightRadius[2] = 300;
 	equalRadius = true;
 }
 
-void CLightInfo::DefaultProjected()
-{
+void CLightInfo::DefaultProjected() {
 	idVec3 oldColor = color;
 	Defaults();
 	color = oldColor;
-
 	pointLight = false;
 	lightTarget[2] = -256;
 	lightUp[1] = -128;
 	lightRight[0] = -128;
 }
 
-void CLightInfo::DefaultSun()
-{
+void CLightInfo::DefaultSun() {
 	idVec3 oldColor = color;
 	Defaults();
 	color = oldColor;
@@ -94,7 +92,7 @@ void CLightInfo::DefaultSun()
 
 void CLightInfo::FromDict( const idDict *e ) {
 
-	e->GetVector( "origin", "", origin );
+	e->GetVector("origin", "", origin);
 
 	lightRadius.Zero();
 	lightTarget.Zero();
@@ -104,60 +102,51 @@ void CLightInfo::FromDict( const idDict *e ) {
 	lightEnd.Zero();
 	lightCenter.Zero();
 
-	castShadows = !e->GetBool( "noshadows" );
-	skipSpecular = e->GetBool( "nospecular" );
+	castShadows = !e->GetBool("noshadows");
+	skipSpecular = e->GetBool("nospecular");
+	strTexture = e->GetString("texture");
 
-	strTexture = e->GetString( "texture" );
+	bool isParallel = e->GetBool("parallel");
 
-	bool isParallel = e->GetBool( "parallel" );
-
-	if ( !e->GetVector("_color", "", color ) ) {
+	if (!e->GetVector("_color", "", color)) {
 		color[0] = color[1] = color[2] = 1;
 	}
-
 	// windows needs 0-255 scale
 	color[0] *= 255;
 	color[1] *= 255;
 	color[2] *= 255;
 
-	if ( e->GetVector( "light_right", "", lightRight ) ) {
+	if (e->GetVector("light_right","", lightRight)) {
 		// projected light
 		pointLight = false;
-
-		e->GetVector( "light_target", "", lightTarget );
-		e->GetVector( "light_up", "", lightUp );
-
-		if ( e->GetVector( "light_start", "", lightStart ) ) {
+		e->GetVector("light_target", "", lightTarget);
+		e->GetVector("light_up", "", lightUp);
+		if (e->GetVector("light_start", "", lightStart)) {
 			// explicit start and end points
 			explicitStartEnd = true;
-
-			if ( !e->GetVector( "light_end", "", lightEnd ) ) {
+			if (!e->GetVector("light_end", "", lightEnd)) {
 				// no end, use target
 				lightEnd = lightTarget;
 			}
 		} else {
 			explicitStartEnd = false;
-
 			// create a start a quarter of the way to the target
 			lightStart = lightTarget * 0.25;
 			lightEnd = lightTarget;
 		}
 	} else {
 		pointLight = true;
-
-		if ( e->GetVector( "light_radius", "", lightRadius ) ) {
-			equalRadius = ( lightRadius.x == lightRadius.y && lightRadius.x == lightRadius.z );
+		if (e->GetVector("light_radius", "", lightRadius)) {
+			equalRadius = (lightRadius.x == lightRadius.y && lightRadius.x == lightRadius.z);
 		} else {
-			float radius = e->GetFloat( "light" );
-			if ( radius == 0 ) {
+			float radius = e->GetFloat("light");
+			if (radius == 0) {
 				radius = 300;
 			}
-
 			lightRadius[0] = lightRadius[1] = lightRadius[2] = radius;
 			equalRadius = true;
 		}
-
-		if ( e->GetVector( "light_center", "", lightCenter ) ) {
+		if (e->GetVector("light_center", "", lightCenter)) {
 			hasCenter = true;
 		}
 	}
@@ -313,10 +302,14 @@ CLightInfo::CLightInfo() {
 	Defaults();
 }
 
+
+// CLightDlg dialog
+
 CLightDlg *g_LightDialog = NULL;
 
-CLightDlg::CLightDlg( CWnd* pParent ) : CDialog( CLightDlg::IDD, pParent )
-{
+
+CLightDlg::CLightDlg( CWnd *pParent )
+	: CDialogEx( CLightDlg::IDD, pParent ) {
 	m_bEqualRadius = FALSE;
 	m_bExplicitFalloff = FALSE;
 	m_bPointLight = FALSE;
@@ -327,45 +320,38 @@ CLightDlg::CLightDlg( CWnd* pParent ) : CDialog( CLightDlg::IDD, pParent )
 	m_fEndX = 0.0f;
 	m_fEndY = 0.0f;
 	m_fEndZ = 0.0f;
-
 	m_fRadiusX = 0.0f;
 	m_fRadiusY = 0.0f;
 	m_fRadiusZ = 0.0f;
-
 	m_fRightX = 0.0f;
 	m_fRightY = 0.0f;
 	m_fRightZ = 0.0f;
-
 	m_fRotate = 0.0f;
-
 	m_fStartX = 0.0f;
 	m_fStartY = 0.0f;
 	m_fStartZ = 0.0f;
-
 	m_fTargetX = 0.0f;
 	m_fTargetY = 0.0f;
 	m_fTargetZ = 0.0f;
-
 	m_fUpX = 0.0f;
 	m_fUpY = 0.0f;
 	m_fUpZ = 0.0f;
-
 	m_hasCenter = FALSE;
-
 	m_centerX = 0.0f;
 	m_centerY = 0.0f;
 	m_centerZ = 0.0f;
-
 	m_bIsParallel = FALSE;
+
+	m_drawMaterial = new idGLDrawableMaterial();
 }
 
 CLightDlg::~CLightDlg() {
+	delete m_drawMaterial;
 }
 
-void CLightDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-
+void CLightDlg::DoDataExchange( CDataExchange *pDX ) {
+	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_LIGHTPREVIEW, m_wndPreview);
 	DDX_Control(pDX, IDC_COMBO_TEXTURE, m_wndLights);
 	DDX_Check(pDX, IDC_CHECK_EQUALRADIUS, m_bEqualRadius);
 	DDX_Check(pDX, IDC_CHECK_EXPLICITFALLOFF, m_bExplicitFalloff);
@@ -398,77 +384,72 @@ void CLightDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_CENTERZ, m_centerZ);
 }
 
-BEGIN_MESSAGE_MAP( CLightDlg, CDialog )
-	ON_BN_CLICKED( IDC_BTN_SAVEMAP, OnBtnSavemap )
-	ON_BN_CLICKED( IDC_BTN_SAVEMAPAS, OnBtnSavemapas )
-	ON_BN_CLICKED( IDC_CHECK_EQUALRADIUS, OnCheckEqualradius )
-	ON_BN_CLICKED( IDC_CHECK_EXPLICITFALLOFF, OnCheckExplicitfalloff )
-	ON_BN_CLICKED( IDC_CHECK_POINT, OnCheckPoint )
-	ON_BN_CLICKED( IDC_CHECK_PROJECTED, OnCheckProjected )
-	ON_BN_CLICKED( IDC_APPLY, OnApply)
-	ON_BN_CLICKED( IDC_APPLY_DIFFERENT, OnApplyDifferences )
-	ON_BN_CLICKED( IDC_BTN_COLOR, OnBtnColor )
-	ON_BN_CLICKED( IDC_BTN_YUP, OnBtnYup )
-	ON_BN_CLICKED( IDC_BTN_YDN, OnBtnYdn )
-	ON_BN_CLICKED( IDC_BTN_XDN, OnBtnXdn )
-	ON_BN_CLICKED( IDC_BTN_XUP, OnBtnXup )
-	ON_BN_CLICKED( IDC_BTN_ZUP, OnBtnZup )
-	ON_BN_CLICKED( IDC_BTN_ZDN, OnBtnZdn )
+
+BEGIN_MESSAGE_MAP(CLightDlg, CDialogEx)
+	ON_BN_CLICKED(IDC_CHECK_EQUALRADIUS, OnCheckEqualradius)
+	ON_BN_CLICKED(IDC_CHECK_EXPLICITFALLOFF, OnCheckExplicitfalloff)
+	ON_BN_CLICKED(IDC_CHECK_POINT, OnCheckPoint)
+	ON_BN_CLICKED(IDC_CHECK_PROJECTED, OnCheckProjected)
+	ON_BN_CLICKED(IDC_APPLY, OnApply)
+	ON_BN_CLICKED(IDC_APPLY_DIFFERENT, OnApplyDifferences)
+	ON_BN_CLICKED(IDC_BTN_COLOR, OnBtnColor)
 	ON_WM_CTLCOLOR()
-	ON_CBN_SELCHANGE( IDC_COMBO_TEXTURE, OnSelchangeComboTexture )
-	ON_BN_CLICKED( IDC_CHECK_CENTER, OnCheckCenter )
-	ON_BN_CLICKED(IDC_CHECK_PARALLEL, OnCheckParallel )
+	ON_CBN_SELCHANGE(IDC_COMBO_TEXTURE, OnSelchangeComboTexture)
+	ON_BN_CLICKED(IDC_CHECK_CENTER, OnCheckCenter)
+	ON_BN_CLICKED(IDC_CHECK_PARALLEL, OnCheckParallel)
 END_MESSAGE_MAP()
 
+// CLightDlg message handlers
+
 void CLightDlg::SetSpecifics() {
-	if ( lightInfo.pointLight ) {
-		GetDlgItem( IDC_EDIT_RADIUSY )->EnableWindow( !lightInfo.equalRadius );
-		GetDlgItem( IDC_EDIT_RADIUSZ )->EnableWindow( !lightInfo.equalRadius );
-		GetDlgItem( IDC_EDIT_CENTERX )->EnableWindow( lightInfo.hasCenter );
-		GetDlgItem( IDC_EDIT_CENTERY )->EnableWindow( lightInfo.hasCenter );
-		GetDlgItem( IDC_EDIT_CENTERZ )->EnableWindow( lightInfo.hasCenter );
+	if (lightInfo.pointLight) {
+		GetDlgItem(IDC_EDIT_RADIUSY)->EnableWindow(!lightInfo.equalRadius);
+		GetDlgItem(IDC_EDIT_RADIUSZ)->EnableWindow(!lightInfo.equalRadius);
+		GetDlgItem(IDC_EDIT_CENTERX)->EnableWindow(lightInfo.hasCenter);
+		GetDlgItem(IDC_EDIT_CENTERY)->EnableWindow(lightInfo.hasCenter);
+		GetDlgItem(IDC_EDIT_CENTERZ)->EnableWindow(lightInfo.hasCenter);
 	} else {
-		GetDlgItem( IDC_EDIT_STARTX )->EnableWindow( lightInfo.explicitStartEnd );
-		GetDlgItem( IDC_EDIT_STARTY )->EnableWindow( lightInfo.explicitStartEnd );
-		GetDlgItem( IDC_EDIT_STARTZ )->EnableWindow( lightInfo.explicitStartEnd );
-		GetDlgItem( IDC_EDIT_ENDX )->EnableWindow( lightInfo.explicitStartEnd );
-		GetDlgItem( IDC_EDIT_ENDY )->EnableWindow( lightInfo.explicitStartEnd );
-		GetDlgItem( IDC_EDIT_ENDZ )->EnableWindow( lightInfo.explicitStartEnd );
+		GetDlgItem(IDC_EDIT_STARTX)->EnableWindow(lightInfo.explicitStartEnd);
+		GetDlgItem(IDC_EDIT_STARTY)->EnableWindow(lightInfo.explicitStartEnd);
+		GetDlgItem(IDC_EDIT_STARTZ)->EnableWindow(lightInfo.explicitStartEnd);
+		GetDlgItem(IDC_EDIT_ENDX)->EnableWindow(lightInfo.explicitStartEnd);
+		GetDlgItem(IDC_EDIT_ENDY)->EnableWindow(lightInfo.explicitStartEnd);
+		GetDlgItem(IDC_EDIT_ENDZ)->EnableWindow(lightInfo.explicitStartEnd);
 	}
 }
 
 void CLightDlg::EnableControls() {
 	bool bLigthType = lightInfo.pointLight;
 
-	GetDlgItem( IDC_CHECK_EQUALRADIUS )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_RADIUSX )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_RADIUSY )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_RADIUSZ )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_TARGETX )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_TARGETY )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_TARGETZ )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_RIGHTX )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_RIGHTY )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_RIGHTZ )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_UPX )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_UPY )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_UPZ )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_STARTX )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_STARTY )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_STARTZ )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_ENDX )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_ENDY )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_EDIT_ENDZ )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_CHECK_EXPLICITFALLOFF )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_CHECK_POINT )->EnableWindow( !bLigthType );
-	GetDlgItem( IDC_CHECK_PROJECTED )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_CENTERX )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_CENTERY )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_EDIT_CENTERZ )->EnableWindow( bLigthType );
-	GetDlgItem( IDC_CHECK_CENTER )->EnableWindow( bLigthType );
+	GetDlgItem(IDC_CHECK_EQUALRADIUS)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_RADIUSX)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_RADIUSY)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_RADIUSZ)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_TARGETX)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_TARGETY)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_TARGETZ)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_RIGHTX)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_RIGHTY)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_RIGHTZ)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_UPX)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_UPY)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_UPZ)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_STARTX)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_STARTY)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_STARTZ)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_ENDX)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_ENDY)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_EDIT_ENDZ)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_CHECK_EXPLICITFALLOFF)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_CHECK_POINT)->EnableWindow(!bLigthType);
+	GetDlgItem(IDC_CHECK_PROJECTED)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_CENTERX)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_CENTERY)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_EDIT_CENTERZ)->EnableWindow(bLigthType);
+	GetDlgItem(IDC_CHECK_CENTER)->EnableWindow(bLigthType);
 
-	reinterpret_cast<CButton*>( GetDlgItem( IDC_CHECK_PROJECTED ) )->SetCheck( !bLigthType );
-	reinterpret_cast<CButton*>( GetDlgItem( IDC_CHECK_POINT ) )->SetCheck( bLigthType );
+	reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_PROJECTED))->SetCheck(!bLigthType);
+	reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_POINT))->SetCheck(bLigthType);
 
 	SetSpecifics();
 }
@@ -482,34 +463,27 @@ void CLightDlg::UpdateDialogFromLightInfo( void ) {
 
 	m_bShadows = lightInfo.castShadows;
 	m_bSkipSpecular = lightInfo.skipSpecular;
-
-	int sel = m_wndLights.FindStringExact( -1, lightInfo.strTexture );
-	m_wndLights.SetCurSel( sel );
+	int sel = m_wndLights.FindStringExact(-1, lightInfo.strTexture);
+	m_wndLights.SetCurSel(sel);
 
 	m_fEndX = lightInfo.lightEnd[0];
 	m_fEndY = lightInfo.lightEnd[1];
 	m_fEndZ = lightInfo.lightEnd[2];
-
 	m_fRadiusX = lightInfo.lightRadius[0];
 	m_fRadiusY = lightInfo.lightRadius[1];
 	m_fRadiusZ = lightInfo.lightRadius[2];
-
 	m_fRightX = lightInfo.lightRight[0];
 	m_fRightY = lightInfo.lightRight[1];
 	m_fRightZ = lightInfo.lightRight[2];
-
 	m_fStartX = lightInfo.lightStart[0];
 	m_fStartY = lightInfo.lightStart[1];
 	m_fStartZ = lightInfo.lightStart[2];
-
 	m_fTargetX = lightInfo.lightTarget[0];
 	m_fTargetY = lightInfo.lightTarget[1];
 	m_fTargetZ = lightInfo.lightTarget[2];
-
 	m_fUpX = lightInfo.lightUp[0];
 	m_fUpY = lightInfo.lightUp[1];
 	m_fUpZ = lightInfo.lightUp[2];
-
 	VectorCopy(lightInfo.color, color);
 
 	m_centerX = lightInfo.lightCenter[0];
@@ -519,7 +493,7 @@ void CLightDlg::UpdateDialogFromLightInfo( void ) {
 	//jhefty - added parallel light updating
 	m_bIsParallel = lightInfo.isParallel;
 
-	UpdateData( FALSE );
+	UpdateData(FALSE);
 }
 
 void CLightDlg::UpdateLightInfoFromDialog( void ) {
@@ -532,42 +506,36 @@ void CLightDlg::UpdateLightInfoFromDialog( void ) {
 	lightInfo.castShadows = ( m_bShadows != FALSE );
 	lightInfo.skipSpecular = ( m_bSkipSpecular != FALSE );
 
-	VectorCopy( color, lightInfo.color );
-	lightInfo.isParallel = ( m_bIsParallel == TRUE );
+	VectorCopy(color, lightInfo.color);
+	lightInfo.isParallel = (m_bIsParallel == TRUE);
 
 	int sel = m_wndLights.GetCurSel();
 	CString str("");
-	if ( sel >= 0 ) {
-		m_wndLights.GetLBText( sel, str );
+	if (sel >= 0) {
+		m_wndLights.GetLBText(sel, str);
 	}
 	lightInfo.strTexture = str;
 
 	lightInfo.lightEnd[0] = m_fEndX;
 	lightInfo.lightEnd[1] = m_fEndY;
 	lightInfo.lightEnd[2] = m_fEndZ;
-
 	lightInfo.lightRadius[0] = m_fRadiusX;
 	lightInfo.lightRadius[1] = m_fRadiusY;
 	lightInfo.lightRadius[2] = m_fRadiusZ;
-
 	lightInfo.lightRight[0] = m_fRightX;
 	lightInfo.lightRight[1] = m_fRightY;
 	lightInfo.lightRight[2] = m_fRightZ;
-
 	lightInfo.lightStart[0] = m_fStartX;
 	lightInfo.lightStart[1] = m_fStartY;
 	lightInfo.lightStart[2] = m_fStartZ;
-
 	lightInfo.lightTarget[0] = m_fTargetX;
 	lightInfo.lightTarget[1] = m_fTargetY;
 	lightInfo.lightTarget[2] = m_fTargetZ;
-
 	lightInfo.lightUp[0] = m_fUpX;
 	lightInfo.lightUp[1] = m_fUpY;
 	lightInfo.lightUp[2] = m_fUpZ;
 
 	lightInfo.hasCenter = ( m_hasCenter != FALSE );
-
 	lightInfo.lightCenter[0] = m_centerX;
 	lightInfo.lightCenter[1] = m_centerY;
 	lightInfo.lightCenter[2] = m_centerZ;
@@ -619,21 +587,19 @@ void CLightDlg::ColorButtons() {
 void CLightDlg::LoadLightTextures() {
 	int count = declManager->GetNumDecls( DECL_MATERIAL );
 
-	for ( int i = 0; i < count; i++ ) {
+	for (int i = 0; i < count; i++) {
 		// just get the name of the light material
-		const idMaterial* mat = declManager->MaterialByIndex( i, false );
+		const idMaterial* mat = declManager->MaterialByIndex(i, false);
 
-		idStr matName = mat->GetName();
-		matName.ToLower();
-
-		if ( matName.Icmpn( "lights/", strlen( "lights/" ) ) == 0 ){
-			m_wndLights.AddString( mat->GetName() );
+		idStr str = mat->GetName();
+		str.ToLower();
+		if (str.Icmpn("lights/", strlen("lights/")) == 0 || str.Icmpn("fogs/", strlen("fogs/")) == 0) {
+			m_wndLights.AddString(mat->GetName());
 		}
 	}
 }
 
-BOOL CLightDlg::OnInitDialog()
-{
+BOOL CLightDlg::OnInitDialog() {
 	CDialog::OnInitDialog();
 
 	com_editors |= EDITOR_LIGHT;
@@ -641,6 +607,8 @@ BOOL CLightDlg::OnInitDialog()
 	UpdateDialog( true );
 
 	LoadLightTextures();
+
+	m_wndPreview.setDrawable(m_drawMaterial);
 
 	return TRUE;
 }
@@ -652,27 +620,23 @@ void CLightDlg::OnDestroy() {
 	return CDialog::OnDestroy();
 }
 
-void CLightDlg::OnCheckEqualradius()
-{
+void CLightDlg::OnCheckEqualradius() {
 	lightInfo.equalRadius = ( reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_EQUALRADIUS))->GetCheck() != 0 );
 	SetSpecifics();
 }
 
-void CLightDlg::OnCheckExplicitfalloff()
-{
+void CLightDlg::OnCheckExplicitfalloff() {
 	lightInfo.explicitStartEnd = ( reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_EXPLICITFALLOFF))->GetCheck() != 0 );
 	SetSpecifics();
 }
 
-void CLightDlg::OnCheckPoint()
-{
+void CLightDlg::OnCheckPoint() {
 	lightInfo.DefaultPoint();
 	UpdateDialogFromLightInfo();
 	EnableControls();
 }
 
-void CLightDlg::OnCheckProjected()
-{
+void CLightDlg::OnCheckProjected() {
 	lightInfo.DefaultProjected();
 	UpdateDialogFromLightInfo();
 	EnableControls();
@@ -689,8 +653,7 @@ void CLightDlg::OnOK() {
 	CDialog::OnOK();
 }
 
-void CLightDlg::UpdateDialog( bool updateChecks )
-{
+void CLightDlg::UpdateDialog( bool updateChecks ) {
 	CString title;
 
 	lightInfo.Defaults();
@@ -717,6 +680,93 @@ void CLightDlg::UpdateDialog( bool updateChecks )
 	if ( updateChecks ) {
 		EnableControls();
 	}
+}
+
+void UpdateLightDialog( float r, float g, float b, float a ) {
+	g_LightDialog->UpdateColor( r, g, b, a );
+}
+
+void CLightDlg::UpdateColor( float r, float g, float b, float a ) {
+	color[0] = a * r;
+	color[1] = a * g;
+	color[2] = a * b;
+	ColorButtons();
+	UpdateLightInfoFromDialog();
+	SaveLightInfo( NULL );
+}
+
+void CLightDlg::OnBtnColor() {
+	int r, g, b;
+	float ob;
+	r = color[0];
+	g = color[1];
+	b = color[2];
+	if ( DoColor( &r, &g, &b, &ob, UpdateLightDialog ) ) {
+		color[0] = ob * r;
+		color[1] = ob * g;
+		color[2] = ob * b;
+		ColorButtons();
+	}
+}
+
+void CLightDlg::OnCancel() {
+	// turn off light debug drawing in the render backend
+	r_singleLight.SetInteger( -1 );
+	r_showLights.SetInteger( 0 );
+
+	CDialogEx::OnCancel();
+}
+
+HBRUSH CLightDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) {
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	return hbr;
+}
+
+BOOL CLightDlg::DestroyWindow() {
+	if (GetSafeHwnd())
+	{
+		CRect rct;
+		GetWindowRect(rct);
+	}
+	return CDialogEx::DestroyWindow();
+}
+
+void CLightDlg::OnSelchangeComboTexture() {
+	UpdateData(TRUE);
+	int sel = m_wndLights.GetCurSel();
+	CString str;
+	if (sel >= 0) {
+		m_wndLights.GetLBText(sel, str);
+		m_drawMaterial->setMedia(str);
+		m_wndPreview.RedrawWindow();
+	}
+}
+
+void CLightDlg::OnCheckCenter() {
+	if (reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_CENTER))->GetCheck()) {
+		lightInfo.hasCenter = true;
+		lightInfo.lightCenter.x = 0;
+		lightInfo.lightCenter.y = 0;
+		lightInfo.lightCenter.z = 32;
+	} else {
+		lightInfo.hasCenter = false;
+		lightInfo.lightCenter.Zero();
+	}
+	UpdateDialogFromLightInfo();
+	SetSpecifics();
+}
+
+void CLightDlg::OnCheckParallel() {
+	if ( reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_PARALLEL))->GetCheck() ) {
+		lightInfo.DefaultSun();
+	} else {
+		lightInfo.isParallel = false;
+		lightInfo.hasCenter = false;
+	}
+
+	UpdateDialogFromLightInfo();
+	SetSpecifics();
 }
 
 void CLightDlg::OnApply() {
@@ -748,165 +798,7 @@ void CLightDlg::OnApplyDifferences () {
 
 	SaveLightInfo( &differences );
 
-	lightInfoOriginal.FromDict( &modifiedlight );
-}
-
-void CLightDlg::OnBtnSavemap()
-{
-	OnApplyDifferences();
-	gameEdit->MapSave();
-}
-
-void CLightDlg::OnBtnSavemapas()
-{
-	CFileDialog dlgSave( FALSE,"map",NULL,OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,"Map Files (*.map)|*.map||",AfxGetMainWnd() );
-	if ( dlgSave.DoModal() == IDOK ) {
-		OnApplyDifferences();
-		idStr work;
-		work = fileSystem->OSPathToRelativePath( dlgSave.m_ofn.lpstrFile );
-		gameEdit->MapSave( work );
-	}
-}
-
-void UpdateLightDialog( float r, float g, float b, float a ) {
-	g_LightDialog->UpdateColor( r, g, b, a );
-}
-
-void CLightDlg::UpdateColor( float r, float g, float b, float a ) {
-	color[0] = a * r;
-	color[1] = a * g;
-	color[2] = a * b;
-	ColorButtons();
-	UpdateLightInfoFromDialog();
-	SaveLightInfo( NULL );}
-
-void CLightDlg::OnBtnColor() {
-	int r, g, b;
-	float ob;
-	r = color[0];
-	g = color[1];
-	b = color[2];
-	if ( DoColor( &r, &g, &b, &ob, UpdateLightDialog ) ) {
-		color[0] = ob * r;
-		color[1] = ob * g;
-		color[2] = ob * b;
-		ColorButtons();
-	}
-}
-
-void CLightDlg::OnCancel() {
-	// turn off light debug drawing in the render backend
-	r_singleLight.SetInteger( -1 );
-	r_showLights.SetInteger( 0 );
-
-	CDialog::OnCancel();
-}
-
-HBRUSH CLightDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
-	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-
-	return hbr;
-}
-
-BOOL CLightDlg::DestroyWindow()
-{
-	if (GetSafeHwnd())
-	{
-		CRect rct;
-		GetWindowRect(rct);
-	}
-	return CDialog::DestroyWindow();
-}
-
-void CLightDlg::OnSelchangeComboTexture()
-{
-	UpdateData(TRUE);
-	int sel = m_wndLights.GetCurSel();
-	CString str;
-	if (sel >= 0) {
-		m_wndLights.GetLBText(sel, str);
-	}
-}
-
-void CLightDlg::OnCheckCenter()
-{
-	if (reinterpret_cast<CButton*>(GetDlgItem(IDC_CHECK_CENTER))->GetCheck()) {
-		lightInfo.hasCenter = true;
-		lightInfo.lightCenter.x = 0;
-		lightInfo.lightCenter.y = 0;
-		lightInfo.lightCenter.z = 32;
-	} else {
-		lightInfo.hasCenter = false;
-		lightInfo.lightCenter.Zero();
-	}
-	UpdateDialogFromLightInfo();
-	SetSpecifics();
-}
-
-void CLightDlg::OnCheckParallel() {
-	if ( reinterpret_cast<CButton*>( GetDlgItem( IDC_CHECK_PARALLEL ) )->GetCheck() ) {
-		lightInfo.DefaultSun();
-	} else {
-		lightInfo.isParallel = false;
-		lightInfo.hasCenter = false;
-	}
-
-	UpdateDialogFromLightInfo();
-	SetSpecifics();
-}
-
-void CLightDlg::UpdateSelectedOrigin( float x, float y, float z ) {
-	idList<idEntity*> list;
-	idVec3 origin;
-	idVec3 vec(x, y, z);
-
-	list.SetNum( 128 );
-	int count = gameEdit->GetSelectedEntities( list.Ptr(), list.Num() );
-	list.SetNum( count );
-
-	if ( count ) {
-		for ( int i = 0; i < count; i++ ) {
-			const idDict *dict = gameEdit->EntityGetSpawnArgs( list[i] );
-			if ( dict == NULL ) {
-				continue;
-			}
-			const char *name = dict->GetString( "name" );
-			gameEdit->EntityTranslate( list[i], vec );
-			gameEdit->EntityUpdateVisuals( list[i] );
-			gameEdit->MapEntityTranslate( name, vec );
-		}
-	}
-}
-
-void CLightDlg::OnBtnYup()
-{
-	UpdateSelectedOrigin(0, 8, 0);
-}
-
-void CLightDlg::OnBtnYdn()
-{
-	UpdateSelectedOrigin(0, -8, 0);
-}
-
-void CLightDlg::OnBtnXdn()
-{
-	UpdateSelectedOrigin(-8, 0, 0);
-}
-
-void CLightDlg::OnBtnXup()
-{
-	UpdateSelectedOrigin(8, 0, 0);
-}
-
-void CLightDlg::OnBtnZup()
-{
-	UpdateSelectedOrigin(0, 0, 8);
-}
-
-void CLightDlg::OnBtnZdn()
-{
-	UpdateSelectedOrigin(0, 0, -8);
+	lightInfoOriginal.FromDict( &modifiedlight);
 }
 
 void LightEditorInit( const idDict *spawnArgs ) {

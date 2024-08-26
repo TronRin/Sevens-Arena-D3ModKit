@@ -29,13 +29,10 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __WINDOW_H__
 #define __WINDOW_H__
 
-#include "idlib/math/Interpolate.h"
-#include "ui/Rectangle.h"
-#include "ui/DeviceContext.h"
-#include "ui/RegExp.h"
-#include "ui/Winvar.h"
-#include "ui/GuiScript.h"
-#include "ui/SimpleWindow.h"
+#include "RegExp.h"
+#include "Winvar.h"
+#include "GuiScript.h"
+#include "SimpleWindow.h"
 
 const int WIN_CHILD			= 0x00000001;
 const int WIN_CAPTION		= 0x00000002;
@@ -73,9 +70,6 @@ const int SCROLLBAR_SIZE = 16;
 
 const int MAX_WINDOW_NAME = 32;
 const int MAX_LIST_ITEMS = 1024;
-
-const int MAX_EXPRESSION_OPS = 4096;
-const int MAX_EXPRESSION_REGISTERS = 4096;
 
 const char DEFAULT_BACKCOLOR[] = "1 1 1 1";
 const char DEFAULT_FORECOLOR[] = "0 0 0 1";
@@ -215,10 +209,6 @@ public:
 	static const idRegEntry RegisterVars[];
 	static const int		NumRegisterVars;
 
-	void SetDC(idDeviceContext *d);
-
-	idDeviceContext*	GetDC ( void ) { return dc; }
-
 	idWindow *SetFocus(idWindow *w, bool scripts = true);
 
 	idWindow *SetCapture(idWindow *w);
@@ -263,7 +253,7 @@ public:
 	virtual bool Parse(idParser *src, bool rebuild = true);
 	virtual const char *HandleEvent(const sysEvent_t *event, bool *updateVisuals);
 	void	CalcRects(float x, float y);
-	virtual void Redraw(float x, float y);
+	virtual void Redraw(float x, float y, bool hud);
 
 	virtual void ArchiveToDictionary(idDict *dict, bool useNames = true);
 	virtual void InitFromDictionary(idDict *dict, bool byName = true);
@@ -435,8 +425,6 @@ protected:
 	idWindow *captureChild;			// if a child window has mouse capture
 	idWindow *overChild;			// if a child window has mouse capture
 	bool hover;
-
-	idDeviceContext *dc;
 
 	idUserInterfaceLocal *gui;
 

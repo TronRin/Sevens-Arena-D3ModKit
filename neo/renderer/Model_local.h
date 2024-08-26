@@ -29,9 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __MODEL_LOCAL_H__
 #define __MODEL_LOCAL_H__
 
-#include "idlib/geometry/JointTransform.h"
-#include "renderer/Model.h"
-
 /*
 ===============================================================================
 
@@ -92,12 +89,10 @@ public:
 
 	bool						LoadASE( const char *fileName );
 	bool						LoadLWO( const char *fileName );
-	bool						LoadMA( const char *filename );
 	bool						LoadOBJ( const char *filename );
 
 	bool						ConvertASEToModelSurfaces( const struct aseModel_s *ase );
 	bool						ConvertLWOToModelSurfaces( const struct st_lwObject *lwo );
-	bool						ConvertMAToModelSurfaces (const struct maModel_s *ma );
 	bool						ConvertOBJToModelSurfaces( const char *filename );
 
 	struct aseModel_s *			ConvertLWOToASE( const struct st_lwObject *obj, const char *fileName );
@@ -332,8 +327,13 @@ public:
 	virtual float				DepthHack() const;
 	virtual int					Memory() const;
 
+	float						SofteningRadius( const int stage ) const;	// #3878 soft particles
+
 private:
+	void						SetSofteningRadii(); // #3878 soft particles
+
 	const idDeclParticle *		particleSystem;
+	idList<float>				softeningRadii; // #3878 soft particles
 };
 
 /*

@@ -26,12 +26,13 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "ui/DeviceContext.h"
-#include "ui/Window.h"
-#include "ui/UserInterfaceLocal.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/FieldWindow.h"
+#include "Window.h"
+#include "UserInterfaceLocal.h"
+#include "FieldWindow.h"
+
 
 void idFieldWindow::CommonInit() {
 	cursorPos = 0;
@@ -39,12 +40,6 @@ void idFieldWindow::CommonInit() {
 	lastCursorPos = 0;
 	paintOffset = 0;
 	showCursor = false;
-}
-
-idFieldWindow::idFieldWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idFieldWindow::idFieldWindow(idUserInterfaceLocal *g) : idWindow(g) {

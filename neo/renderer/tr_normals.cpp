@@ -26,10 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "renderer/VertexCache.h"
-#include "renderer/tr_local.h"
-#include "renderer/tr_normals.h"
+#include "precompiled.h"
+#pragma hdrstop
+
+#include "tr_local.h"
+#include "tr_normals.h"
 
 idMikkTSpaceInterface mikkTSpaceInterface;
 

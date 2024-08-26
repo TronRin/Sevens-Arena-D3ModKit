@@ -26,13 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/Session.h"
-#include "framework/DeclSkin.h"
-#include "renderer/GuiModel.h"
-#include "renderer/RenderWorld_local.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 /*
 ===================
@@ -227,7 +224,7 @@ void idRenderWorldLocal::UpdateEntityDef( qhandle_t entityHandle, const renderEn
 	idRenderEntityLocal	*def = entityDefs[entityHandle];
 	if ( def ) {
 
-		if (re->forceUpdate != true) {
+		if ( re->forceUpdate != true ) {
 
 			// check for exact match (OPTIMIZE: check through pointers more)
 			if ( !re->joints && !re->callbackData && !def->dynamicModel && !memcmp( re, &def->parms, sizeof( *re ) ) ) {

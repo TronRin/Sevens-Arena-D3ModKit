@@ -28,10 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __LISTWINDOW_H
 #define __LISTWINDOW_H
 
-#include "idlib/containers/StrList.h"
-#include "idlib/containers/HashTable.h"
-#include "ui/Window.h"
-
 class idSliderWindow;
 
 enum {
@@ -52,7 +48,6 @@ struct idTabRect {
 class idListWindow : public idWindow {
 public:
 	idListWindow(idUserInterfaceLocal *gui);
-	idListWindow(idDeviceContext *d, idUserInterfaceLocal *gui);
 
 	virtual const char*	HandleEvent(const sysEvent_t *event, bool *updateVisuals);
 	virtual void		PostParse();

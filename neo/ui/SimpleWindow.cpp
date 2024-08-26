@@ -26,16 +26,16 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "ui/DeviceContext.h"
-#include "ui/Window.h"
-#include "ui/UserInterfaceLocal.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/SimpleWindow.h"
+#include "Window.h"
+#include "UserInterfaceLocal.h"
+#include "SimpleWindow.h"
+
 
 idSimpleWindow::idSimpleWindow(idWindow *win) {
 	gui = win->GetGui();
-	dc = win->dc;
 	drawRect = win->drawRect;
 	clientRect = win->clientRect;
 	textRect = win->textRect;

@@ -26,12 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/DemoFile.h"
-#include "renderer/tr_local.h"
-#include "renderer/VertexCache.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/GuiModel.h"
+#include "tr_local.h"
+
 
 /*
 ================
@@ -190,7 +189,7 @@ void idGuiModel::EmitSurface( guiModelSurface_t *surf, float modelMatrix[16], fl
 
 	renderEntity_t renderEntity;
 	memset( &renderEntity, 0, sizeof( renderEntity ) );
-	memcpy( renderEntity.shaderParms, surf->color, sizeof( surf->color ) );
+	memcpy( renderEntity.shaderParms, surf->color.ToFloatPtr(), sizeof(surf->color));
 
 	viewEntity_t *guiSpace = (viewEntity_t *)R_ClearedFrameAlloc( sizeof( *guiSpace ) );
 	memcpy( guiSpace->modelMatrix, modelMatrix, sizeof( guiSpace->modelMatrix ) );
@@ -271,7 +270,7 @@ void idGuiModel::EmitFullScreen( void ) {
 
 	viewDef->floatTime = tr.frameShaderTime;
 
-	// qglOrtho( 0, 640, 480, 0, 0, 1 );		// always assume 640x480 virtual coordinates
+	// glOrtho( 0, 640, 480, 0, 0, 1 );		// always assume 640x480 virtual coordinates
 	viewDef->projectionMatrix[0] = 2.0f / 640.0f;
 	viewDef->projectionMatrix[5] = -2.0f / 480.0f;
 	viewDef->projectionMatrix[10] = -2.0f / 1.0f;
@@ -356,6 +355,15 @@ void idGuiModel::SetColor( float r, float g, float b, float a ) {
 	surf->color[1] = g;
 	surf->color[2] = b;
 	surf->color[3] = a;
+}
+
+/*
+=============
+GetColor
+=============
+*/
+idVec4 idGuiModel::GetColor( void ) const {
+	return idVec4( surf->color[0], surf->color[1], surf->color[2], surf->color[3] );
 }
 
 /*
@@ -655,4 +663,45 @@ void idGuiModel::DrawStretchTri( idVec2 p1, idVec2 p2, idVec2 p3, idVec2 t1, idV
 	}
 
 	memcpy( &verts[numVerts], tempVerts, vertCount * sizeof( verts[0] ) );
+}
+
+
+/*
+=============
+AllocTris
+=============
+*/
+idDrawVert * idGuiModel::AllocTris( int vertCount, const glIndex_t * tempIndexes, int indexCount, const idMaterial * material, const uint64_t glState ) {
+	if ( material == NULL ) {
+		return NULL;
+	}
+
+	// break the current surface if we are changing to a new material or we can't
+	// fit the data into our allocated block
+	if ( material != surf->material || renderSystem->GetColor() != surf->color ) {
+		if (surf->numVerts) {
+			AdvanceSurf();
+		}
+		surf->material = material;
+		surf->color = renderSystem->GetColor();
+	}
+
+	int numVerts = verts.Num();
+	int numIndexes = indexes.Num();
+	int startVert = numVerts;
+	int startIndex = numIndexes;
+
+	verts.AssureSize( numVerts + vertCount );
+	indexes.AssureSize( numIndexes + indexCount );
+
+	idDrawVert *vert = &verts[numVerts];
+
+	for ( int i = 0; i < indexCount; i++ ) {
+		indexes[startIndex + i] = startVert + tempIndexes[i] - surf->firstVert;
+	}
+
+	surf->numVerts += vertCount;
+	surf->numIndexes += indexCount;
+
+	return vert;
 }

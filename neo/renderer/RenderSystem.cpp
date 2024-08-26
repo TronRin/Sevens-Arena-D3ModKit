@@ -25,18 +25,10 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#include "sys/platform.h"
-#include "idlib/containers/List.h"
-#include "framework/EventLoop.h"
-#include "framework/Session.h"
-#include "framework/DemoFile.h"
-#include "renderer/ModelManager.h"
-#include "renderer/Material.h"
-#include "renderer/GuiModel.h"
-#include "renderer/VertexCache.h"
-#include "renderer/RenderWorld_local.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 idRenderSystemLocal	tr;
 idRenderSystem	*renderSystem = &tr;
@@ -313,6 +305,25 @@ void idRenderSystemLocal::SetColor4( float r, float g, float b, float a ) {
 
 /*
 =============
+GetColor
+=============
+*/
+idVec4 idRenderSystemLocal::GetColor( void ) const {
+	return guiModel->GetColor();
+}
+
+/*
+=============
+idRenderSystemLocal::DrawFilled
+=============
+*/
+void idRenderSystemLocal::DrawFilled( const idVec4 & color, float x, float y, float w, float h ) {
+	SetColor( color );
+	DrawStretchPic( x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, whiteMaterial );
+}
+
+/*
+=============
 DrawStretchPic
 =============
 */
@@ -346,6 +357,16 @@ void idRenderSystemLocal::DrawStretchTri( idVec2 p1, idVec2 p2, idVec2 p3, idVec
 
 /*
 =============
+idRenderSystemLocal::AllocTris
+=============
+*/
+idDrawVert* idRenderSystemLocal::AllocTris( int numVerts, const glIndex_t* indexes, int numIndexes, const idMaterial *material ) {
+	return guiModel->AllocTris( numVerts, indexes, numIndexes, material, 0 );
+}
+
+
+/*
+=============
 GlobalToNormalizedDeviceCoordinates
 =============
 */
@@ -370,7 +391,7 @@ idRenderSystemLocal::DrawSmallChar
 small chars are drawn at native screen resolution
 =====================
 */
-void idRenderSystemLocal::DrawSmallChar( int x, int y, int ch, const idMaterial *material ) {
+void idRenderSystemLocal::DrawSmallChar( int x, int y, int ch ) {
 	int row, col;
 	float frow, fcol;
 	float size;
@@ -393,14 +414,14 @@ void idRenderSystemLocal::DrawSmallChar( int x, int y, int ch, const idMaterial 
 	size = 0.0625f;
 
 	DrawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
-					   fcol, frow,
-					   fcol + size, frow + size,
-					   material );
+					   fcol, frow, 
+					   fcol + size, frow + size, 
+					   charSetMaterial );
 }
 
 /*
 ==================
-idRenderSystemLocal::DrawSmallString[Color]
+idRenderSystemLocal::DrawSmallStringExt
 
 Draws a multi-colored string with a drop shadow, optionally forcing
 to a fixed color.
@@ -408,7 +429,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void idRenderSystemLocal::DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material ) {
+void idRenderSystemLocal::DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor ) {
 	idVec4		color;
 	const unsigned char	*s;
 	int			xx;
@@ -431,7 +452,7 @@ void idRenderSystemLocal::DrawSmallStringExt( int x, int y, const char *string, 
 			s += 2;
 			continue;
 		}
-		DrawSmallChar( xx, y, *s, material );
+		DrawSmallChar( xx, y, *s );
 		xx += SMALLCHAR_WIDTH;
 		s++;
 	}
@@ -443,7 +464,7 @@ void idRenderSystemLocal::DrawSmallStringExt( int x, int y, const char *string, 
 idRenderSystemLocal::DrawBigChar
 =====================
 */
-void idRenderSystemLocal::DrawBigChar( int x, int y, int ch, const idMaterial *material ) {
+void idRenderSystemLocal::DrawBigChar( int x, int y, int ch ) {
 	int row, col;
 	float frow, fcol;
 	float size;
@@ -466,14 +487,14 @@ void idRenderSystemLocal::DrawBigChar( int x, int y, int ch, const idMaterial *m
 	size = 0.0625f;
 
 	DrawStretchPic( x, y, BIGCHAR_WIDTH, BIGCHAR_HEIGHT,
-					   fcol, frow,
-					   fcol + size, frow + size,
-					   material );
+					   fcol, frow, 
+					   fcol + size, frow + size, 
+					   charSetMaterial );
 }
 
 /*
 ==================
-idRenderSystemLocal::DrawBigString[Color]
+idRenderSystemLocal::DrawBigStringExt
 
 Draws a multi-colored string with a drop shadow, optionally forcing
 to a fixed color.
@@ -481,7 +502,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void idRenderSystemLocal::DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material ) {
+void idRenderSystemLocal::DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor ) {
 	idVec4		color;
 	const char	*s;
 	int			xx;
@@ -504,7 +525,7 @@ void idRenderSystemLocal::DrawBigStringExt( int x, int y, const char *string, co
 			s += 2;
 			continue;
 		}
-		DrawBigChar( xx, y, *s, material );
+		DrawBigChar( xx, y, *s );
 		xx += BIGCHAR_WIDTH;
 		s++;
 	}
@@ -512,62 +533,6 @@ void idRenderSystemLocal::DrawBigStringExt( int x, int y, const char *string, co
 }
 
 //======================================================================================
-
-/*
-==================
-SetBackEndRenderer
-
-Check for changes in the back end renderSystem, possibly invalidating cached data
-==================
-*/
-void idRenderSystemLocal::SetBackEndRenderer() {
-	if ( !r_renderer.IsModified() ) {
-		return;
-	}
-
-	bool oldVPstate = backEndRendererHasVertexPrograms;
-
-	backEndRenderer = BE_BAD;
-
-	if ( idStr::Icmp( r_renderer.GetString(), "arb2" ) == 0 ) {
-		if ( glConfig.allowARB2Path ) {
-			backEndRenderer = BE_ARB2;
-		}
-	}
-
-	// fallback
-	if ( backEndRenderer == BE_BAD ) {
-		// choose the best
-		if ( glConfig.allowARB2Path ) {
-			backEndRenderer = BE_ARB2;
-		}
-	}
-
-	backEndRendererHasVertexPrograms = false;
-	backEndRendererMaxLight = 1.0;
-
-	switch( backEndRenderer ) {
-	case BE_ARB2:
-		common->Printf( "using ARB2 renderSystem\n" );
-		backEndRendererHasVertexPrograms = true;
-		backEndRendererMaxLight = 999;
-		break;
-	default:
-		common->FatalError( "SetbackEndRenderer: bad back end" );
-	}
-
-	// clear the vertex cache if we are changing between
-	// using vertex programs and not, because specular and
-	// shadows will be different data
-	if ( oldVPstate != backEndRendererHasVertexPrograms ) {
-		vertexCache.PurgeAll();
-		if ( primaryWorld ) {
-			primaryWorld->FreeInteractions();
-		}
-	}
-
-	r_renderer.ClearModified();
-}
 
 /*
 ====================
@@ -592,9 +557,6 @@ void idRenderSystemLocal::BeginFrame( int windowWidth, int windowHeight ) {
 			r_useScissor.SetBool( origUseScissor );
 		}
 	} // DG end
-
-	// determine which back end we will use
-	SetBackEndRenderer();
 
 	guiModel->Clear();
 
@@ -934,13 +896,13 @@ void idRenderSystemLocal::CaptureRenderToFile( const char *fileName, bool fixAlp
 	guiModel->Clear();
 	R_IssueRenderCommands();
 
-	qglReadBuffer( GL_BACK );
+	glReadBuffer( GL_BACK );
 
 	// include extra space for OpenGL padding to word boundaries
 	int	c = ( rc->width + 3 ) * rc->height;
 	byte *data = (byte *)R_StaticAlloc( c * 3 );
 
-	qglReadPixels( rc->x, rc->y, rc->width, rc->height, GL_RGB, GL_UNSIGNED_BYTE, data );
+	glReadPixels( rc->x, rc->y, rc->width, rc->height, GL_RGB, GL_UNSIGNED_BYTE, data );
 
 	byte *data2 = (byte *)R_StaticAlloc( c * 4 );
 

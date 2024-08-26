@@ -26,13 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "renderer/ModelManager.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "gamesys/SysCvar.h"
-#include "Player.h"
-
-#include "anim/Anim_Testmodel.h"
+#include "../Game_local.h"
 
 /*
 =============================================================================
@@ -770,15 +767,6 @@ void idTestModel::TestModel_f( const idCmdArgs &args ) {
 			if ( name[ 0 ] != '_' ) {
 				name.DefaultFileExtension( ".ase" );
 			}
-
-#ifndef _D3XP
-			// Maya ascii format is supported natively now
-			if ( strstr( name, ".ma" ) || strstr( name, ".mb" ) ) {
-				idModelExport exporter;
-				exporter.ExportModel( name );
-				name.SetFileExtension( MD5_MESH_EXT );
-			}
-#endif
 
 			if ( !renderModelManager->CheckModel( name ) ) {
 				gameLocal.Printf( "Can't register model\n" );

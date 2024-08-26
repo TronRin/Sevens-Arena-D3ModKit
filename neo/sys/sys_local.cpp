@@ -26,10 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/KeyInput.h"
-
-#include "sys/sys_local.h"
+#include "precompiled.h"
+#pragma hdrstop
+#include "sys_local.h"
 
 const char * sysLanguageNames[] = {
 	"english", "spanish", "italian", "german", "french", "russian",
@@ -42,7 +41,11 @@ idSysLocal			sysLocal;
 idSys *				sys = &sysLocal;
 
 bool idSysLocal::IsGameWindowVisible( void ) {
+#ifdef _WIN32
 	return Sys_IsWindowVisible();
+#else
+	return true;
+#endif // _WIN32
 }
 
 void idSysLocal::DebugPrintf( const char *fmt, ... ) {

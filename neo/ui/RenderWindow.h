@@ -28,16 +28,10 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERWINDOW_H
 #define __RENDERWINDOW_H
 
-#include "renderer/RenderWorld.h"
-#include "ui/Window.h"
-
 class idUserInterfaceLocal;
-class idMD5Anim;
-
 class idRenderWindow : public idWindow {
 public:
 	idRenderWindow(idUserInterfaceLocal *gui);
-	idRenderWindow(idDeviceContext *d, idUserInterfaceLocal *gui);
 	virtual ~idRenderWindow();
 
 	virtual void PostParse();

@@ -28,9 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __MARKERWINDOW_H
 #define __MARKERWINDOW_H
 
-#include "framework/Session.h"
-#include "ui/Window.h"
-
 class idUserInterfaceLocal;
 
 typedef struct {
@@ -42,7 +39,6 @@ typedef struct {
 class idMarkerWindow : public idWindow {
 public:
 	idMarkerWindow(idUserInterfaceLocal *gui);
-	idMarkerWindow(idDeviceContext *d, idUserInterfaceLocal *gui);
 	virtual ~idMarkerWindow();
 	virtual size_t Allocated(){return idWindow::Allocated();};
 

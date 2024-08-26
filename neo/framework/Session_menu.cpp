@@ -26,16 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/LangDict.h"
-#include "framework/async/AsyncNetwork.h"
-#include "framework/FileSystem.h"
-#include "framework/Console.h"
-#include "framework/Game.h"
-#include "sound/sound.h"
-#include "ui/UserInterface.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "framework/Session_local.h"
+#include "Session_local.h"
 
 #include "sys/sys_imgui.h"
 

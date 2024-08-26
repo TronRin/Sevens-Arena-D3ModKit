@@ -26,15 +26,14 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/FileSystem.h"
-#include "framework/KeyInput.h"
-#include "ui/DeviceContext.h"
-#include "ui/Window.h"
-#include "ui/UserInterfaceLocal.h"
-#include "ui/SliderWindow.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/EditWindow.h"
+#include "Window.h"
+#include "UserInterfaceLocal.h"
+#include "SliderWindow.h"
+#include "EditWindow.h"
+
 
 bool idEditWindow::ParseInternalVar( const char *_name, idParser *src ) {
 	if ( idStr::Icmp( _name, "maxchars" ) == 0) {
@@ -107,15 +106,9 @@ void idEditWindow::CommonInit() {
 	liveUpdate = true;
 	readonly = false;
 
-	scroller = new idSliderWindow(dc, gui);
+	scroller = new idSliderWindow(gui);
 }
 
-
-idEditWindow::idEditWindow( idDeviceContext *d, idUserInterfaceLocal *g ) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
-}
 
 idEditWindow::idEditWindow( idUserInterfaceLocal *g ) : idWindow(g) {
 	gui = g;

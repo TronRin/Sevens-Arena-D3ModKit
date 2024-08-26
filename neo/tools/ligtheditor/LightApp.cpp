@@ -26,12 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "tools/edit_gui_common.h"
-#include "../../sys/win32/rc/resource.h"
+#include "precompiled.h"
+#pragma hdrstop
+
 #include "LightApp.h"
 #include "lightdlg.h"
-#include <process.h>
-#include <ddeml.h>
 
 BEGIN_MESSAGE_MAP(CLightApp, CWinApp)
 END_MESSAGE_MAP()
@@ -81,7 +80,7 @@ BOOL CLightApp::InitInstance() {
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
 
 	// create main MDI Frame window
-	qglEnableClientState( GL_VERTEX_ARRAY );
+	glEnableClientState( GL_VERTEX_ARRAY );
 
 	m_pMainWnd = g_LightDialog;
 

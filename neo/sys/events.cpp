@@ -26,20 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include <SDL.h>
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "sys/platform.h"
-#include "idlib/containers/List.h"
-#include "idlib/Heap.h"
-#include "framework/Common.h"
-#include "framework/Console.h"
-#include "framework/KeyInput.h"
-#include "framework/Session_local.h"
-#include "renderer/RenderSystem.h"
-#include "renderer/tr_local.h"
-
-#include "sys/sys_public.h"
-#include "sys/sys_imgui.h"
+#include "../framework/Session_local.h"
+#include "../renderer/tr_local.h"
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
 #define SDL_Keycode SDLKey
@@ -999,8 +990,8 @@ unsigned char Sys_MapCharForKey(int key) {
 ===============
 Sys_GrabMouseCursor
 Note: Usually grabbing is handled in idCommonLocal::Frame() -> Sys_GenerateEvents() -> handleMouseGrab()
-      This function should only be used to release the mouse before long operations where
-      common->Frame() won't be called for a while
+	  This function should only be used to release the mouse before long operations where
+	  common->Frame() won't be called for a while
 ===============
 */
 void Sys_GrabMouseCursor(bool grabIt) {
@@ -1209,7 +1200,7 @@ sysEvent_t Sys_GetEvent() {
 				if (!key) {
 					if (ev.type == SDL_KEYDOWN)
 						common->Warning( "unmapped SDL key %d (0x%x) - if possible use SDL2 for better keyboard support",
-						                 ev.key.keysym.sym, ev.key.keysym.unicode );
+										 ev.key.keysym.sym, ev.key.keysym.unicode );
 					continue; // handle next event
 				}
 			}

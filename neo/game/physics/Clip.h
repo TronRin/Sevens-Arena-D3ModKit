@@ -29,12 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __CLIP_H__
 #define __CLIP_H__
 
-#include "idlib/geometry/TraceModel.h"
-#include "cm/CollisionModel.h"
-
-class idSaveGame;
-class idRestoreGame;
-
 /*
 ===============================================================================
 
@@ -47,6 +41,7 @@ class idRestoreGame;
 #define JOINT_HANDLE_TO_CLIPMODEL_ID( id )	( -1 - id )
 
 class idClip;
+class idClipModel;
 class idEntity;
 
 
@@ -69,6 +64,7 @@ public:
 							~idClipModel( void );
 
 	bool					LoadModel( const char *name );
+	void					FreeModel( void );
 	void					LoadModel( const idTraceModel &trm );
 	void					LoadModel( const int renderModelHandle );
 
@@ -102,11 +98,11 @@ public:
 	bool					IsLinked( void ) const;				// returns true if the clip model is linked
 	bool					IsEnabled( void ) const;			// returns true if enabled for collision detection
 	bool					IsEqual( const idTraceModel &trm ) const;
-	cmHandle_t				Handle( void ) const;				// returns handle used to collide vs this model
+	idCollisionModel *		Handle( void ) const;				// returns handle used to collide vs this model
 	const idTraceModel *	GetTraceModel( void ) const;
 	void					GetMassProperties( const float density, float &mass, idVec3 &centerOfMass, idMat3 &inertiaTensor ) const;
 
-	static cmHandle_t		CheckModel( const char *name );
+	static idCollisionModel *CheckModel( const char *name );
 	static void				ClearTraceModelCache( void );
 	static int				TraceModelCacheSize( void );
 
@@ -124,7 +120,7 @@ private:
 	idBounds				absBounds;				// absolute bounds
 	const idMaterial *		material;				// material for trace models
 	int						contents;				// all contents ored together
-	cmHandle_t				collisionModelHandle;	// handle to collision model
+	idCollisionModel		*collisionModel = nullptr;	// handle to collision model
 	int						traceModelIndex;		// trace model used for collision detection
 	int						renderModelHandle;		// render model def handle
 
@@ -281,16 +277,16 @@ public:
 	// clip versus a specific model
 	void					TranslationModel( trace_t &results, const idVec3 &start, const idVec3 &end,
 								const idClipModel *mdl, const idMat3 &trmAxis, int contentMask,
-								cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
+								idCollisionModel *model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
 	void					RotationModel( trace_t &results, const idVec3 &start, const idRotation &rotation,
 								const idClipModel *mdl, const idMat3 &trmAxis, int contentMask,
-								cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
+								idCollisionModel* model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
 	int						ContactsModel( contactInfo_t *contacts, const int maxContacts, const idVec3 &start, const idVec6 &dir, const float depth,
 								const idClipModel *mdl, const idMat3 &trmAxis, int contentMask,
-								cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
+								idCollisionModel* model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
 	int						ContentsModel( const idVec3 &start,
 								const idClipModel *mdl, const idMat3 &trmAxis, int contentMask,
-								cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
+								idCollisionModel* model, const idVec3 &modelOrigin, const idMat3 &modelAxis );
 
 	// clip versus all entities but not the world
 	void					TranslationEntities( trace_t &results, const idVec3 &start, const idVec3 &end,

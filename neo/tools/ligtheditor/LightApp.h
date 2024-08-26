@@ -29,16 +29,11 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __LIGHTAPP_H__
 #define __LIGHTAPP_H__
 
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
-
 #ifndef __AFXWIN_H__
 	#error include 'stdafx.h' before including this file for PCH
 #endif
 
-class CLightApp : public CWinAppEx
-{
+class CLightApp : public CWinAppEx {
 public:
 	CLightApp();
 

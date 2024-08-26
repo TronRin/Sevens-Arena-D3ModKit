@@ -26,13 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "framework/FileSystem.h"
-#include "renderer/tr_local.h"
-#include "sound/sound.h"
+#include "tr_local.h"
 
-#include "renderer/Cinematic.h"
 
 // DG: get rid of libjpeg; as far as I can tell no roqs that actually use it exist
 //#define ID_USE_LIBJPEG 1
@@ -57,6 +55,7 @@ public:
 	virtual int				AnimationLength();
 	virtual void			Close();
 	virtual void			ResetTime(int time);
+	virtual int             GetStartTime(void);
 
 private:
 	size_t					mcomp[256];
@@ -242,6 +241,15 @@ void idCinematic::ResetTime(int milliseconds) {
 
 /*
 ==============
+idCinematic::GetStartTime
+==============
+*/
+int idCinematic::GetStartTime( void ) {
+	return -1;
+}
+
+/*
+==============
 idCinematicLocal::ImageForTime
 ==============
 */
@@ -378,6 +386,15 @@ idCinematicLocal::ResetTime
 void idCinematicLocal::ResetTime(int time) {
 	startTime = ( backEnd.viewDef ) ? 1000 * backEnd.viewDef->floatTime : -1;
 	status = FMV_PLAY;
+}
+
+/*
+==============
+ idCinematicLocal::GetStartTime
+==============
+*/
+int idCinematicLocal::GetStartTime( void ) {
+	return startTime;
 }
 
 /*

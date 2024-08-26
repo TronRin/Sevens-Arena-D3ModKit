@@ -29,14 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __TR_LOCAL_H__
 #define __TR_LOCAL_H__
 
-class idScreenRect; // yay for include recursion
-
-#include "renderer/Image.h"
-#include "renderer/Interaction.h"
-#include "renderer/ModelDecal.h"
-#include "renderer/ModelOverlay.h"
-#include "renderer/RenderSystem.h"
-#include "renderer/RenderWorld.h"
+#include "Image.h"
 
 class idRenderWorldLocal;
 
@@ -105,6 +98,11 @@ SURFACES
 ==============================================================================
 */
 
+#include "ModelDecal.h"
+#include "ModelOverlay.h"
+#include "Interaction.h"
+
+
 // drawSurf_t structures command the back end to render surfaces
 // a given srfTriangles_t may be used with multiple viewEntity_t,
 // as when viewed in a subview or multiple viewport render, or
@@ -114,6 +112,7 @@ SURFACES
 
 // drawSurf_t are always allocated and freed every frame, they are never cached
 static const int	DSF_VIEW_INSIDE_SHADOW	= 1;
+static const int	DSF_SOFT_PARTICLE		= 2; // #3878 - soft particles
 
 typedef struct drawSurf_s {
 	const srfTriangles_t	*geo;
@@ -126,6 +125,7 @@ typedef struct drawSurf_s {
 	int						dsFlags;			// DSF_VIEW_INSIDE_SHADOW, etc
 	struct vertCache_s		*dynamicTexCoords;	// float * in vertex cache memory
 	// specular directions for non vertex program cards, skybox texcoords, etc
+	float					particle_radius;	// The radius of individual quads for soft particles #3878
 } drawSurf_t;
 
 
@@ -679,11 +679,6 @@ typedef struct {
 const int MAX_GUI_SURFACES	= 1024;		// default size of the drawSurfs list for guis, will
 										// be automatically expanded as needed
 
-typedef enum {
-	BE_ARB2,
-	BE_BAD
-} backEndName_t;
-
 typedef struct {
 	int		x, y, width, height;	// these are in physical, OpenGL Y-at-bottom pixels
 } renderCrop_t;
@@ -713,19 +708,22 @@ public:
 	virtual bool			RegisterFont( const char *fontName, fontInfoEx_t &font );
 	virtual void			SetColor( const idVec4 &rgba );
 	virtual void			SetColor4( float r, float g, float b, float a );
+	virtual idVec4			GetColor( void ) const;
 	virtual void			DrawStretchPic ( const idDrawVert *verts, const glIndex_t *indexes, int vertCount, int indexCount, const idMaterial *material,
 											bool clip = true, float x = 0.0f, float y = 0.0f, float w = 640.0f, float h = 0.0f );
 	virtual void			DrawStretchPic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, const idMaterial *material );
 
 	virtual void			DrawStretchTri ( idVec2 p1, idVec2 p2, idVec2 p3, idVec2 t1, idVec2 t2, idVec2 t3, const idMaterial *material );
+	virtual idDrawVert *	AllocTris( int numVerts, const glIndex_t * indexes, int numIndexes, const idMaterial *material );
 	virtual void			GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc );
 	virtual void			GetGLSettings( int& width, int& height );
 	virtual void			PrintMemInfo( MemInfo_t *mi );
 
-	virtual void			DrawSmallChar( int x, int y, int ch, const idMaterial *material );
-	virtual void			DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material );
-	virtual void			DrawBigChar( int x, int y, int ch, const idMaterial *material );
-	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material );
+	virtual void			DrawFilled( const idVec4 & color, float x, float y, float w, float h );
+	virtual void			DrawSmallChar( int x, int y, int ch );
+	virtual void			DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor );
+	virtual void			DrawBigChar( int x, int y, int ch );
+	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor );
 	virtual void			WriteDemoPics();
 	virtual void			DrawDemoPics();
 	virtual void			BeginFrame( int windowWidth, int windowHeight );
@@ -743,7 +741,6 @@ public:
 							~idRenderSystemLocal( void );
 
 	void					Clear( void );
-	void					SetBackEndRenderer();			// sets tr.backEndRenderer based on cvars
 	void					RenderViewToViewport( const renderView_t *renderView, idScreenRect *viewport );
 
 public:
@@ -763,13 +760,6 @@ public:
 	int						viewportOffset[2];	// for doing larger-than-window tiled renderings
 	int						tiledViewport[2];
 
-	// determines which back end to use, and if vertex programs are in use
-	backEndName_t			backEndRenderer;
-	bool					backEndRendererHasVertexPrograms;
-	float					backEndRendererMaxLight;	// 1.0 for standard, unlimited for floats
-														// determines how much overbrighting needs
-														// to be done post-process
-
 	idVec4					ambientLightVector;	// used for "ambient bump mapping"
 
 	float					sortOffset;				// for determinist sorting of equal sort materials
@@ -781,6 +771,10 @@ public:
 	viewDef_t *				primaryView;
 	// many console commands need to know which world they should operate on
 
+	const idMaterial *		whiteMaterial;
+	const idMaterial *		charSetMaterial;
+	const idMaterial *		defaultPointLight;
+	const idMaterial *		defaultProjectedLight;
 	const idMaterial *		defaultMaterial;
 	idImage *				testImage;
 	idCinematic *			testVideo;
@@ -848,8 +842,6 @@ extern idCVar r_flareSize;				// scale the flare deforms from the material def
 extern idCVar r_gamma;					// changes gamma tables
 extern idCVar r_brightness;				// changes gamma tables
 extern idCVar r_gammaInShader;			// set gamma+brightness in shader instead of modifying system gamma tables
-
-extern idCVar r_renderer;				// arb2, etc
 
 extern idCVar r_checkBounds;			// compare all surface bounds with precalculated ones
 
@@ -927,7 +919,6 @@ extern idCVar r_skipROQ;
 extern idCVar r_ignoreGLErrors;
 
 extern idCVar r_forceLoadImages;		// draw all images to screen after registration
-extern idCVar r_demonstrateBug;			// used during development to show IHV's their problems
 extern idCVar r_screenFraction;			// for testing fill rate, the resolution of the entire screen can be changed
 
 #if MD5_ENABLE_LODS > 2 // DEBUG+
@@ -1001,6 +992,10 @@ extern idCVar r_debugPolygonFilled;
 extern idCVar r_materialOverride;		// override all materials
 
 extern idCVar r_debugRenderToTexture;
+
+extern idCVar r_glDebugContext; // DG: use debug context to call logging callbacks on GL errors
+extern idCVar r_enableDepthCapture; // DG: disable capturing depth buffer, used for soft particles
+extern idCVar r_useSoftParticles;
 
 /*
 ====================================================================
@@ -1200,7 +1195,7 @@ viewEntity_t *R_SetEntityDefViewEntity( idRenderEntityLocal *def );
 viewLight_t *R_SetLightDefViewLight( idRenderLightLocal *def );
 
 void R_AddDrawSurf( const srfTriangles_t *tri, const viewEntity_t *space, const renderEntity_t *renderEntity,
-					const idMaterial *shader, const idScreenRect &scissor );
+					const idMaterial *shader, const idScreenRect &scissor, const float soft_particle_radius = -1.0f ); // soft particles in #3878
 
 void R_LinkLightSurf( const drawSurf_t **link, const srfTriangles_t *tri, const viewEntity_t *space,
 				   const idRenderLightLocal *light, const idMaterial *shader, const idScreenRect &scissor, bool viewInsideShadow );
@@ -1336,6 +1331,10 @@ typedef enum {
 	FPROG_AMBIENT,
 	VPROG_GLASSWARP,
 	FPROG_GLASSWARP,
+	// SteveL #3878: soft particles
+	VPROG_SOFT_PARTICLE,
+	FPROG_SOFT_PARTICLE,
+	//
 	PROG_USER
 } program_t;
 
@@ -1383,9 +1382,22 @@ typedef enum {
 	PP_SPECULAR_MATRIX_S,
 	PP_SPECULAR_MATRIX_T,
 	PP_COLOR_MODULATE,
-	PP_COLOR_ADD,
+	PP_COLOR_ADD, // 17
 
-	PP_LIGHT_FALLOFF_TQ = 20	// only for NV programs
+	PP_LIGHT_FALLOFF_TQ = 20,	// only for NV programs - DG: unused
+	PP_GAMMA_BRIGHTNESS = 21, // DG: for gamma in shader: { r_brightness, r_brightness, r_brightness, 1/r_gamma }
+	// DG: for soft particles from TDM: reciprocal of _currentDepth size.
+	//     Lets us convert a screen position to a texcoord in _currentDepth
+	PP_CURDEPTH_RECIPR  = 22,
+	// DG: for soft particles from TDM: particle radius, given as { radius, 1/(fadeRange), 1/radius }
+	//     fadeRange is the particle diameter for alpha blends (like smoke), but the particle radius for additive
+	//     blends (light glares), because additive effects work differently. Fog is half as apparent when a wall
+	//     is in the middle of it. Light glares lose no visibility when they have something to reflect off.
+	PP_PARTICLE_RADIUS  = 23,
+	// DG: for soft particles from TDM: color channel mask.
+	//     Particles with additive blend need their RGB channels modifying to blend them out
+	//     Particles with an alpha blend need their alpha channel modifying.
+	PP_PARTICLE_COLCHAN_MASK = 24,
 } programParameter_t;
 
 
@@ -1721,5 +1733,11 @@ TR_FONT
 
 void R_InitFreeType();
 void R_DoneFreeType();
+
+//=============================================
+
+#include "RenderWorld_local.h"
+#include "GuiModel.h"
+#include "VertexCache.h"
 
 #endif /* !__TR_LOCAL_H__ */

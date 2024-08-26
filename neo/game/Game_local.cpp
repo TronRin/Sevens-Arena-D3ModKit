@@ -26,41 +26,12 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include "precompiled.h"
+#pragma hdrstop
+
 #include <SDL_endian.h>
 
-#include "sys/platform.h"
-#include "idlib/LangDict.h"
-#include "idlib/Timer.h"
-#include "framework/async/NetworkSystem.h"
-#include "framework/DeclEntityDef.h"
-#include "framework/DeclSkin.h"
-#include "framework/FileSystem.h"
-#include "renderer/ModelManager.h"
-
-#include "gamesys/SysCvar.h"
-#include "gamesys/SysCmds.h"
-#include "script/Script_Thread.h"
-#include "ai/AI.h"
-#include "anim/Anim_Testmodel.h"
-#include "Camera.h"
-#include "SmokeParticles.h"
-#include "Player.h"
-#include "WorldSpawn.h"
-#include "Misc.h"
-#include "Trigger.h"
-#include "Entity.h"
-
 #include "Game_local.h"
-
-#ifndef GAME_DLL
-#include "tools/compilers/aas/AASFileManager.h"
-#endif
-
-const int NUM_RENDER_PORTAL_BITS	= idMath::BitsForInteger( PS_BLOCK_ALL );
-
-const float	DEFAULT_GRAVITY			= 1066.0f;
-const idVec3	DEFAULT_GRAVITY_VEC3( 0, 0, -DEFAULT_GRAVITY );
-const int	CINEMATIC_SKIP_DELAY	= SEC2MS( 2.0f );
 
 #ifdef GAME_DLL
 
@@ -455,9 +426,6 @@ void idGameLocal::Shutdown( void ) {
 
 	idAI::FreeObstacleAvoidanceNodes();
 
-	// shutdown the model exporter
-	idModelExport::Shutdown();
-
 	idEvent::Shutdown();
 
 	delete[] locationEntities;
@@ -479,7 +447,7 @@ void idGameLocal::Shutdown( void ) {
 	mapFile = NULL;
 
 	// free the collision map
-	collisionModelManager->FreeMap();
+	collisionModelManager->FreeMap( CM_WORLD_MAP );
 
 	ShutdownConsoleCommands();
 
@@ -1876,7 +1844,7 @@ void idGameLocal::CacheDictionaryMedia( const idDict *dict ) {
 				// precache the render model
 				renderModelManager->FindModel( kv->GetValue() );
 				// precache .cm files only
-				collisionModelManager->LoadModel( kv->GetValue(), true );
+				collisionModelManager->LoadModel( CM_WORLD_MAP, kv->GetValue(), true );
 			}
 		}
 		kv = dict->MatchPrefix( "model", kv );
@@ -3011,7 +2979,7 @@ void idGameLocal::RunDebugInfo( void ) {
 	}
 
 	if ( g_showCollisionWorld.GetBool() ) {
-		collisionModelManager->DrawModel( 0, vec3_origin, mat3_identity, origin, 128.0f );
+		collisionModelManager->DrawModel( 0, vec3_origin, mat3_identity, origin, mat3_identity, 128.0f );
 	}
 
 	if ( g_showCollisionModels.GetBool() ) {

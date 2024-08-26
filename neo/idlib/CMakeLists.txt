@@ -41,6 +41,7 @@ set( src_idlib
 	Dict.cpp
 	Str.cpp
 	Parser.cpp
+	precompiled.cpp
 	MapFile.cpp
 	CmdArgs.cpp
 	Token.cpp
@@ -64,3 +65,6 @@ if ( MSVC )
 
 	set_target_properties( idlib PROPERTIES FOLDER "libs" )
 endif()
+
+target_include_directories( idlib PRIVATE "${CMAKE_SOURCE_DIR}/idlib" )
+target_precompile_headers( idlib PRIVATE "precompiled.h" )

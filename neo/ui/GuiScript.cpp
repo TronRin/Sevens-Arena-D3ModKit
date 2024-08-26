@@ -26,15 +26,14 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/LangDict.h"
-#include "framework/Session.h"
-#include "sound/sound.h"
-#include "ui/Window.h"
-#include "ui/Winvar.h"
-#include "ui/UserInterfaceLocal.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/GuiScript.h"
+#include "Window.h"
+#include "Winvar.h"
+#include "GuiScript.h"
+#include "UserInterfaceLocal.h"
+
 
 /*
 =========================
@@ -158,6 +157,10 @@ void Script_ResetTime(idWindow *window, idList<idGSWinVar> *src) {
 		win = window->GetGui()->GetDesktop()->FindChildByName(*parm);
 		parm = dynamic_cast<idWinStr*>((*src)[1].var);
 	}
+	if ( parm == NULL ) {
+		return;
+	}
+
 	if (win && win->win) {
 		win->win->ResetTime(atoi(*parm));
 		win->win->EvalRegs(-1, true);
@@ -570,7 +573,11 @@ void idGuiScript::FixupParms(idWindow *win) {
 			delete str;
 		}
 		//
-
+	} else if (handler == &Script_LocalSound) {
+		idWinStr * str = dynamic_cast<idWinStr*>(parms[0].var);
+		if ( str ) {
+			declManager->FindSound( str->c_str() );
+		}
 	} else {
 		int c = parms.Num();
 		for (int i = 0; i < c; i++) {

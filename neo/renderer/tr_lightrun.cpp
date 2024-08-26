@@ -26,13 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/Session.h"
-#include "renderer/ModelManager.h"
-#include "renderer/RenderWorld_local.h"
-#include "ui/UserInterface.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 /*
 
@@ -360,9 +357,9 @@ void R_DeriveLightData( idRenderLightLocal *light ) {
 	}
 	if ( !light->lightShader ) {
 		if ( light->parms.pointLight ) {
-			light->lightShader = declManager->FindMaterial( "lights/defaultPointLight" );
+			light->lightShader = tr.defaultPointLight;
 		} else {
-			light->lightShader = declManager->FindMaterial( "lights/defaultProjectedLight" );
+			light->lightShader = tr.defaultProjectedLight;
 		}
 	}
 
@@ -373,11 +370,11 @@ void R_DeriveLightData( idRenderLightLocal *light ) {
 		const idMaterial	*defaultShader;
 
 		if ( light->parms.pointLight ) {
-			defaultShader = declManager->FindMaterial( "lights/defaultPointLight" );
+			defaultShader = tr.defaultPointLight;
 			light->falloffImage = defaultShader->LightFalloffImage();
 		} else {
 			// projected lights by default don't diminish with distance
-			defaultShader = declManager->FindMaterial( "lights/defaultProjectedLight" );
+			defaultShader = tr.defaultProjectedLight;
 			light->falloffImage = defaultShader->LightFalloffImage();
 		}
 	}

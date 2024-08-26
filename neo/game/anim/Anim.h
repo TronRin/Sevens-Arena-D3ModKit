@@ -28,13 +28,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __ANIM_H__
 #define __ANIM_H__
 
-#include "idlib/containers/StrList.h"
-#include "idlib/containers/HashTable.h"
-#include "idlib/Dict.h"
-#include "renderer/Model.h"
-
-#include "physics/Clip.h"
-
 //
 // animation channels
 // these can be changed by modmakers and licensees to be whatever they need.
@@ -186,6 +179,7 @@ typedef struct {
 } animFlags_t;
 
 
+#ifdef ID_MAYA_IMPORT_TOOL
 /*
 ==============================================================================================
 
@@ -220,6 +214,7 @@ public:
 	bool					ExportAnim( const char *anim );
 	int						ExportModels( const char *pathname, const char *extension );
 };
+#endif
 
 /*
 ==============================================================================================

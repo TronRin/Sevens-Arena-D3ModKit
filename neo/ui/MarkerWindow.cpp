@@ -26,15 +26,15 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/KeyInput.h"
-// included for image uploading for player stat graph
-#include "renderer/Image.h"
-#include "ui/DeviceContext.h"
-#include "ui/Window.h"
-#include "ui/UserInterfaceLocal.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/MarkerWindow.h"
+// included for image uploading for player stat graph
+#include "../renderer/Image.h"
+
+#include "Window.h"
+#include "UserInterfaceLocal.h"
+#include "MarkerWindow.h"
 
 class idImage;
 void idMarkerWindow::CommonInit() {
@@ -45,12 +45,6 @@ void idMarkerWindow::CommonInit() {
 	imageBuff = NULL;
 	markerMat = NULL;
 	markerStop = NULL;
-}
-
-idMarkerWindow::idMarkerWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idMarkerWindow::idMarkerWindow(idUserInterfaceLocal *g) : idWindow(g) {

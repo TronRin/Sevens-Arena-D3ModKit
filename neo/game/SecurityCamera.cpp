@@ -26,15 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "gamesys/SysCvar.h"
-#include "physics/Physics_RigidBody.h"
-#include "Entity.h"
-#include "Light.h"
-#include "Player.h"
-#include "Fx.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "SecurityCamera.h"
+#include "Game_local.h"
 
 /***********************************************************************
 
@@ -166,7 +161,7 @@ void idSecurityCamera::Spawn( void ) {
 		str = spawnArgs.GetString( "model" );		// use the visual model
 	}
 
-	if ( !collisionModelManager->TrmFromModel( str, trm ) ) {
+	if ( !collisionModelManager->ModelFromTrm( CM_WORLD_MAP, str, trm, NULL ) ) {
 		gameLocal.Error( "idSecurityCamera '%s': cannot load collision model %s", name.c_str(), str.c_str() );
 		return;
 	}

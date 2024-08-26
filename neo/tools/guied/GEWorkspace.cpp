@@ -26,13 +26,13 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "tools/edit_gui_common.h"
+#include "precompiled.h"
+#pragma hdrstop
 
 
 #include "../../sys/win32/rc/resource.h"
 #include "../../renderer/tr_local.h"
 #include "../../sys/win32/win_local.h"
-#include "../../ui/DeviceContext.h"
 #include "../../ui/EditWindow.h"
 #include "../../ui/ListWindow.h"
 #include "../../ui/BindWindow.h"
@@ -218,43 +218,43 @@ void rvGEWorkspace::RenderGrid ( void )
 		return;
 	}
 
-	qglEnable(GL_BLEND);
-	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	qglColor4f ( color[0], color[1], color[2], 0.5f );
+	glColor4f ( color[0], color[1], color[2], 0.5f );
 
-	qglBegin ( GL_LINES );
+	glBegin ( GL_LINES );
 	step = mApplication->GetOptions().GetGridWidth ( ) * g_ZoomScales[mZoom];
 	for ( x = mRect.x + mRect.w; x >= mRect.x ; x -= step )
 	{
-		qglVertex2f ( x, mRect.y );
-		qglVertex2f ( x, mRect.y + mRect.h );
+		glVertex2f ( x, mRect.y );
+		glVertex2f ( x, mRect.y + mRect.h );
 	}
 	step = mApplication->GetOptions().GetGridHeight ( ) * g_ZoomScales[mZoom];
 	for ( y = mRect.y + mRect.h; y >= mRect.y ; y -= step )
 	{
-		qglVertex2f ( mRect.x, y );
-		qglVertex2f ( mRect.x + mRect.w, y );
+		glVertex2f ( mRect.x, y );
+		glVertex2f ( mRect.x + mRect.w, y );
 	}
-	qglEnd ( );
+	glEnd ( );
 
-	qglDisable(GL_BLEND);
-	qglColor3f ( color[0], color[1], color[2] );
+	glDisable(GL_BLEND);
+	glColor3f ( color[0], color[1], color[2] );
 
-	qglBegin ( GL_LINES );
+	glBegin ( GL_LINES );
 	step = mApplication->GetOptions().GetGridWidth ( ) * g_ZoomScales[mZoom];
 	for ( x = mRect.x + mRect.w; x >= mRect.x ; x -= step * 4 )
 	{
-		qglVertex2f ( x, mRect.y );
-		qglVertex2f ( x, mRect.y + mRect.h );
+		glVertex2f ( x, mRect.y );
+		glVertex2f ( x, mRect.y + mRect.h );
 	}
 	step = mApplication->GetOptions().GetGridHeight ( ) * g_ZoomScales[mZoom];
 	for ( y = mRect.y + mRect.h; y >= mRect.y ; y -= step * 4 )
 	{
-		qglVertex2f ( mRect.x, y );
-		qglVertex2f ( mRect.x + mRect.w, y );
+		glVertex2f ( mRect.x, y );
+		glVertex2f ( mRect.x + mRect.w, y );
 	}
-	qglEnd ( );
+	glEnd ( );
 }
 
 /*
@@ -273,37 +273,37 @@ void rvGEWorkspace::Render ( HDC hdc )
 	scale = g_ZoomScales[mZoom];
 
 	// Switch GL contexts to our dc
-	if (!qwglMakeCurrent( hdc, win32.hGLRC ))
+	if (!wglMakeCurrent( hdc, win32.hGLRC ))
 	{
-		common->Printf("ERROR: wglMakeCurrent failed.. Error:%i\n", qglGetError());
-		common->Printf("Please restart GUI Editor if the Map view is not working\n");
+		common->Printf("ERROR: wglMakeCurrent failed.. Error:%i\n", glGetError());
+		common->Printf("Please restart GUI Editor if the grid view is not working\n");
 		return;
 	}
 
 	// Prepare the view and clear it
 	GL_State( GLS_DEFAULT );
-	qglViewport(0, 0, mWindowWidth, mWindowHeight );
-	qglScissor(0, 0, mWindowWidth, mWindowHeight );
-	qglClearColor ( 0.75f, 0.75f, 0.75f, 0 );
+	glViewport(0, 0, mWindowWidth, mWindowHeight );
+	glScissor(0, 0, mWindowWidth, mWindowHeight );
+	glClearColor ( 0.75f, 0.75f, 0.75f, 0 );
 
-	qglDisable(GL_DEPTH_TEST);
-	qglDisable(GL_CULL_FACE);
-	qglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Render the workspace below
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadIdentity();
-	qglOrtho(0,mWindowWidth, mWindowHeight, 0, -1, 1);
-	qglMatrixMode(GL_MODELVIEW);
-	qglLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0,mWindowWidth, mWindowHeight, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-	qglColor3f ( mApplication->GetOptions().GetWorkspaceColor()[0], mApplication->GetOptions().GetWorkspaceColor()[1], mApplication->GetOptions().GetWorkspaceColor()[2] );
-	qglBegin ( GL_QUADS );
-	qglVertex2f ( mRect.x, mRect.y );
-	qglVertex2f ( mRect.x + mRect.w, mRect.y );
-	qglVertex2f ( mRect.x + mRect.w, mRect.y + mRect.h );
-	qglVertex2f ( mRect.x, mRect.y + mRect.h );
-	qglEnd ( );
+	glColor3f ( mApplication->GetOptions().GetWorkspaceColor()[0], mApplication->GetOptions().GetWorkspaceColor()[1], mApplication->GetOptions().GetWorkspaceColor()[2] );
+	glBegin ( GL_QUADS );
+	glVertex2f ( mRect.x, mRect.y );
+	glVertex2f ( mRect.x + mRect.w, mRect.y );
+	glVertex2f ( mRect.x + mRect.w, mRect.y + mRect.h );
+	glVertex2f ( mRect.x, mRect.y + mRect.h );
+	glEnd ( );
 
 	// Prepare the renderSystem view to draw the GUI in
 	viewDef_t viewDef;
@@ -324,7 +324,7 @@ void rvGEWorkspace::Render ( HDC hdc )
 	idWindow::SetDebugDraw();
 
 	// Draw the gui
-	mInterface->Redraw ( 0 ); // eventLoop->Milliseconds() );
+	mInterface->Redraw ( 0, false ); // eventLoop->Milliseconds() );
 
 	// disable debug draw
 	idWindow::DisableDebugDraw();
@@ -341,27 +341,27 @@ void rvGEWorkspace::Render ( HDC hdc )
 
 	// Prepare the viewport for drawing selections, etc.
 	GL_State( GLS_DEFAULT );
-	qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
-//	qglDisable(GL_BLEND);
-	qglDisable(GL_CULL_FACE);
+	glDisable( GL_TEXTURE_CUBE_MAP_EXT );
+//	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
 
-	qglViewport(0, 0, mWindowWidth, mWindowHeight );
-	qglScissor(0, 0, mWindowWidth, mWindowHeight );
-	qglMatrixMode(GL_PROJECTION);
-	qglLoadIdentity();
-	qglOrtho(0,mWindowWidth, mWindowHeight, 0, -1, 1);
-	qglMatrixMode(GL_MODELVIEW);
-	qglLoadIdentity();
+	glViewport(0, 0, mWindowWidth, mWindowHeight );
+	glScissor(0, 0, mWindowWidth, mWindowHeight );
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0,mWindowWidth, mWindowHeight, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	RenderGrid ( );
 
 	mSelections.Render ( );
 
-	qglFinish ( );
-	qwglSwapBuffers(hdc);
+	glFinish ( );
+	SwapBuffers(hdc);
 
-	qglEnable( GL_TEXTURE_CUBE_MAP_EXT );
-	qglEnable( GL_CULL_FACE);
+	glEnable( GL_TEXTURE_CUBE_MAP_EXT );
+	glEnable( GL_CULL_FACE);
 }
 
 /*
@@ -1487,7 +1487,7 @@ Create a new window
 */
 idWindow* rvGEWorkspace::NewWindow ( idDict* state, rvGEWindowWrapper::EWindowType type )
 {
-	idWindow*			window = new idWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+	idWindow*			window = new idWindow ( mInterface );
 	rvGEWindowWrapper*	wrapper;
 	int					count;
 	idStr				baseName;
@@ -1495,23 +1495,23 @@ idWindow* rvGEWorkspace::NewWindow ( idDict* state, rvGEWindowWrapper::EWindowTy
 	switch ( type )
 	{
 		case rvGEWindowWrapper::WT_NORMAL:
-			window = new idWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_BIND:
-			window = new idBindWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idBindWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_RENDER:
-			window = new idRenderWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idRenderWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_CHOICE:
-			window = new idChoiceWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idChoiceWindow ( mInterface );
 			break;
 
 		case rvGEWindowWrapper::WT_EDIT:
-			window = new idEditWindow ( mInterface->GetDesktop()->GetDC(), mInterface );
+			window = new idEditWindow ( mInterface );
 			break;
 
 		default:

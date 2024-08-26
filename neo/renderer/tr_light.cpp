@@ -26,14 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/math/Interpolate.h"
-#include "framework/Game.h"
-#include "renderer/VertexCache.h"
-#include "renderer/RenderWorld_local.h"
-#include "ui/Window.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
+#include "Model_local.h"
 
 static const float CHECK_BOUNDS_EPSILON = 1.0f;
 
@@ -76,60 +73,12 @@ Returns false if the cache couldn't be allocated, in which case the surface shou
 ==================
 */
 bool R_CreateLightingCache( const idRenderEntityLocal *ent, const idRenderLightLocal *light, srfTriangles_t *tri ) {
-	idVec3		localLightOrigin;
-
 	// fogs and blends don't need light vectors
 	if ( light->lightShader->IsFogLight() || light->lightShader->IsBlendLight() ) {
 		return true;
 	}
 
 	// not needed if we have vertex programs
-	if ( tr.backEndRendererHasVertexPrograms ) {
-		return true;
-	}
-
-	R_GlobalPointToLocal( ent->modelMatrix, light->globalLightOrigin, localLightOrigin );
-
-	int	size = tri->ambientSurface->numVerts * sizeof( lightingCache_t );
-	lightingCache_t *cache = (lightingCache_t *)_alloca16( size );
-
-#if 1
-
-	SIMDProcessor->CreateTextureSpaceLightVectors( &cache[0].localLightVector, localLightOrigin,
-												tri->ambientSurface->verts, tri->ambientSurface->numVerts, tri->indexes, tri->numIndexes );
-
-#else
-
-	bool *used = (bool *)_alloca16( tri->ambientSurface->numVerts * sizeof( used[0] ) );
-	memset( used, 0, tri->ambientSurface->numVerts * sizeof( used[0] ) );
-
-	// because the interaction may be a very small subset of the full surface,
-	// it makes sense to only deal with the verts used
-	for ( int j = 0; j < tri->numIndexes; j++ ) {
-		int i = tri->indexes[j];
-		if ( used[i] ) {
-			continue;
-		}
-		used[i] = true;
-
-		idVec3 lightDir;
-		const idDrawVert *v;
-
-		v = &tri->ambientSurface->verts[i];
-
-		lightDir = localLightOrigin - v->xyz;
-
-		cache[i].localLightVector[0] = lightDir * v->tangents[0];
-		cache[i].localLightVector[1] = lightDir * v->tangents[1];
-		cache[i].localLightVector[2] = lightDir * v->normal;
-	}
-
-#endif
-
-	vertexCache.Alloc( cache, size, &tri->lightingCache );
-	if ( !tri->lightingCache ) {
-		return false;
-	}
 	return true;
 }
 
@@ -672,6 +621,8 @@ void R_LinkLightSurf( const drawSurf_t **link, const srfTriangles_t *tri, const 
 	drawSurf->material = shader;
 	drawSurf->scissorRect = scissor;
 	drawSurf->dsFlags = 0;
+	drawSurf->particle_radius = 0.0f; // #3878
+
 	if ( viewInsideShadow ) {
 		drawSurf->dsFlags |= DSF_VIEW_INSIDE_SHADOW;
 	}
@@ -690,15 +641,6 @@ void R_LinkLightSurf( const drawSurf_t **link, const srfTriangles_t *tri, const 
 			float *regs = (float *)R_FrameAlloc( shader->GetNumRegisters() * sizeof( float ) );
 			drawSurf->shaderRegisters = regs;
 			shader->EvaluateRegisters( regs, space->entityDef->parms.shaderParms, tr.viewDef, space->entityDef->parms.referenceSound );
-		}
-
-		// calculate the specular coordinates if we aren't using vertex programs
-		if ( !tr.backEndRendererHasVertexPrograms && !r_skipSpecular.GetBool() ) {
-			R_SpecularTexGen( drawSurf, light->globalLightOrigin, tr.viewDef->renderView.vieworg );
-			// if we failed to allocate space for the specular calculations, drop the surface
-			if ( !drawSurf->dynamicTexCoords ) {
-				return;
-			}
 		}
 	}
 
@@ -1184,7 +1126,8 @@ R_AddDrawSurf
 =================
 */
 void R_AddDrawSurf( const srfTriangles_t *tri, const viewEntity_t *space, const renderEntity_t *renderEntity,
-					const idMaterial *shader, const idScreenRect &scissor ) {
+					const idMaterial *shader, const idScreenRect &scissor, const float soft_particle_radius )
+{
 	drawSurf_t		*drawSurf;
 	const float		*shaderParms;
 	static float	refRegs[MAX_EXPRESSION_REGISTERS];	// don't put on stack, or VC++ will do a page touch
@@ -1196,7 +1139,17 @@ void R_AddDrawSurf( const srfTriangles_t *tri, const viewEntity_t *space, const 
 	drawSurf->material = shader;
 	drawSurf->scissorRect = scissor;
 	drawSurf->sort = shader->GetSort() + tr.sortOffset;
-	drawSurf->dsFlags = 0;
+
+	if ( soft_particle_radius != -1.0f )	// #3878
+	{
+		drawSurf->dsFlags = DSF_SOFT_PARTICLE;
+		drawSurf->particle_radius = soft_particle_radius;
+	}
+	else
+	{
+		drawSurf->dsFlags = 0;
+		drawSurf->particle_radius = 0.0f;
+	}
 
 	// bumping this offset each time causes surfaces with equal sort orders to still
 	// deterministically draw in the order they are added
@@ -1216,7 +1169,7 @@ void R_AddDrawSurf( const srfTriangles_t *tri, const viewEntity_t *space, const 
 		}
 		tr.viewDef->drawSurfs = (drawSurf_t **)R_FrameAlloc( tr.viewDef->maxDrawSurfs * sizeof( tr.viewDef->drawSurfs[0] ) );
 		if(count > 0)
-			memcpy( tr.viewDef->drawSurfs, old, count ); // XXX null pointer passed as argument 2, which is declared to never be null
+			memcpy( tr.viewDef->drawSurfs, old, count );
 	}
 	tr.viewDef->drawSurfs[tr.viewDef->numDrawSurfs] = drawSurf;
 	tr.viewDef->numDrawSurfs++;
@@ -1425,8 +1378,21 @@ static void R_AddAmbientDrawsurfs( viewEntity_t *vEntity ) {
 				vertexCache.Touch( tri->indexCache );
 			}
 
+			// Soft Particles -- SteveL #3878
+			float particle_radius = -1.0f;		// Default = disallow softening, but allow modelDepthHack if specified in the decl.
+			if ( r_useSoftParticles.GetBool() && r_enableDepthCapture.GetInteger() != 0
+				&& !shader->ReceivesLighting()          // don't soften surfaces that are meant to be solid
+				&& tr.viewDef->renderView.viewID >= 0 ) // Skip during "invisible" rendering passes (e.g. lightgem)
+			{
+				const idRenderModelPrt* prt = dynamic_cast<const idRenderModelPrt*>( def->parms.hModel ); // yuck.
+				if ( prt )
+				{
+					particle_radius = prt->SofteningRadius( surf->id );
+				}
+			}
+
 			// add the surface for drawing
-			R_AddDrawSurf( tri, vEntity, &vEntity->entityDef->parms, shader, vEntity->scissorRect );
+			R_AddDrawSurf( tri, vEntity, &vEntity->entityDef->parms, shader, vEntity->scissorRect, particle_radius );
 
 			// ambientViewCount is used to allow light interactions to be rejected
 			// if the ambient surface isn't visible at all
@@ -1513,6 +1479,14 @@ void R_AddModelSurfaces( void ) {
 				tr.viewDef->floatTime = oldFloatTime;
 				tr.viewDef->renderView.time = oldTime;
 			}
+			continue;
+		}
+
+		// Don't let particle entities re-instantiate their dynamic model during non-visible 
+		// views (in TDM, the light gem render) -- SteveL #3970
+		if ( tr.viewDef->renderView.viewID < 0
+			&& dynamic_cast<const idRenderModelPrt*>( vEntity->entityDef->parms.hModel ) != NULL ) // yuck.
+		{
 			continue;
 		}
 

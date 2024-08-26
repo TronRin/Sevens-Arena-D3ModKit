@@ -26,15 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/math/Interpolate.h"
-#include "renderer/Cinematic.h"
-#include "renderer/tr_local.h"
-#include "ui/Window.h"
-#include "ui/UserInterface.h"
-#include "sound/sound.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/Material.h"
+#include "tr_local.h"
 
 #define _SURFTYPE(x) ( ( x ) | ( surfaceFlags & ( ~SURF_TYPE_MASK ) ) )
 
@@ -1418,6 +1413,10 @@ void idMaterial::ParseStage( idLexer &src, const textureRepeat_t trpDefault ) {
 			ss->drawStateBits |= GLS_DEPTHMASK;
 			continue;
 		}
+		if ( !token.Icmp( "ignoreDepth" ) ) { // Added in #3877.
+			ss->drawStateBits |= GLS_DEPTHFUNC_ALWAYS;
+			continue;
+		}
 		if ( !token.Icmp( "alphaTest" ) ) {
 			ss->hasAlphaTest = true;
 			ss->alphaTestRegister = ParseExpression( src );
@@ -2573,6 +2572,20 @@ void idMaterial::ResetCinematicTime( int time ) const {
 
 /*
 =============
+idMaterial::GetCinematicStartTime
+=============
+*/
+int idMaterial::GetCinematicStartTime() const {
+	for( int i = 0; i < numStages; i++ ) {
+		if ( stages[i].texture.cinematic ) {
+			return stages[i].texture.cinematic->GetStartTime();
+		}
+	}
+	return -1;
+}
+
+/*
+=============
 idMaterial::ConstantRegisters
 =============
 */
@@ -2699,6 +2712,34 @@ idMaterial::GetBumpStage
 const shaderStage_t *idMaterial::GetBumpStage( void ) const {
 	for ( int i = 0 ; i < numStages ; i++ ) {
 		if ( stages[i].lighting == SL_BUMP ) {
+			return &stages[i];
+		}
+	}
+	return NULL;
+}
+
+/*
+===================
+idMaterial::GetDiffuseStage
+===================
+*/
+const shaderStage_t *idMaterial::GetDiffuseStage( void ) const {
+	for ( int i = 0 ; i < numStages ; i++ ) {
+		if ( stages[i].lighting == SL_DIFFUSE ) {
+			return &stages[i];
+		}
+	}
+	return NULL;
+}
+
+/*
+===================
+idMaterial::GetSpecularStage
+===================
+*/
+const shaderStage_t *idMaterial::GetSpecularStage( void ) const {
+	for ( int i = 0 ; i < numStages ; i++ ) {
+		if ( stages[i].lighting == SL_SPECULAR ) {
 			return &stages[i];
 		}
 	}

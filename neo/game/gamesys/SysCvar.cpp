@@ -26,12 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "GameBase.h"
-#include "MultiplayerGame.h"
-
-#include "SysCvar.h"
+#include "../Game_local.h"
 
 /*
 

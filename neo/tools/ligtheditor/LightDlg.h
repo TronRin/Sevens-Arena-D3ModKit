@@ -25,9 +25,10 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#ifndef __LIGHTDLG_H__
-#define __LIGHTDLG_H__
 
+#pragma once
+
+#include "../../sys/win32/rc/resource.h"
 #include "../common/GLWidget.h"
 
 class CLightInfo {
@@ -65,10 +66,9 @@ public:
 	void		ToDictWriteAllInfo( idDict *e );
 };
 
-/////////////////////////////////////////////////////////////////////////////
 // CLightDlg dialog
 
-class CLightDlg : public CDialog {
+class CLightDlg : public CDialogEx {
 public:
 					CLightDlg(CWnd* pParent = NULL);   // standard constructor
 					~CLightDlg();
@@ -85,6 +85,7 @@ public:
 	void			UpdateSelectedOrigin( float x, float y, float z );
 
 	enum { IDD = IDD_DIALOG_LIGHT };
+	idGLWidget m_wndPreview;
 	CComboBox	m_wndLights;
 	CSliderCtrl	m_wndFalloff;
 	BOOL	m_bEqualRadius;
@@ -121,7 +122,7 @@ public:
 
 public:
 	virtual BOOL DestroyWindow();
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 protected:
@@ -137,19 +138,11 @@ protected:
 	afx_msg void OnApply();
 	afx_msg void OnBtnColor();
 	virtual void OnCancel();
-	afx_msg void OnBtnYup();
-	afx_msg void OnBtnYdn();
-	afx_msg void OnBtnXdn();
-	afx_msg void OnBtnXup();
-	afx_msg void OnBtnZup();
-	afx_msg void OnBtnZdn();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnSelchangeComboTexture();
 	afx_msg void OnCheckCenter();
 	afx_msg void OnCheckParallel();
 	afx_msg void OnApplyDifferences();
-	afx_msg void OnBtnSavemap();
-	afx_msg void OnBtnSavemapas();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -159,8 +152,7 @@ private:
 	CLightInfo				lightInfo;
 	CLightInfo				lightInfoOriginal;
 	idVec3					color;
+	idGLDrawableMaterial *	m_drawMaterial;
 };
 
 extern CLightDlg* g_LightDialog;
-
-#endif // __LIGHTDLG_H__

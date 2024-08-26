@@ -26,12 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/DemoFile.h"
-#include "framework/Session.h"
-#include "renderer/RenderWorld_local.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 /*
 
@@ -1058,17 +1056,17 @@ void idRenderWorldLocal::ShowPortals() {
 
 			if ( portalAreas[ p->intoArea ].viewCount != tr.viewCount ) {
 				// red = can't see
-				qglColor3f( 1, 0, 0 );
+				glColor3f( 1, 0, 0 );
 			} else {
 				// green = see through
-				qglColor3f( 0, 1, 0 );
+				glColor3f( 0, 1, 0 );
 			}
 
-			qglBegin( GL_LINE_LOOP );
+			glBegin( GL_LINE_LOOP );
 			for ( j = 0 ; j < w->GetNumPoints() ; j++ ) {
-				qglVertex3fv( (*w)[j].ToFloatPtr() );
+				glVertex3fv( (*w)[j].ToFloatPtr() );
 			}
-			qglEnd();
+			glEnd();
 		}
 	}
 }

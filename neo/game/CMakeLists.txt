@@ -43,7 +43,6 @@ set( src_game
 	ai/AI_events.cpp
 	ai/AI_pathing.cpp
 	ai/AI_script.cpp
-	gamesys/DebugGraph.cpp
 	gamesys/Class.cpp
 	gamesys/Event.cpp
 	gamesys/SaveGame.cpp
@@ -52,7 +51,6 @@ set( src_game
 	gamesys/SysCvar.cpp
 	anim/Anim.cpp
 	anim/Anim_Blend.cpp
-	anim/Anim_Import.cpp
 	anim/Anim_Testmodel.cpp
 	script/Script_Compiler.cpp
 	script/Script_Interpreter.cpp
@@ -81,35 +79,34 @@ set( src_game
 
 add_globbed_headers(src_game "game")
 
-if ( GAME_CODE AND NOT HARDLINK_GAME )
-
 if( HARDLINK_GAME )
 	add_library( ${PROJECT_NAME} STATIC ${src_game} )
 else()
 	add_library( ${PROJECT_NAME} SHARED ${src_game} )
-endif()# HARDLINK_GAME
+endif()
 
 if ( MSVC )
 	target_sources( ${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/sys/win32/natvis/game.natvis" )
-	
 	source_group( TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX neo FILES ${src_game} )
 
 	if( HARDLINK_GAME )
 		set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER "libs" )
 	else()
 		set_target_properties( ${PROJECT_NAME} PROPERTIES FOLDER "dlls" )
-	endif()# HARDLINK_GAME
+	endif()
 endif()
+
+target_precompile_headers( ${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/idlib/precompiled.h" )
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES PREFIX "" )
 set_target_properties( ${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS "GAME_DLL;_D3XP;CTF" )
-target_include_directories( ${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" )
+target_include_directories( ${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/idlib" )
 set_target_properties( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "${ldflags}" )
 set_target_properties( ${PROJECT_NAME} PROPERTIES INSTALL_NAME_DIR "@executable_path" )
-
 if( NOT HARDLINK_GAME )
 	target_link_libraries( ${PROJECT_NAME} idlib )
 endif()
+set_target_properties( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} LIBRARY_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 
 if( NOT APPLE AND NOT WIN32 )
 	install(TARGETS ${PROJECT_NAME}
@@ -118,5 +115,3 @@ if( NOT APPLE AND NOT WIN32 )
 			ARCHIVE DESTINATION "${libdir}"
 	)
 endif()
-
-endif() # GAME_CODE && !HARDLINK_GAME

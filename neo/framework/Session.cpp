@@ -26,16 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/hashing/CRC32.h"
-#include "idlib/LangDict.h"
-#include "framework/async/AsyncNetwork.h"
-#include "framework/Console.h"
-#include "framework/Game.h"
-#include "framework/EventLoop.h"
-#include "renderer/ModelManager.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "framework/Session_local.h"
+#include "Session_local.h"
 
 idCVar	idSessionLocal::com_showAngles( "com_showAngles", "0", CVAR_SYSTEM | CVAR_BOOL, "" );
 idCVar	idSessionLocal::com_minTics( "com_minTics", "1", CVAR_SYSTEM, "" );
@@ -100,6 +94,13 @@ static void Session_Map_f( const idCmdArgs &args ) {
 
 	map = args.Argv(1);
 	if ( !map.Length() ) {
+		// DG: if the map command is called without any arguments, print the current map
+		// TODO: could check whether we're currently in a game, otherwise the last loaded
+		//       map is printed.. but OTOH, who cares
+		const char* curmap = sessLocal.mapSpawnData.serverInfo.GetString( "si_map" );
+		if ( curmap[0] != '\0' ) {
+			common->Printf( "Current Map: %s\n", curmap );
+		}
 		return;
 	}
 	map.StripFileExtension();

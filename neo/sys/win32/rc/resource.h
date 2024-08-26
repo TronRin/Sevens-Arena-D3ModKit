@@ -319,7 +319,6 @@
 #define IDC_SPIN_SPRING_MAX_LENGTH      513
 #define IDD_DBG_FIND                    2000
 #define IDD_DBG_QUICKWATCH              2001
-#define IDD_DBG_ABOUT                   2002
 #define IDR_DBG_MAIN                    2003
 #define IDR_DBG_ACCELERATORS            2004
 #define IDR_DBG_SCRIPT_POPUP            2005
@@ -359,7 +358,6 @@
 #define IDC_DECLEDITOR_EDIT_TEXT        3217
 #define IDC_DECLEDITOR_BUTTON_TEST      3218
 #define IDI_ICON1                       4001
-#define IDD_GUIED_ABOUT                 5000
 #define IDD_GUIED_OPTIONS_GRID          5001
 #define IDD_GUIED_OPTIONS_GENERAL       5002
 #define IDD_GUIED_ITEMPROPS_GENERAL     5003
@@ -564,14 +562,23 @@
 #define IDC_APPLY                       10203
 #define IDC_APPLY_DIFFERENT             10209
 #define IDC_BTN_COLOR                   10347
+#define IDD_ABOUT                       10348
+#define IDC_ABOUT_TEXT                  10349
+#define IDC_ABOUT_GLVENDOR              10350
+#define IDC_ABOUT_GLVERSION             10351
+#define IDC_ABOUT_GLRENDERER            10353
+#define IDC_ABOUT_GLEXTENSIONS          10354
+#define IDC_ABOUT_BITMAP                10355
 #define IDC_CHECK_POINT                 10428
 #define IDC_CHECK_EQUALRADIUS           10429
+#define IDC_RADIO_FALLOFF               10430
 #define IDC_CHECK_PROJECTED             10431
 #define IDC_CHECK_EXPLICITFALLOFF       10432
 #define IDC_CHECK_CENTER                10433
 #define IDC_SLIDER_BRIGHTNESS           10434
 #define IDC_CHECK_PARALLEL              10435
 #define IDC_CHECK_SHADOWS               10436
+#define IDC_RADIO_FALLOFF2              10437
 #define IDC_CHECK_SPECULAR              10438
 #define IDC_EDIT_RADIUSY                10439
 #define IDC_EDIT_RADIUSZ                10440
@@ -595,6 +602,9 @@
 #define IDC_COMBO_TEXTURE               10458
 #define IDC_EDIT_CENTERY                10459
 #define IDC_EDIT_CENTERZ                10461
+#define IDC_RADIO_FALLOFF3              10462
+#define IDC_CHECK_DIFFUSE               10463
+#define IDC_LIGHTPREVIEW                10500
 #define IDC_BUTTON_COLOR1               10501
 #define IDC_STATIC_RGB_RECT             10502
 #define IDC_STATIC_HSB_RECT             10503
@@ -765,7 +775,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        9022
+#define _APS_NEXT_RESOURCE_VALUE        9020
 #define _APS_NEXT_COMMAND_VALUE         29005
 #define _APS_NEXT_CONTROL_VALUE         9208
 #define _APS_NEXT_SYMED_VALUE           9005

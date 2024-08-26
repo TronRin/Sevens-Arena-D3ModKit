@@ -26,10 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "tools/compilers/dmap/dmap.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "tools/compilers/compiler_public.h"
+#include "dmap.h"
 
 dmapGlobals_t	dmapGlobals;
 
@@ -379,7 +379,7 @@ void Dmap( const idCmdArgs &args ) {
 			start = Sys_Milliseconds();
 
 			collisionModelManager->LoadMap( dmapGlobals.dmapFile );
-			collisionModelManager->FreeMap();
+			collisionModelManager->FreeMap( CM_WORLD_MAP );
 
 			end = Sys_Milliseconds();
 			common->Printf( "-------------------------------------\n" );

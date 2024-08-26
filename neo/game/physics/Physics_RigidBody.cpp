@@ -25,17 +25,11 @@ If you have questions concerning this license or the applicable additional terms
 
 ===========================================================================
 */
-#include <algorithm>
 
-#include "sys/platform.h"
-#include "idlib/math/Quat.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "gamesys/SysCvar.h"
-#include "Entity.h"
-#include "Player.h"
-
-#include "physics/Physics_RigidBody.h"
-#include "physics/Physics_Liquid.h"
+#include "../Game_local.h"
 
 CLASS_DECLARATION( idPhysics_Base, idPhysics_RigidBody )
 END_CLASS
@@ -647,7 +641,7 @@ idPhysics_RigidBody::DebugDraw
 void idPhysics_RigidBody::DebugDraw( void ) {
 
 	if ( rb_showBodies.GetBool() || ( rb_showActive.GetBool() && current.atRest < 0 ) ) {
-		collisionModelManager->DrawModel( clipModel->Handle(), clipModel->GetOrigin(), clipModel->GetAxis(), vec3_origin, 0.0f );
+		clipModel->Handle()->DrawModel( clipModel->GetOrigin(), clipModel->GetAxis(), vec3_origin, 0.0f );
 	}
 
 	if ( rb_showMass.GetBool() ) {

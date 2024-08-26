@@ -26,12 +26,14 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "tools/edit_gui_common.h"
+#include "precompiled.h"
+#pragma hdrstop
 
 
 #include "../../sys/win32/rc/resource.h"
 #include "../../sys/win32/win_local.h"
 #include "DebuggerApp.h"
+#include "../common/AboutBoxDlg.h"
 #include "DebuggerQuickWatchDlg.h"
 #include "DebuggerFindDlg.h"
 
@@ -54,6 +56,57 @@ If you have questions concerning this license or the applicable additional terms
 #define IDC_DBG_BREAKLIST		31012
 
 #define ID_DBG_FILE_MRU1		10000
+
+class CAboutDebuggerDlg : public CAboutDlg {
+public:
+	CAboutDebuggerDlg( void );
+	virtual BOOL OnInitDialog();
+};
+
+CAboutDebuggerDlg::CAboutDebuggerDlg() : CAboutDlg( IDD_ABOUT ) {
+	SetDialogTitle( _T( "About Script Debugger" ) );
+}
+
+BOOL CAboutDebuggerDlg::OnInitDialog() {
+	CAboutDlg::OnInitDialog();
+
+	CString buffer;
+	buffer.Format( "Script Debugger Build: %i\n%s\nCopyright 2004, 2011 Id Software, Inc\n\n", BUILD_NUMBER, ID__DATE__ );
+	SetDlgItemText( IDC_ABOUT_TEXT, buffer );
+
+	return TRUE;
+}
+
+static INT_PTR CALLBACK AboutDebugerDlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam ) {
+	static CAboutDebuggerDlg *pDlg = nullptr;
+
+	if ( message == WM_INITDIALOG ) {
+		pDlg = reinterpret_cast<CAboutDebuggerDlg *>( lParam );
+		pDlg->Attach( hDlg ); // Attach the HWND to the MFC dialog
+		pDlg->OnInitDialog();
+		return TRUE;
+	}
+
+	if ( pDlg ) {
+		switch ( message ) {
+			case WM_COMMAND:
+				if ( LOWORD( wParam ) == IDOK || LOWORD( wParam ) == IDCANCEL ) {
+					EndDialog( hDlg, LOWORD( wParam ) );
+					return TRUE;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
+	return FALSE;
+}
+
+static void ShowAboutDebuggerDialog( HINSTANCE hInstance, HWND hParent ) {
+	CAboutDebuggerDlg aboutDlg;
+	DialogBoxParam( hInstance, MAKEINTRESOURCE( IDD_ABOUT ), hParent, AboutDebugerDlgProc, reinterpret_cast<LPARAM>( &aboutDlg ) );
+}
 
 /*
 ================
@@ -170,7 +223,7 @@ bool rvDebuggerWindow::Create ( HINSTANCE instance )
 
 	UpdateTitle ( );
 
-	Printf ( "Script Debugger v1.1\n\n" );
+	Printf( va( "Script Debugger Build: %i\n\n", BUILD_NUMBER ) );
 
 	ShowWindow ( mWnd, SW_SHOW );
 	UpdateWindow ( mWnd );
@@ -1228,7 +1281,7 @@ int rvDebuggerWindow::HandleCommand ( WPARAM wparam, LPARAM lparam )
 		}
 
 		case ID_DBG_HELP_ABOUT:
-			DialogBox ( mInstance, MAKEINTRESOURCE(IDD_DBG_ABOUT), mWnd, AboutDlgProc );
+			ShowAboutDebuggerDialog( GetInstance(), mWnd );
 			break;
 
 		case ID_DBG_DEBUG_BREAK:

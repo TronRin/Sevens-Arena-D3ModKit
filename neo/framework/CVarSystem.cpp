@@ -26,12 +26,9 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/async/AsyncNetwork.h"
-#include "framework/Common.h"
-#include "framework/Session.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "framework/CVarSystem.h"
 
 idCVar * idCVar::staticVars = NULL;
 
@@ -308,7 +305,7 @@ idInternalCVar::Set
 */
 void idInternalCVar::Set( const char *newValue, bool force, bool fromServer ) {
 	if ( session && session->IsMultiplayer() && !fromServer ) {
-#ifndef ID_MAYA_IMPORT
+#ifndef ID_TYPEINFO
 		if ( ( flags & CVAR_NETWORKSYNC ) && idAsyncNetwork::client.IsActive() ) {
 			common->Printf( "%s is a synced over the network and cannot be changed on a multiplayer client.\n", nameString.c_str() );
 #if ID_ALLOW_CHEATS

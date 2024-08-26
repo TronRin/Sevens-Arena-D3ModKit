@@ -26,22 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/LangDict.h"
-#include "framework/async/NetworkSystem.h"
-#include "framework/FileSystem.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "gamesys/SysCvar.h"
-#include "script/Script_Thread.h"
-#include "ai/AI.h"
-#include "anim/Anim_Testmodel.h"
-#include "Entity.h"
-#include "Moveable.h"
-#include "WorldSpawn.h"
-#include "Fx.h"
-#include "Misc.h"
-
-#include "SysCmds.h"
+#include "../Game_local.h"
 
 /*
 ==================
@@ -1375,6 +1363,7 @@ Cmd_CollisionModelInfo_f
 ==================
 */
 static void Cmd_CollisionModelInfo_f( const idCmdArgs &args ) {
+	/*
 	const char *value;
 
 	if ( !gameLocal.CheatsOk() ) {
@@ -1393,58 +1382,7 @@ static void Cmd_CollisionModelInfo_f( const idCmdArgs &args ) {
 	} else {
 		collisionModelManager->ModelInfo( atoi(value) );
 	}
-}
-
-/*
-==================
-Cmd_ExportModels_f
-==================
-*/
-static void Cmd_ExportModels_f( const idCmdArgs &args ) {
-	idModelExport	exporter;
-	idStr			name;
-
-	// don't allow exporting models when cheats are disabled,
-	// but if we're not in the game, it's ok
-	if ( gameLocal.GetLocalPlayer() && !gameLocal.CheatsOk( false ) ) {
-		return;
-	}
-
-	if ( args.Argc() < 2 ) {
-		exporter.ExportModels( "def", ".def" );
-	} else {
-		name = args.Argv( 1 );
-		name = "def/" + name;
-		name.DefaultFileExtension( ".def" );
-		exporter.ExportDefFile( name );
-	}
-}
-
-/*
-==================
-Cmd_ReexportModels_f
-==================
-*/
-static void Cmd_ReexportModels_f( const idCmdArgs &args ) {
-	idModelExport	exporter;
-	idStr			name;
-
-	// don't allow exporting models when cheats are disabled,
-	// but if we're not in the game, it's ok
-	if ( gameLocal.GetLocalPlayer() && !gameLocal.CheatsOk( false ) ) {
-		return;
-	}
-
-	idAnimManager::forceExport = true;
-	if ( args.Argc() < 2 ) {
-		exporter.ExportModels( "def", ".def" );
-	} else {
-		name = args.Argv( 1 );
-		name = "def/" + name;
-		name.DefaultFileExtension( ".def" );
-		exporter.ExportDefFile( name );
-	}
-	idAnimManager::forceExport = false;
+	*/
 }
 
 /*
@@ -2338,7 +2276,6 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand( "script",				Cmd_Script_f,				CMD_FL_GAME|CMD_FL_CHEAT,	"executes a line of script" );
 	cmdSystem->AddCommand( "listCollisionModels",	Cmd_ListCollisionModels_f,	CMD_FL_GAME,				"lists collision models" );
 	cmdSystem->AddCommand( "collisionModelInfo",	Cmd_CollisionModelInfo_f,	CMD_FL_GAME,				"shows collision model info" );
-	cmdSystem->AddCommand( "reexportmodels",		Cmd_ReexportModels_f,		CMD_FL_GAME|CMD_FL_CHEAT,	"reexports models", ArgCompletion_DefFile );
 	cmdSystem->AddCommand( "reloadanims",			Cmd_ReloadAnims_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"reloads animations" );
 	cmdSystem->AddCommand( "listAnims",				Cmd_ListAnims_f,			CMD_FL_GAME,				"lists all animations" );
 	cmdSystem->AddCommand( "aasStats",				Cmd_AASStats_f,				CMD_FL_GAME,				"shows AAS stats" );
@@ -2356,7 +2293,6 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand( "gameError",				Cmd_GameError_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"causes a game error" );
 
 	cmdSystem->AddCommand( "disasmScript",			Cmd_DisasmScript_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"disassembles script" );
-	cmdSystem->AddCommand( "exportmodels",			Cmd_ExportModels_f,			CMD_FL_GAME|CMD_FL_CHEAT,	"exports models", ArgCompletion_DefFile );
 
 	// multiplayer client commands ( replaces old impulses stuff )
 	cmdSystem->AddCommand( "clientDropWeapon",		idMultiplayerGame::DropWeapon_f, CMD_FL_GAME,			"drop current weapon" );

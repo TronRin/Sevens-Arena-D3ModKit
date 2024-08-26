@@ -26,9 +26,8 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/Common.h"
-#include "edit_public.h"
+#include "precompiled.h"
+#pragma hdrstop
 
 void	LightEditorInit( const idDict *spawnArgs ) { common->Printf( "The Light Editor only runs on Win32\n" ); }
 void	LightEditorShutdown( void ) {}

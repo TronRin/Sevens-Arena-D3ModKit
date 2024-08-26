@@ -1,4 +1,5 @@
 set( src_cm
+	${CMAKE_SOURCE_DIR}/cm/CollisionModel.cpp
 	${CMAKE_SOURCE_DIR}/cm/CollisionModel_contacts.cpp
 	${CMAKE_SOURCE_DIR}/cm/CollisionModel_contents.cpp
 	${CMAKE_SOURCE_DIR}/cm/CollisionModel_debug.cpp
@@ -13,10 +14,12 @@ add_globbed_headers( src_cm "cm" )
 
 set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/CVarSystem.cpp
+	${CMAKE_SOURCE_DIR}/framework/DebugGraph.cpp
 	${CMAKE_SOURCE_DIR}/framework/CmdSystem.cpp
 	${CMAKE_SOURCE_DIR}/framework/Common.cpp
 	${CMAKE_SOURCE_DIR}/framework/Compressor.cpp
 	${CMAKE_SOURCE_DIR}/framework/Console.cpp
+	${CMAKE_SOURCE_DIR}/framework/ConsoleHistory.cpp
 	${CMAKE_SOURCE_DIR}/framework/DemoFile.cpp
 	${CMAKE_SOURCE_DIR}/framework/DeclAF.cpp
 	${CMAKE_SOURCE_DIR}/framework/DeclEntityDef.cpp
@@ -45,6 +48,15 @@ set( src_framework
 	${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp
 )
 
+# Don't use precompiled headers for miniz/minizip sources.
+set_source_files_properties(
+	${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c
+	${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c
+	PROPERTIES
+	SKIP_PRECOMPILE_HEADERS ON
+	LANGUAGE C
+)
+
 always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/miniz/miniz.c )
 always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/ioapi.c )
 always_optimize_sourcefile( ${CMAKE_SOURCE_DIR}/framework/minizip/unzip.cpp )
@@ -61,6 +73,7 @@ set( src_aas_file
 add_globbed_headers( src_aas_file "libs/aasfile" )
 
 set( src_renderer
+	${CMAKE_SOURCE_DIR}/renderer/DeviceContext.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Cinematic.cpp
 	${CMAKE_SOURCE_DIR}/renderer/GuiModel.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Image_files.cpp
@@ -78,7 +91,6 @@ set( src_renderer
 	${CMAKE_SOURCE_DIR}/renderer/Model_ase.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_liquid.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_lwo.cpp
-	${CMAKE_SOURCE_DIR}/renderer/Model_ma.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_md3.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_md5.cpp
 	${CMAKE_SOURCE_DIR}/renderer/Model_obj.cpp
@@ -116,29 +128,49 @@ set( src_renderer
 
 add_globbed_headers( src_renderer "renderer" )
 
-# RBMIKKT_TANGENT...
-
 set( src_mikktspace
 	${CMAKE_SOURCE_DIR}/libs/mikktspace/mikktspace.c
 )
 
-add_globbed_headers( src_mikktspace "mikktspace" )
+# Don't use precompiled headers for mikktspace sources.
+set_source_files_properties(
+	${CMAKE_SOURCE_DIR}/libs/mikktspace/mikktspace.c
+	PROPERTIES
+	SKIP_PRECOMPILE_HEADERS ON
+	LANGUAGE C
+)
 
-# ...RBMIKKT_TANGENT
+add_globbed_headers( src_mikktspace "mikktspace" )
 
 if( IMGUI )
 	set( src_imgui
 		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl2.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_opengl2.cpp
+
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui.h
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
+
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+
 		sys_imgui.h
 		sys_imgui.cpp
 		imgui_savestyle.cpp
+	)
+	
+	# Don't use precompiled headers for imgui sources.
+	set_source_files_properties(
+		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl2.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_opengl2.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/imgui.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
+		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+		PROPERTIES
+		SKIP_PRECOMPILE_HEADERS ON
 	)
 else()
 	set( src_imgui
@@ -163,7 +195,6 @@ add_globbed_headers( src_sound "sound" )
 set( src_ui
 	${CMAKE_SOURCE_DIR}/ui/BindWindow.cpp
 	${CMAKE_SOURCE_DIR}/ui/ChoiceWindow.cpp
-	${CMAKE_SOURCE_DIR}/ui/DeviceContext.cpp
 	${CMAKE_SOURCE_DIR}/ui/EditWindow.cpp
 	${CMAKE_SOURCE_DIR}/ui/FieldWindow.cpp
 	${CMAKE_SOURCE_DIR}/ui/GuiScript.cpp
@@ -346,7 +377,6 @@ if ( TOOLS AND MFC_FOUND AND MSVC )
 		${src_sound_editor}
 		${src_script_debugger}
 		${CMAKE_SOURCE_DIR}/tools/edit_public.h
-		${CMAKE_SOURCE_DIR}/tools/edit_gui_common.h
 	)
 
 	SET( CMAKE_MFC_FLAG 2 )
@@ -395,6 +425,14 @@ elseif( WIN32 )
 		win32/win_syscon.cpp
 		win32/SDL_win32_main.c
 	)
+	
+	# Don't use precompiled headers for our SDL Win32 c sources.
+	set_source_files_properties(
+		win32/SDL_win32_main.c
+		PROPERTIES
+		SKIP_PRECOMPILE_HEADERS ON
+		LANGUAGE C
+	)
 
 	# adding the few relevant headers in sys/ manually..
 	set( src_sys_base ${src_sys_base}
@@ -406,15 +444,28 @@ elseif( WIN32 )
 
 	set( src_sys_core
 		glimp.cpp
+		win32/rc/windows_default.manifest
+		win32/rc/windows_dpiaware.manifest
+		win32/rc/windows_visualstyles.manifest
 	)
 
 	if( TOOLS )
-		file( GLOB src_sys_tools_images "win32/rc/res/*.bmp" "win32/rc/res/*.ico" "win32/rc/res/*.cur" )
-		set( src_sys_core ${src_sys_core} ${src_sys_tools_images}  "win32/rc/doom.rc" )
+		file(GLOB src_sys_tools_images "sys/win32/rc/res/*.bmp" "sys/win32/rc/res/*.ico" "sys/win32/rc/res/*.cur")
+		set(src_sys_core
+			${src_sys_core}
+			${src_sys_tools_images}
+			win32/rc/doom.rc
+			win32/rc/resource.h
+		)
 	else()
 		# adding both .rc files breaks the build, but I think it only contains the icon
 		# and doom.rc also contains that (+icons for editor etc, AFAIK), so this is fine
-		set(src_sys_core ${src_sys_core} "win32/rc/dhewm3.rc" )
+		set(src_sys_core
+			${src_sys_core}
+			win32/rc/res/doom3.ico
+			win32/rc/dhewm3.rc
+			win32/rc/dhewm3_resource.h
+		)
 	endif()
 else()
 	set( src_sys_base
@@ -443,27 +494,25 @@ if( ENGINE )
 		${src_editor_tools}
 	)
 	
-	set( src_engine
-		${src_core}
-		${src_sys_base}
-		${src_sys_core}
-		${src_imgui}
-		${src_editor_tools}
-	)
-
 	if( MSVC )
-		set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${ENGINE_EXECUTABLE} )
-		
+		# set MSVC default debug directory on executable	
+		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES VS_STARTUP_PROJECT ${ENGINE_EXECUTABLE} )
+		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES VS_DEBUGGER_COMMAND "${OUTPUT_FOLDER}/${ENGINE_EXECUTABLE}.exe" )
+		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${OUTPUT_FOLDER}" )
+		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "+set developer 1" )
+
 		target_sources( ${ENGINE_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
-		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_engine} )
+
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_sys_core} ${src_imgui} ${src_editor_tools} )
 	endif()
 	
-	target_include_directories( ${ENGINE_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/libs/imgui" )
+	target_precompile_headers( ${ENGINE_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/idlib/precompiled.h" )
+
+	target_include_directories( ${ENGINE_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/idlib" "${CMAKE_SOURCE_DIR}/libs/imgui" )
 
 	if( HARDLINK_GAME )
 		set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "${TOOLS_DEFINES}" )
-		
+
 		# Hack to get .natvis added
 		if ( MSVC )
 			target_sources( ${ENGINE_EXECUTABLE} PRIVATE "win32/natvis/game.natvis" )
@@ -474,14 +523,12 @@ if( ENGINE )
 
 	set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES LINK_FLAGS "${ldflags}" )
 	set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/sys/osx/Info.plist )
+	set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( ${ENGINE_EXECUTABLE} PROPERTIES FOLDER "exes" )
 
 	target_link_libraries( ${ENGINE_EXECUTABLE}
 		idlib
-		$<$<BOOL:FREETYPE>:Freetype::Freetype>
-		${OPENAL_LIBRARY}
-		${CURL_LIBRARY}
-		${SDL2_LIBRARY}
+		${sys_thirdparty_libs}
 		${sys_libs}
 	)
 
@@ -510,24 +557,20 @@ if( DEDICATED )
 		${src_sys_base}
 		${src_debuggerServer}
 	)
-	
-	set( src_engine
-		${src_core}
-		${src_stub_openal}
-		${src_stub_gl}
-		${src_sys_base}
-		${src_debuggerServer}
-	)
-	
+
 	if ( MSVC )
 		target_sources( ${DEDICATED_EXECUTABLE} PRIVATE "win32/natvis/engine.natvis" )
-		
-		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_engine} )
+
+		source_group( TREE ${CMAKE_SOURCE_DIR} PREFIX neo FILES ${src_core} ${src_sys_base} ${src_stub_openal} ${src_stub_gl} ${src_debuggerServer} )
 	endif()
+
+	target_precompile_headers( ${DEDICATED_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/idlib/precompiled.h" )
+
+	target_include_directories( ${DEDICATED_EXECUTABLE} PRIVATE "${CMAKE_SOURCE_DIR}/idlib" )
 
 	if( HARDLINK_GAME )
 		set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES COMPILE_DEFINITIONS "IMGUI_DISABLE;ID_DEDICATED" )
-		
+
 		# Hack to get .natvis added
 		if ( MSVC )
 			target_sources( ${DEDICATED_EXECUTABLE} PRIVATE "win32/natvis/game.natvis" )
@@ -537,13 +580,14 @@ if( DEDICATED )
 	endif()
 
 	set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES LINK_FLAGS "${ldflags}" )
+	set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:>${OUTPUT_FOLDER} )
 	set_target_properties( ${DEDICATED_EXECUTABLE} PROPERTIES FOLDER "exes" )
+
+	list( REMOVE_ITEM sys_thirdparty_libs ${OPENAL_LIBRARY} GLEW::GLEW )
 
 	target_link_libraries( ${DEDICATED_EXECUTABLE}
 		idlib
-		$<$<BOOL:FREETYPE>:Freetype::Freetype>
-		${CURL_LIBRARY}
-		${SDL2_LIBRARY}
+		${sys_thirdparty_libs}
 		${sys_libs}
 	)
 

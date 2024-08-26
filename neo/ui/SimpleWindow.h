@@ -29,8 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __SIMPLEWIN_H__
 #define __SIMPLEWIN_H__
 
-#include "ui/Window.h"
-
 class idUserInterfaceLocal;
 class idDeviceContext;
 class idSimpleWindow;
@@ -66,7 +64,6 @@ protected:
 	void			DrawBorderAndCaption(const idRectangle &drawRect);
 
 	idUserInterfaceLocal *gui;
-	idDeviceContext *dc;
 	int				flags;
 	idRectangle		drawRect;			// overall rect
 	idRectangle		clientRect;			// client area

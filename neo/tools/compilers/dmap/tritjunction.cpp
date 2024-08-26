@@ -26,10 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "renderer/ModelManager.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "tools/compilers/dmap/dmap.h"
+#include "dmap.h"
 
 /*
 
@@ -594,7 +594,7 @@ void	FixGlobalTjunctions( uEntity_t *e ) {
 			if ( !modelName ) {
 				continue;
 			}
-			if ( !strstr( modelName, ".lwo" ) && !strstr( modelName, ".ase" ) && !strstr( modelName, ".ma" ) && !strstr( modelName, ".obj" ) ) {
+			if ( !strstr( modelName, ".lwo" ) && !strstr( modelName, ".ase" ) && !strstr( modelName, ".md3" ) && !strstr( modelName, ".obj" ) ) {
 				continue;
 			}
 

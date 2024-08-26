@@ -26,13 +26,8 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/math/Vector.h"
-#include "idlib/Heap.h"
-#include "framework/Common.h"
-#include <limits.h>
-
-#include "idlib/Str.h"
+#include "precompiled.h"
+#pragma hdrstop
 
 // DG: idDynamicBlockAlloc isn't thread-safe and idStr is used both in the main thread
 //     and the async thread! For some reason this seems to cause lots of problems on
@@ -1944,7 +1939,7 @@ char * D3_UTF8toISO8859_1( const char *utf8str, char *isobuf, int isobufLen, cha
 			else if ( invalidChar != 0 )
 				buffer[i++] = invalidChar;
 		} else if ((*str & 0xf0) == 0xe0) {
-			// Unicode character between 0x0800 and 0xFFF => way out of range for ISO8859-1
+			// Unicode character between 0x0800 and 0xFFFF => way out of range for ISO8859-1
 			// so just validate and skip the input bytes
 			if (*str == 0xe0 && (str[1] < 0xa0 || str[1] > 0xbf)) return NULL;
 			if (*str == 0xed && str[1] > 0x9f) return NULL; // str[1] < 0x80 is checked below

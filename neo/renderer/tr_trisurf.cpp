@@ -26,11 +26,11 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "renderer/VertexCache.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/tr_local.h"
-#include "renderer/tr_normals.h"
+#include "tr_local.h"
+#include "tr_normals.h"
 
 /*
 ==============================================================================
@@ -1282,7 +1282,6 @@ typedef struct {
 } tangentVert_t;
 
 static void	R_DuplicateMirroredVertexes( srfTriangles_t *tri ) {
-
 	tangentVert_t	*tverts, *vert;
 	int				i, j;
 	int				totalVerts;

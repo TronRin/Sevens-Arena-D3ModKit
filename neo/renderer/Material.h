@@ -29,10 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __MATERIAL_H__
 #define __MATERIAL_H__
 
-#include "idlib/containers/List.h"
-#include "idlib/Lexer.h"
-#include "framework/DeclManager.h"
-
 /*
 ===============================================================================
 
@@ -371,6 +367,14 @@ public:
 						// used for bumpy-specular
 	const shaderStage_t *GetBumpStage( void ) const;
 
+						// get the diffuse stage, or NULL if not present.
+						// used for color
+	const shaderStage_t *GetDiffuseStage( void ) const;
+
+						// get the specular stage, or NULL if not present.
+						// used for glossines.
+	const shaderStage_t *GetSpecularStage( void ) const;
+
 						// returns true if the material will draw anything at all.  Triggers, portals,
 						// etc, will not have anything to draw.  A not drawn surface can still castShadow,
 						// which can be used to make a simplified shadow hull for a complex object set
@@ -549,6 +553,8 @@ public:
 	void				CloseCinematic( void ) const;
 
 	void				ResetCinematicTime( int time ) const;
+
+	int					GetCinematicStartTime( void ) const;
 
 	void				UpdateCinematic( int time ) const;
 

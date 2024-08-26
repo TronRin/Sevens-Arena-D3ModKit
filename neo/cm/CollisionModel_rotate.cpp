@@ -34,9 +34,10 @@ If you have questions concerning this license or the applicable additional terms
 ===============================================================================
 */
 
-#include "sys/platform.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "cm/CollisionModel_local.h"
+#include "CollisionModel_local.h"
 
 /*
 ===============================================================================
@@ -1251,7 +1252,7 @@ idCollisionModelManagerLocal::Rotation180
 void idCollisionModelManagerLocal::Rotation180( trace_t *results, const idVec3 &rorg, const idVec3 &axis,
 										const float startAngle, const float endAngle, const idVec3 &start,
 										const idTraceModel *trm, const idMat3 &trmAxis, int contentMask,
-										cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis ) {
+										idCollisionModel* model, const idVec3 &modelOrigin, const idMat3 &modelAxis ) {
 	int i, j, edgeNum;
 	float d, maxErr, initialTan;
 	bool model_rotated, trm_rotated;
@@ -1263,15 +1264,6 @@ void idCollisionModelManagerLocal::Rotation180( trace_t *results, const idVec3 &
 	cm_trmEdge_t *edge;
 	cm_trmVertex_t *vert;
 	ALIGN16( static cm_traceWork_t tw );
-
-	if ( model < 0 || model > MAX_SUBMODELS || model > idCollisionModelManagerLocal::maxModels ) {
-		common->Printf("idCollisionModelManagerLocal::Rotation180: invalid model handle\n");
-		return;
-	}
-	if ( !idCollisionModelManagerLocal::models[model] ) {
-		common->Printf("idCollisionModelManagerLocal::Rotation180: invalid model\n");
-		return;
-	}
 
 	idCollisionModelManagerLocal::checkCount++;
 
@@ -1288,7 +1280,7 @@ void idCollisionModelManagerLocal::Rotation180( trace_t *results, const idVec3 &
 	assert( tw.angle > -180.0f && tw.angle < 180.0f );
 	tw.angle = idMath::ClampFloat(-180.0f, 180.0f, tw.angle); // DG: enforce it for the rare cases the assert would trigger
 	tw.maxTan = initialTan = idMath::Fabs( tan( ( idMath::PI / 360.0f ) * tw.angle ) );
-	tw.model = idCollisionModelManagerLocal::models[model];
+	tw.model = (idCollisionModelLocal*)model;
 	tw.start = start - modelOrigin;
 	// rotation axis, axis is assumed to be normalized
 	tw.axis = axis;
@@ -1612,7 +1604,7 @@ idCollisionModelManagerLocal::Rotation
 */
 void idCollisionModelManagerLocal::Rotation( trace_t *results, const idVec3 &start, const idRotation &rotation,
 										const idTraceModel *trm, const idMat3 &trmAxis, int contentMask,
-										cmHandle_t model, const idVec3 &modelOrigin, const idMat3 &modelAxis ) {
+										idCollisionModel *model, const idVec3 &modelOrigin, const idMat3 &modelAxis ) {
 	idVec3 tmp;
 	float maxa, stepa, a, lasta;
 
@@ -1621,9 +1613,14 @@ void idCollisionModelManagerLocal::Rotation( trace_t *results, const idVec3 &sta
 
 	memset( results, 0, sizeof( *results ) );
 
+	// If the model is NULL then assume we are checking the world model.
+	if ( model == NULL ) {
+		model = models[0];
+	}
+
 	// if special position test
 	if ( rotation.GetAngle() == 0.0f ) {
-		idCollisionModelManagerLocal::ContentsTrm( results, start, trm, trmAxis, contentMask, model, modelOrigin, modelAxis );
+		idCollisionModelManagerLocal::ContentsTrm( results, start, trm, trmAxis, contentMask, (idCollisionModelLocal*)model, modelOrigin, modelAxis );
 		return;
 	}
 

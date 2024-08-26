@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.27.8 )
+cmake_minimum_required( VERSION 3.20 )
 
 # Check if vcpkg exist in our source folder
 if ( EXISTS "${CMAKE_SOURCE_DIR}/../vcpkg/scripts/buildsystems/vcpkg.cmake" )
@@ -7,18 +7,13 @@ else()
 	message( FATAL_ERROR "Vcpkg wasn't not found, aborting, make sure to git clone this with all submodules!")
 endif()
 
-# Drop the binaries in the output/ folder
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/../output" )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/../output" )
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/../output" )
-
 # Enable folder groups
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER  "" )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" )
 
-project( MyGame )
+project( MyGame CXX C)
 
 # build type
 if( NOT CMAKE_BUILD_TYPE )
@@ -34,7 +29,6 @@ option( ENGINE						"Build the main executable." ON )
 option( DEDICATED					"Build the dedicated server executable." ON )
 option( GAME_CODE					"Build the game code." ON )
 option( TOOLS						"Build the include tools into the main executable." ON )
-option( MAYA_IMPORT					"Build the include maya import tool (Requires MayaSDK)." ON )
 option( ONATIVE						"Optimize for the host CPU." OFF )
 option( IMGUI						"Build with Dear ImGui integration - requires SDL2 and C++11" ON )
 option( REPRODUCIBLE_BUILD			"Replace __DATE__ and __TIME__ by hardcoded values for reproducible builds." OFF )
@@ -66,7 +60,7 @@ if ( LINUX_RELEASE_BINS )
 	set( CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE )
 	set( CMAKE_BUILD_WITH_INSTALL_RPATH TRUE )
 	set( CMAKE_INSTALL_RPATH "$ORIGIN/libs" )
-	set( ldflags "${ldflags} -Wl,-z,origin" ) # not sure this is even needed, but shouldn't hurt
+	set( ldflags "${ldflags} -Wl,--large-address-aware,-z,origin" ) # not sure this is even needed, but shouldn't hurt
 else()
 	set( CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE )
 endif()
@@ -82,22 +76,40 @@ set( MFC_TOOLS OFF ) # (Visual Studio + SDL2 only)
 # Define our cpu variable
 include( CPUDefine )
 
+# Nicely tied our thirdparty libraries here
+set( sys_thirdparty_libs )
+
 # libs
 find_package( Stb REQUIRED )
 include_directories( ${Stb_INCLUDE_DIR} )
 
 find_package( OpenAL REQUIRED )
 include_directories( ${OPENAL_INCLUDE_DIR} )
+list( APPEND sys_thirdparty_libs ${OPENAL_LIBRARY} )
 
 find_package( SDL2 REQUIRED )
 include_directories( ${SDL2_INCLUDE_DIR} )
-set( SDL2_LIBRARY SDL2::SDL2 )
+list( APPEND sys_thirdparty_libs SDL2::SDL2 )
+
+find_package( GLEW REQUIRED )
+include_directories( ${GLEW_INCLUDE_DIRS} )
+list( APPEND sys_thirdparty_libs GLEW::GLEW )
 
 if ( FREETYPE )
-	find_package(Freetype REQUIRED)
+	find_package( Freetype REQUIRED )
 	find_path( FREETYPE_INCLUDE_DIR "fttypes.h" PATH_SUFFIXES "freetype" )
 	include_directories( ${FREETYPE_INCLUDE_DIR} )
 	add_definitions( -DID_BUILD_FREETYPE )
+	list( APPEND sys_thirdparty_libs Freetype::Freetype )
+endif()
+
+if( IMGUI )
+	# we need C++11 for ImGui
+	set ( CMAKE_CXX_STANDARD 11 )
+	message( STATUS "Dear ImGui integration enabled" )
+else()
+	message( STATUS "Dear ImGui integration disabled" )
+	add_definitions( -DIMGUI_DISABLE )
 endif()
 
 # ImGUI
@@ -116,6 +128,7 @@ if( CURL_FOUND )
 	set( ID_ENABLE_CURL ON )
 	include_directories( ${CURL_INCLUDE_DIR} )
 	message( STATUS "libcurl found and enabled" )
+	list( APPEND sys_thirdparty_libs ${CURL_LIBRARY} )
 else()
 	message( WARNING "libcurl not found, server downloads won't be available (apart from that the engine will work)" )
 	set( ID_ENABLE_CURL OFF )
@@ -123,35 +136,6 @@ else()
 endif()
 
 if( TOOLS )
-	if ( MAYA_IMPORT )
-		include( ExternalProject )
-
-		# Locate and download MayaSDK, change MAYASDK_URL to one of the urls listed here: https://aps.autodesk.com/developer/overview/maya
-		# ( Rigth click in anyone > Copy Url)
-		set( MAYASDK_URL "https://autodesk-adn-transfer.s3-us-west-2.amazonaws.com/ADN+Extranet/M%26E/Maya/devkit+2019/Autodesk_Maya_2019_3_Update_DEVKIT_Windows.zip" CACHE STRING "" )
-	
-		# The downloaded Hash & MD5 of the MAYASDK_URL download
-		# These ones are from 2019 make sure to generate one for newer releases!
-		set( MAYASDK_HASH "2332C6C79B8C7974A5645523E395962BBB19901289AAAEE129D3BF2B630829C7" CACHE STRING "" )
-		set( MAYASDK_MD5 "6BC28A0047709DEECC3DBB0D4A0B4D14" CACHE STRING "" )
-
-		# Set the maya version (mainly for the project creation + reference)
-		set( MAYA_VERSION 2019 )
-
-		ExternalProject_Add( MayaDevKit
-			URL ${MAYASDK_URL}
-			URL_HASH SHA256=${MAYASDK_HASH}
-			URL_MD5 ${MAYASDK_MD5}
-			DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/downloads
-			SOURCE_DIR ${CMAKE_SOURCE_DIR}/libs/MayaSDKDevKit
-			CONFIGURE_COMMAND ""
-			BUILD_COMMAND ""
-			INSTALL_COMMAND ""
-		)
-		
-		set_target_properties( MayaDevKit PROPERTIES FOLDER "libs" )
-	endif()
-
 	if( MSVC )
 		# This is required for tools on windows.
 		find_package( MFC )
@@ -168,7 +152,7 @@ set( D3_COMPILER_IS_CLANG FALSE )
 set( D3_COMPILER_IS_GCC_OR_CLANG FALSE )
 
 if( NOT MSVC )
-	#if( NOT WIN32 )
+	if( NOT WIN32 )
 		# libbacktrace support - TODO: might work with MinGW? we don't have a crash handler for win32 though..
 		include( CheckCSourceCompiles )
 		set( CMAKE_REQUIRED_LIBRARIES backtrace )
@@ -183,7 +167,18 @@ if( NOT MSVC )
 		else()
 			message( WARNING "libbacktrace wasn't found. It's not required but recommended, because it provides useful backtraces if engine/game crashes" )
 		endif()
-	#endif() # NOT WIN32
+	endif() # NOT WIN32
+
+	# check if our SDL2 supports X11 in SDL_syswm so we can use it for DPI scaling ImGui
+	set( CMAKE_REQUIRED_LIBRARIES SDL2 )
+	check_c_source_compiles( "#include <SDL_syswm.h>
+		int main() { SDL_SysWMinfo wmInfo = {}; wmInfo.info.x11.display = NULL; return 0; }" HAVE_SDL_X11 )
+	unset( CMAKE_REQUIRED_LIBRARIES )
+		
+	if ( HAVE_SDL_X11 )
+		message( STATUS "This SDL2 has X11 support" )
+		add_definitions( -DD3_SDL_X11 )
+	endif()
 
 	# check if our SDL2 supports X11 in SDL_syswm so we can use it for DPI scaling ImGui
 	set( CMAKE_REQUIRED_LIBRARIES SDL2 )
@@ -231,9 +226,9 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 	set( CMAKE_C_FLAGS_DEBUG "-g -ggdb -D_DEBUG -O0" )
 	set( CMAKE_C_FLAGS_DEBUGALL "-g -ggdb -D_DEBUG" )
 	set( CMAKE_C_FLAGS_PROFILE "-g -ggdb -D_DEBUG -O1 -fno-omit-frame-pointer" )
-	set( CMAKE_C_FLAGS_RELEASE "-O2 -fno-math-errno -fno-trapping-math -fomit-frame-pointer" )
-	set( CMAKE_C_FLAGS_RELWITHDEBINFO "-g -ggdb -O2 -fno-math-errno -fno-trapping-math -fno-omit-frame-pointer" )
-	set( CMAKE_C_FLAGS_MINSIZEREL "-Os -fno-math-errno -fno-trapping-math -fomit-frame-pointer" )
+	set( CMAKE_C_FLAGS_RELEASE "-O2 -fno-math-errno -fno-trapping-math  -ffinite-math-only -fomit-frame-pointer" )
+	set( CMAKE_C_FLAGS_RELWITHDEBINFO "-g -ggdb -O2 -fno-math-errno -fno-trapping-math  -ffinite-math-only -fno-omit-frame-pointer" )
+	set( CMAKE_C_FLAGS_MINSIZEREL "-Os -fno-math-errno -fno-trapping-math  -ffinite-math-only -fomit-frame-pointer" )
 
 	set( CMAKE_CXX_FLAGS_DEBUGALL ${CMAKE_C_FLAGS_DEBUGALL} )
 	set( CMAKE_CXX_FLAGS_PROFILE ${CMAKE_C_FLAGS_PROFILE} )
@@ -286,16 +281,20 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 	if( cxx_has_Wno-cpp20-compat )
 		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-c++20-compat" )
 	endif()
+	
+	if ( NOT MSVC )
+		find_package( OpenSSL REQUIRED )
+	endif()
 
 	if(APPLE)
 		add_definitions(-DMACOS_X=1)
 
 		if( cpu STREQUAL "x86_64" )
-			add_compile_options( -arch x86_64 -mmacosx-version-min=10.9 )
-			set( ldflags "${ldflags} -arch x86_64 -mmacosx-version-min=10.9" )
+			add_compile_options( -arch x86_64 -mmacosx-version-min=10.7 )
+			set( ldflags "${ldflags} -arch x86_64 -mmacosx-version-min=10.7" )
 		elseif( cpu STREQUAL "arm64" )
-			add_compile_options( -arch arm64 -mmacosx-version-min=11.0 )
-			set( ldflags "${ldflags} -arch arm64 -mmacosx-version-min=11.0" )
+			add_compile_options( -arch arm64 -mmacosx-version-min=10.7 )
+			set( ldflags "${ldflags} -arch arm64 -mmacosx-version-min=10.7" )
 		elseif( cpu STREQUAL "x86" )
 			CHECK_CXX_COMPILER_FLAG( "-arch i386" cxx_has_arch_i386 )
 			if( cxx_has_arch_i386 )
@@ -318,15 +317,15 @@ if( D3_COMPILER_IS_GCC_OR_CLANG )
 			message( FATAL_ERROR "Unsupported CPU architecture for OSX" )
 		endif()
 
-		set( sys_libs ${sys_libs} "-framework Carbon -framework Cocoa -framework IOKit" )
+		set( sys_libs ${sys_libs} "OpenSSL::SSL OpenSSL::Crypto -framework Carbon -framework Cocoa -framework IOKit" )
 	elseif( WIN32 )
 		# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
-		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl,--stack,8388608" )
+		set( ldflags "${ldflags} -static-libgcc -static-libstdc++ -Wl, --large-address-aware --stack,8388608" )
 	elseif( os STREQUAL "linux" )
-		set( sys_libs ${sys_libs} dl )
+		set( sys_libs ${sys_libs} dl OpenSSL::SSL OpenSSL::Crypto rt )
 	elseif( os STREQUAL "freebsd" )
 		find_library( EXECINFO_LIBRARIES execinfo /usr/lib /usr/local/lib )
-		set( sys_libs ${sys_libs} ${EXECINFO_LIBRARIES} )
+		set( sys_libs ${sys_libs} OpenSSL::SSL OpenSSL::Crypto rt ${EXECINFO_LIBRARIES} )
 	endif()
 elseif( MSVC )
 	add_compile_options( /MP ) # parallel build (use all cores, or as many as configured in VS)
@@ -344,6 +343,19 @@ elseif( MSVC )
 	add_compile_options( /wd4996 ) # 'function': was declared deprecated
 	add_compile_options( /wd4068 ) # unknown pragma
 	add_compile_options( /wd4458 ) # declaration of 'variable' hides class member
+	add_compile_options( /wd4018 ) # 'math symbol': signed/unsigned mismatch
+	add_compile_options( /wd4018 ) # 'math symbol': signed/unsigned mismatch
+	add_compile_options( /wd26495 ) # variable 'variable' is uninitialized. Always initialize a member variable (type.6).
+	add_compile_options( /wd4146 ) # unary minus operator applied to unsigned type, result still unsigned
+	add_compile_options( /wd4805 ) # 'symbol' unsafe mix of type 'type a' and type 'type b' in operation
+	add_compile_options( /wd4273 ) # 'function': inconsistent dll linkage
+	add_compile_options( /wd4838 ) # conversion from 'type' to 'type' requires a narrowing conversion
+
+	# Ignore warnings for Dedicate server build
+	set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
+	set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
+	set( CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4286 /ignore:4217" )
+
 	
 	add_definitions( -D_ALLOW_KEYWORD_MACROS ) # because of the "#define private public" and "#define protected public" in TypeInfo.cpp
 	
@@ -354,9 +366,18 @@ elseif( MSVC )
 	
 	# use 8MB stack instead of 1MB, so big models don't overflow it with _alloca()
 	set( ldflags "${ldflags} /STACK:8388608" )
+	
+	# let the 32bit app use more than 2gb of ram
+	set( ldflags "${ldflags} /LARGEADDRESSAWARE" )
+	
+	# Don't let the linker generate manifest files for shared dlls
+	set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO" )
 else()
 	message( FATAL_ERROR "Unsupported compiler" )
 endif()
+
+# Drop the binaries in the output/${os} folder
+set( OUTPUT_FOLDER ${CMAKE_SOURCE_DIR}/../output/${os} )
 
 set( CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} )
 set( CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_C_FLAGS_RELWITHDEBINFO} )
@@ -405,13 +426,10 @@ if( NOT APPLE AND NOT WIN32 )
 	message( STATUS "  Data directory:    ${datadir}" )
 endif()
 
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories("${CMAKE_SOURCE_DIR}/idlib")
+include_directories(${CMAKE_BINARY_DIR} PUBLIC)
+include_directories(${CMAKE_SOURCE_DIR} PUBLIC)
+include_directories("${CMAKE_SOURCE_DIR}/idlib" PUBLIC)
 
 add_subdirectory(idlib)
-if ( TOOLS AND MAYA_IMPORT )
-	add_subdirectory(MayaImport)
-endif()
 add_subdirectory(game)
 add_subdirectory(sys)

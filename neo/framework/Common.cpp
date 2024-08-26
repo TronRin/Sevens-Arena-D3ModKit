@@ -26,34 +26,16 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include <SDL.h>
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "sys/platform.h"
-#include "idlib/containers/HashTable.h"
-#include "idlib/LangDict.h"
-#include "idlib/MapFile.h"
-#include "cm/CollisionModel.h"
-#include "framework/async/AsyncNetwork.h"
-#include "framework/async/NetworkSystem.h"
-#include "framework/Console.h"
-#include "framework/Session.h"
-#include "framework/Game.h"
-#include "framework/KeyInput.h"
-#include "framework/EventLoop.h"
-#include "renderer/Image.h"
-#include "renderer/Model.h"
-#include "renderer/ModelManager.h"
-#include "renderer/RenderSystem.h"
-#include "tools/compilers/compiler_public.h"
-#include "libs/aasfile/AASFileManager.h"
-#include "tools/edit_public.h"
-#include "tools/compilers/dmap/dmap.h"
-#include "sys/sys_imgui.h"
+#include "ConsoleHistory.h"
 
-#include "framework/Common.h"
+#include "../renderer/Image.h"
 
-#include "GameCallbacks_local.h"
-#include "Session_local.h"
+#include "Session_local.h" // DG: For FT_IsDemo/isDemo() hack
+
+#include "../tools/compilers/dmap/dmap.h"
 
 #define	MAX_PRINT_MSG_SIZE	4096
 #define MAX_WARNING_LIST	256
@@ -1346,6 +1328,7 @@ bool OSX_GetCPUIdentification( int& cpuId, bool& oldArchitecture );
 void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 	// DG: add an optional "nores" argument for "don't change the resolution" (r_mode)
 	bool nores = args.Argc() > 1 && idStr::Icmp( args.Argv(1), "nores" ) == 0;
+	cvarSystem->SetCVarInteger( "r_useSoftParticles", 0, CVAR_ARCHIVE ); // DG: disable soft particles for all but ultra
 	if ( com_machineSpec.GetInteger() == 3 ) { // ultra
 		//cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE ); DG: redundant, set again below
 		cvarSystem->SetCVarInteger( "image_lodbias", 0, CVAR_ARCHIVE );
@@ -1368,6 +1351,7 @@ void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 			cvarSystem->SetCVarInteger( "r_mode", 5, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "image_useNormalCompression", 0, CVAR_ARCHIVE );
 		cvarSystem->SetCVarInteger( "r_multiSamples", 0, CVAR_ARCHIVE );
+		cvarSystem->SetCVarInteger( "r_useSoftParticles", 1, CVAR_ARCHIVE ); // DG: enable soft particles for ultra preset
 	} else if ( com_machineSpec.GetInteger() == 2 ) { // high
 		cvarSystem->SetCVarString( "image_filter", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
 		//cvarSystem->SetCVarInteger( "image_anisotropy", 1, CVAR_ARCHIVE ); DG: redundant, set again below
@@ -2322,7 +2306,7 @@ void idCommonLocal::PrintLoadingMessage( const char *msg ) {
 	renderSystem->BeginFrame( renderSystem->GetScreenWidth(), renderSystem->GetScreenHeight() );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, 1, 1, declManager->FindMaterial( "splashScreen" ) );
 	int len = strlen( msg );
-	renderSystem->DrawSmallStringExt( ( 640 - len * SMALLCHAR_WIDTH ) / 2, 410, msg, idVec4( 0.0f, 0.81f, 0.94f, 1.0f ), true, declManager->FindMaterial( "textures/bigchars" ) );
+	renderSystem->DrawSmallStringExt( ( 640 - len * SMALLCHAR_WIDTH ) / 2, 410, msg, idVec4( 0.0f, 0.81f, 0.94f, 1.0f ), true );
 	renderSystem->EndFrame( NULL, NULL );
 }
 
@@ -2403,7 +2387,7 @@ void idCommonLocal::Frame( void ) {
 
 				// if there was a large gap in time since the last frame, or the frame
 				// rate is very very low, limit the number of frames we will run
-				const int clampedDeltaMilliseconds = min( deltaMilliseconds, com_deltaTimeClamp.GetInteger() );
+				const int clampedDeltaMilliseconds = Min( deltaMilliseconds, com_deltaTimeClamp.GetInteger() );
 
 				gameTimeResidual += clampedDeltaMilliseconds * com_timescale.GetFloat();
 
@@ -2563,6 +2547,13 @@ void idCommonLocal::LoadGameDLLbyName( const char *dll, idStr& s ) {
 		// then the binary dir in the bundle on osx
 		if (!gameDLL && Sys_GetPath(PATH_EXE, s)) {
 			s.StripFilename();
+			s.AppendPath(dll);
+			gameDLL = sys->DLL_Load(s);
+		}
+
+		// if not found in the bundle's directory, try in the bundle itself
+		if (!gameDLL && Sys_GetPath(PATH_EXE, s)) {
+			s.AppendPath("Contents/MacOS/base");
 			s.AppendPath(dll);
 			gameDLL = sys->DLL_Load(s);
 		}
@@ -2775,6 +2766,9 @@ static bool checkForHelp(int argc, char **argv)
 				WriteString("  set path to your Base game data (the directory " BASE_GAMEDIR "/ is in)\n");
 				WriteString("+set fs_game <modname>\n");
 				WriteString("  start the given addon/mod, e.g. +set fs_game myaddon\n");
+				WriteString("+set fs_game_base <base-modname>\n");
+				WriteString("  some mods are based on other mods, usually the current expansio on which the engine is.\n");
+				WriteString("  This specifies the base mod e.g. +set fs_game myawesomeaddon +set fs_game_base mygamexpansion\n");
 #ifndef ID_DEDICATED
 				WriteString("+set r_fullscreen <0 or 1>\n");
 				WriteString("  start game in windowed (0) or fullscreen (1) mode\n");
@@ -2823,7 +2817,7 @@ void idSoundThread( void ) {
 	while ( !commonLocal.IsShuttingDown() ) {
 		// Call the AsyncUpdate method with the current milliseconds
 		soundSystem->AsyncUpdate( Sys_Milliseconds() );
-		Sleep( 0 );
+		Sys_Sleep( 0 );
 	}
 }
 
@@ -2987,8 +2981,8 @@ void idCommonLocal::Init( int argc, char **argv ) {
 		// Initialize our sound thread.
 		static std::thread updateThread( idSoundThread );
 
-		// load the persistent console history
-		console->LoadHistory();
+		// load the console history file
+		consoleHistory.LoadHistoryFile();
 
 		com_fullyInitialized = true;
 	}
@@ -3009,9 +3003,6 @@ void idCommonLocal::Shutdown( void ) {
 
 	idAsyncNetwork::server.Kill();
 	idAsyncNetwork::client.Shutdown();
-
-	// save persistent console history
-	console->SaveHistory();
 
 	// game specific shut down
 	ShutdownGame( false );
@@ -3094,9 +3085,6 @@ void idCommonLocal::InitGame( void ) {
 	InitLanguageDict();
 
 	PrintLoadingMessage( common->GetLanguageDict()->GetString( "#str_loading_events" ) );
-
-	// load the font, etc
-	console->LoadGraphics();
 
 	// init journalling, etc
 	eventLoop->Init();

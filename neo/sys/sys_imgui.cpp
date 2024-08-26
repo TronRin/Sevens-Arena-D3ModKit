@@ -28,7 +28,8 @@ If you have questions concerning this license or the applicable additional terms
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include <SDL.h>
+#include "precompiled.h"
+#pragma hdrstop
 
 #include "sys_imgui.h"
 
@@ -42,12 +43,8 @@ typedef char* (*MY_XGETDEFAULTFUN)(Display*, const char*, const char*);
 #include "../libs/imgui/backends/imgui_impl_opengl2.h"
 #include "../libs/imgui/backends/imgui_impl_sdl2.h"
 
-#include "framework/Common.h"
-#include "framework/KeyInput.h"
-#include "framework/Session_local.h" // sessLocal.GetActiveMenu()
-#include "renderer/qgl.h"
-#include "renderer/tr_local.h" // glconfig
-#include "ui/DeviceContext.h"
+#include "../framework/Session_local.h" // sessLocal.GetActiveMenu()
+#include "../renderer/tr_local.h" // glconfig
 
 extern void Com_DrawSettingsMenu(); // in framework/SettingsMenu.cpp
 extern void Com_OpenCloseSettingsMenu( bool open ); // ditto
@@ -532,8 +529,8 @@ namespace D3 {
 
 			// Idtech4 uses the OpenGL ARB shader extensions, for most things it renders.
 			// disable those shaders, the OpenGL classic integration of ImGui doesn't use shaders
-			qglDisable( GL_VERTEX_PROGRAM_ARB );
-			qglDisable( GL_FRAGMENT_PROGRAM_ARB );
+			glDisable( GL_VERTEX_PROGRAM_ARB );
+			glDisable( GL_FRAGMENT_PROGRAM_ARB );
 
 			// Idtech4 uses OpenGL's ARB_vertex_buffer_object extension to use VBOs on the GPU
 			// as buffers for glDrawElements() (instead of passing userspace buffers to that function)
@@ -541,27 +538,27 @@ namespace D3 {
 			// and unbind it (after drawing, bind it again)
 			GLint curArrayBuffer = 0;
 			if ( glConfig.ARBVertexBufferObjectAvailable ) {
-				qglGetIntegerv( GL_ARRAY_BUFFER_BINDING_ARB, &curArrayBuffer );
-				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, 0 );
+				glGetIntegerv( GL_ARRAY_BUFFER_BINDING_ARB, &curArrayBuffer );
+				glBindBufferARB( GL_ARRAY_BUFFER_ARB, 0 );
 			}
 
 			// disable all texture units, ImGui_ImplOpenGL2_RenderDrawData() will enable texture 0
 			// and bind its own textures to it as needed
 			for ( int i = glConfig.maxTextureUnits - 1 ; i >= 0 ; i-- ) {
 				GL_SelectTexture( i );
-				qglDisable( GL_TEXTURE_2D );
+				glDisable( GL_TEXTURE_2D );
 				if ( glConfig.texture3DAvailable ) {
-					qglDisable( GL_TEXTURE_3D );
+					glDisable( GL_TEXTURE_3D );
 				}
 				if ( glConfig.cubeMapAvailable ) {
-					qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
+					glDisable( GL_TEXTURE_CUBE_MAP_EXT );
 				}
 			}
 
 			ImGui_ImplOpenGL2_RenderDrawData( ImGui::GetDrawData() );
 
 			if ( curArrayBuffer != 0 ) {
-				qglBindBufferARB( GL_ARRAY_BUFFER_ARB, curArrayBuffer );
+				glBindBufferARB( GL_ARRAY_BUFFER_ARB, curArrayBuffer );
 			}
 
 			// reset this at the end of each frame, will be set again by ProcessEvent()

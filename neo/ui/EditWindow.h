@@ -29,7 +29,7 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __EDITWINDOW_H__
 #define __EDITWINDOW_H__
 
-#include "ui/Window.h"
+#include "Window.h"
 
 const int MAX_EDITFIELD = 4096;
 
@@ -39,8 +39,7 @@ class idSliderWindow;
 class idEditWindow : public idWindow {
 public:
 						idEditWindow(idUserInterfaceLocal *gui);
-						idEditWindow(idDeviceContext *d, idUserInterfaceLocal *gui);
-	virtual				~idEditWindow();
+	virtual 			~idEditWindow();
 
 	virtual void		Draw( int time, float x, float y );
 	virtual const char *HandleEvent( const sysEvent_t *event, bool *updateVisuals );

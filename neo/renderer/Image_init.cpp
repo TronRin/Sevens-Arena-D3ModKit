@@ -26,14 +26,10 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "framework/async/AsyncNetwork.h"
-#include "framework/Session.h"
-#include "renderer/tr_local.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "renderer/Image.h"
-
-#include "framework/GameCallbacks_local.h"
+#include "tr_local.h"
 
 const char *imageFilter[] = {
 	"GL_LINEAR_MIPMAP_NEAREST",
@@ -369,13 +365,13 @@ static void R_BorderClampImage( idImage *image ) {
 		TF_LINEAR /* TF_NEAREST */, false, TR_CLAMP_TO_BORDER, TD_DEFAULT );
 
 	if ( !glConfig.isInitialized ) {
-		// can't call qglTexParameterfv yet
+		// can't call glTexParameterfv yet
 		return;
 	}
 	// explicit zero border
 	float	color[4];
 	color[0] = color[1] = color[2] = color[3] = 0;
-	qglTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color );
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color );
 }
 
 static void R_RGBA8Image( idImage *image ) {
@@ -389,6 +385,19 @@ static void R_RGBA8Image( idImage *image ) {
 
 	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
 		TF_DEFAULT, false, TR_REPEAT, TD_HIGH_QUALITY );
+}
+
+static void R_DepthImage( idImage *image ) {
+	byte	data[DEFAULT_SIZE][DEFAULT_SIZE][4];
+
+	memset( data, 0, sizeof( data ) );
+	data[0][0][0] = 16;
+	data[0][0][1] = 32;
+	data[0][0][2] = 48;
+	data[0][0][3] = 96;
+
+	image->GenerateImage( (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
+		TF_NEAREST, false, TR_CLAMP, TD_HIGH_QUALITY );
 }
 
 #if 0
@@ -1008,14 +1017,14 @@ static const filterName_t textureFilters[] = {
 		}
 		glt->Bind();
 		if ( glt->filter == TF_DEFAULT ) {
-			qglTexParameterf(texEnum, GL_TEXTURE_MIN_FILTER, globalImages->textureMinFilter );
-			qglTexParameterf(texEnum, GL_TEXTURE_MAG_FILTER, globalImages->textureMaxFilter );
+			glTexParameterf(texEnum, GL_TEXTURE_MIN_FILTER, globalImages->textureMinFilter );
+			glTexParameterf(texEnum, GL_TEXTURE_MAG_FILTER, globalImages->textureMaxFilter );
 		}
 		if ( glConfig.anisotropicAvailable ) {
-			qglTexParameterf(texEnum, GL_TEXTURE_MAX_ANISOTROPY_EXT, globalImages->textureAnisotropy );
+			glTexParameterf(texEnum, GL_TEXTURE_MAX_ANISOTROPY_EXT, globalImages->textureAnisotropy );
 		}
 		if ( glConfig.textureLODBiasAvailable ) {
-			qglTexParameterf(texEnum, GL_TEXTURE_LOD_BIAS_EXT, globalImages->textureLODBias );
+			glTexParameterf(texEnum, GL_TEXTURE_LOD_BIAS_EXT, globalImages->textureLODBias );
 		}
 	}
 }
@@ -1405,14 +1414,14 @@ void idImageManager::SetNormalPalette( void ) {
 		return;
 	}
 
-	qglColorTableEXT( GL_SHARED_TEXTURE_PALETTE_EXT,
+	glColorTableEXT( GL_SHARED_TEXTURE_PALETTE_EXT,
 					   GL_RGB,
 					   256,
 					   GL_RGB,
 					   GL_UNSIGNED_BYTE,
 					   temptable );
 
-	qglEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
+	glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
 }
 
 /*
@@ -1943,11 +1952,11 @@ void idImageManager::BindNull() {
 	tmu = &backEnd.glState.tmu[backEnd.glState.currenttmu];
 
 	if ( tmu->textureType == TT_CUBIC ) {
-		qglDisable( GL_TEXTURE_CUBE_MAP_EXT );
+		glDisable( GL_TEXTURE_CUBE_MAP_EXT );
 	} else if ( tmu->textureType == TT_3D ) {
-		qglDisable( GL_TEXTURE_3D );
+		glDisable( GL_TEXTURE_3D );
 	} else if ( tmu->textureType == TT_2D ) {
-		qglDisable( GL_TEXTURE_2D );
+		glDisable( GL_TEXTURE_2D );
 	}
 	tmu->textureType = TT_DISABLED;
 }
@@ -1996,6 +2005,7 @@ void idImageManager::Init() {
 	accumImage = ImageFromFunction("_accum", R_RGBA8Image );
 	scratchCubeMapImage = ImageFromFunction("_scratchCubeMap", makeNormalizeVectorCubeMap );
 	currentRenderImage = ImageFromFunction("_currentRender", R_RGBA8Image );
+	currentDepthImage = ImageFromFunction( "_currentDepth", R_DepthImage ); // #3877. Allow shaders to access scene depth
 
 	cmdSystem->AddCommand( "reloadImages", R_ReloadImages_f, CMD_FL_RENDERER, "reloads images" );
 	cmdSystem->AddCommand( "listImages", R_ListImages_f, CMD_FL_RENDERER, "lists images" );

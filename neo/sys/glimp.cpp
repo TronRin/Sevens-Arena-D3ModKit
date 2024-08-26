@@ -26,11 +26,12 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
+#include "precompiled.h"
+#pragma hdrstop
+
 #include <SDL.h>
 
-#include "sys/platform.h"
-
-#include "renderer/tr_local.h"
+#include "../renderer/tr_local.h"
 
 #include "sys/sys_imgui.h"
 
@@ -278,6 +279,11 @@ try_again:
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 
+		if ( r_glDebugContext.GetBool() ) {
+			common->Printf( "Requesting an OpenGL Debug Context (r_glDebugContext is enabled)\n" );
+			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		}
+
 		if ( parms.fullScreen && parms.fullScreenDesktop ) {
 			common->Printf( "Will create a pseudo-fullscreen window at the current desktop resolution\n" );
 		} else {
@@ -434,6 +440,10 @@ try_again:
 		if (SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, r_swapInterval.GetInteger()) < 0)
 			common->Warning("SDL_GL_SWAP_CONTROL not supported");
 
+		if ( r_glDebugContext.GetBool() ) {
+			common->Warning( "r_glDebugContext is set, but not supported by SDL1.2!\n" );
+		}
+
 		r_swapInterval.ClearModified();
 
 		window = SDL_SetVideoMode(parms.width, parms.height, colorbits, flags);
@@ -482,7 +492,7 @@ try_again:
 			win32.hWnd = sdlinfo.info.win.window;
 			win32.hDC = sdlinfo.info.win.hdc;
 			// NOTE: hInstance is set in main()
-			win32.hGLRC = qwglGetCurrentContext();
+			win32.hGLRC = wglGetCurrentContext();
 
 			int pfIdx = GetPixelFormat(win32.hDC);
 			PIXELFORMATDESCRIPTOR src = {};
@@ -578,13 +588,27 @@ try_again:
 
 		// for r_fillWindowAlphaChan -1, see also the big comment above
 		glConfig.shouldFillWindowAlpha = false;
+		glConfig.isWayland = false;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		const char* videoDriver = SDL_GetCurrentVideoDriver();
 		if (idStr::Icmp(videoDriver, "wayland") == 0) {
 			glConfig.shouldFillWindowAlpha = true;
+			glConfig.isWayland = true;
 		}
 #endif
 
+		glConfig.haveDebugContext = false;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		int cflags = 0;
+		if ( SDL_GL_GetAttribute( SDL_GL_CONTEXT_FLAGS, &cflags ) == 0 ) {
+			glConfig.haveDebugContext = (cflags & SDL_GL_CONTEXT_DEBUG_FLAG) != 0;
+			if ( glConfig.haveDebugContext )
+				common->Printf( "Got a debug context!\n" );
+			else if( r_glDebugContext.GetBool() ) {
+				common->Warning( "Requested a debug context, but didn't get one!\n" );
+			}
+		}
+#endif
 		break;
 	}
 
@@ -718,6 +742,8 @@ glimpParms_t GLimp_GetCurState()
 			ret.width = real_mode.w;
 			ret.height = real_mode.h;
 			ret.displayHz = real_mode.refresh_rate;
+		} else {
+			common->Warning( "GLimp_GetCurState(): Can't get display mode: %s\n", SDL_GetError() );
 		}
 	}
 	if ( ret.width == 0 && ret.height == 0 ) { // windowed mode or SDL_GetWindowDisplayMode() failed
@@ -853,15 +879,9 @@ void GLimp_DeactivateContext() {
 
 /*
 ===================
-GLimp_ExtensionPointer
+GLimp_GrabInput
 ===================
 */
-GLExtension_t GLimp_ExtensionPointer(const char *name) {
-	assert(SDL_WasInit(SDL_INIT_VIDEO));
-
-	return (GLExtension_t)SDL_GL_GetProcAddress(name);
-}
-
 void GLimp_GrabInput(int flags) {
 	if (!window) {
 		common->Warning("GLimp_GrabInput called without window");
@@ -908,10 +928,30 @@ bool GLimp_SetWindowResizable( bool enableResizable )
 void GLimp_UpdateWindowSize()
 {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	int ww=0, wh=0;
-	SDL_GetWindowSize( window, &ww, &wh );
-	glConfig.winWidth = ww;
-	glConfig.winHeight = wh;
+	Uint32 winFlags = SDL_GetWindowFlags( window );
+	if ( (winFlags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN ) {
+		// real fullscreen mode => must use SDL_GetWindowDisplayMode()
+		// TODO: well, theoretically SDL_GetWindowSize() should work for fullscreen mode as well,
+		//       but not in all SDL versions, I think?
+		//  And in fact it seems like with "real" fullscreen windows on XWayland SDL_GetWindowSize()
+		//  returns the correct values and SDL_GetWindowDisplayMode() doesn't, when the fullscreen
+		//  resolution is lower than the desktop resolution.. it's kind of messy.
+		SDL_DisplayMode dm = {};
+		if ( SDL_GetWindowDisplayMode( window, &dm ) == 0 ) {
+			glConfig.winWidth = dm.w;
+			glConfig.winHeight = dm.h;
+			int ww=0, wh=0;
+			SDL_GetWindowSize( window, &ww, &wh );
+		} else {
+			common->Warning( "GLimp_UpdateWindowSize(): SDL_GetWindowDisplayMode() failed: %s\n", SDL_GetError() );
+		}
+
+	} else {
+		int ww=0, wh=0;
+		SDL_GetWindowSize( window, &ww, &wh );
+		glConfig.winWidth = ww;
+		glConfig.winHeight = wh;
+	}
 	SDL_GL_GetDrawableSize( window, &glConfig.vidWidth, &glConfig.vidHeight );
 #endif
 }

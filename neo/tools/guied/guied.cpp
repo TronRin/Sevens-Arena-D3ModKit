@@ -26,14 +26,13 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "tools/edit_gui_common.h"
-
+#include "precompiled.h"
+#pragma hdrstop
 
 #include "../../renderer/tr_local.h"
 #include "../../sys/win32/win_local.h"
 #include <io.h>
 
-#include "../../ui/DeviceContext.h"
 #include "../../sys/win32/rc/resource.h"
 
 #include "GEApp.h"

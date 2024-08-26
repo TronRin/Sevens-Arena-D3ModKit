@@ -29,9 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __RENDERER_H__
 #define __RENDERER_H__
 
-#include "framework/Common.h"
-#include "renderer/Model.h"
-
 /*
 ===============================================================================
 
@@ -67,7 +64,6 @@ typedef struct glconfig_s {
 	bool				textureLODBiasAvailable;
 	bool				textureEnvAddAvailable;
 	bool				textureEnvCombineAvailable;
-	bool				registerCombinersAvailable;
 	bool				cubeMapAvailable;
 	bool				envDot3Available;
 	bool				texture3DAvailable;
@@ -78,6 +74,7 @@ typedef struct glconfig_s {
 	bool				twoSidedStencilAvailable;
 	bool				textureNonPowerOfTwoAvailable;
 	bool				depthBoundsTestAvailable;
+	bool				glDebugOutputAvailable;
 
 	// GL framebuffer size, see also winWidth and winHeight
 	int					vidWidth, vidHeight;	// passed to R_BeginFrame
@@ -86,13 +83,14 @@ typedef struct glconfig_s {
 
 	bool				isFullscreen;
 
-	bool				allowARB2Path;
-
 	bool				isInitialized;
 
 	// DG: current video backend is known to need opaque default framebuffer
 	//     used if r_fillWindowAlphaChan == -1
 	bool				shouldFillWindowAlpha;
+	bool				isWayland; // DG: for other wayland-specific hacks.. (does *not* detect XWayland!)
+
+	bool				haveDebugContext;
 
 	// For some reason people decided that we need displays with ultra small pixels,
 	// so everything rendered on them must be scaled up to be legible.
@@ -213,20 +211,23 @@ public:
 	// GUI drawing just involves shader parameter setting and axial image subsections
 	virtual void			SetColor( const idVec4 &rgba ) = 0;
 	virtual void			SetColor4( float r, float g, float b, float a ) = 0;
+	virtual idVec4			GetColor( void ) const = 0;
 
 	virtual void			DrawStretchPic( const idDrawVert *verts, const glIndex_t *indexes, int vertCount, int indexCount, const idMaterial *material,
 											bool clip = true, float min_x = 0.0f, float min_y = 0.0f, float max_x = 640.0f, float max_y = 480.0f ) = 0;
 	virtual void			DrawStretchPic( float x, float y, float w, float h, float s1, float t1, float s2, float t2, const idMaterial *material ) = 0;
 
 	virtual void			DrawStretchTri ( idVec2 p1, idVec2 p2, idVec2 p3, idVec2 t1, idVec2 t2, idVec2 t3, const idMaterial *material ) = 0;
+	virtual idDrawVert *	AllocTris( int numVerts, const glIndex_t * indexes, int numIndexes, const idMaterial * material ) = 0;
 	virtual void			GlobalToNormalizedDeviceCoordinates( const idVec3 &global, idVec3 &ndc ) = 0;
 	virtual void			GetGLSettings( int& width, int& height ) = 0;
 	virtual void			PrintMemInfo( MemInfo_t *mi ) = 0;
 
-	virtual void			DrawSmallChar( int x, int y, int ch, const idMaterial *material ) = 0;
-	virtual void			DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material ) = 0;
-	virtual void			DrawBigChar( int x, int y, int ch, const idMaterial *material ) = 0;
-	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor, const idMaterial *material ) = 0;
+	virtual void			DrawFilled( const idVec4 & color, float x, float y, float w, float h ) = 0;
+	virtual void			DrawSmallChar( int x, int y, int ch ) = 0;
+	virtual void			DrawSmallStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor ) = 0;
+	virtual void			DrawBigChar( int x, int y, int ch ) = 0;
+	virtual void			DrawBigStringExt( int x, int y, const char *string, const idVec4 &setColor, bool forceColor ) = 0;
 
 	// dump all 2D drawing so far this frame to the demo file
 	virtual void			WriteDemoPics() = 0;

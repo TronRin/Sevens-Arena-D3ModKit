@@ -26,15 +26,15 @@ If you have questions concerning this license or the applicable additional terms
 ===========================================================================
 */
 
-#include "sys/platform.h"
-#include "idlib/containers/HashTable.h"
-#include "framework/Session_local.h"
-#include "ui/DeviceContext.h"
-#include "ui/Window.h"
-#include "ui/UserInterfaceLocal.h"
-#include "ui/SliderWindow.h"
+#include "precompiled.h"
+#pragma hdrstop
 
-#include "ui/ListWindow.h"
+#include "../framework/Session_local.h"
+
+#include "Window.h"
+#include "UserInterfaceLocal.h"
+#include "SliderWindow.h"
+#include "ListWindow.h"
 
 // Number of pixels above the text that the rect starts
 static const int pixelOffset = 3;
@@ -53,14 +53,8 @@ void idListWindow::CommonInit() {
 	top = 0;
 	sizeBias = 0;
 	horizontal = false;
-	scroller = new idSliderWindow(dc, gui);
+	scroller = new idSliderWindow(gui);
 	multipleSel = false;
-}
-
-idListWindow::idListWindow(idDeviceContext *d, idUserInterfaceLocal *g) : idWindow(d, g) {
-	dc = d;
-	gui = g;
-	CommonInit();
 }
 
 idListWindow::idListWindow(idUserInterfaceLocal *g) : idWindow(g) {

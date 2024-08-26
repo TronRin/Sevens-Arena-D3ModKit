@@ -29,11 +29,6 @@ If you have questions concerning this license or the applicable additional terms
 #ifndef __IMAGE_H__
 #define __IMAGE_H__
 
-#include "idlib/containers/List.h"
-#include "framework/FileSystem.h"
-#include "renderer/Material.h"
-#include "renderer/qgl.h"
-
 /*
 ====================================================================
 
@@ -45,20 +40,20 @@ No texture is ever used that does not have a corresponding idImage.
 
 no code outside this unit should call any of these OpenGL functions:
 
-qglGenTextures
-qglDeleteTextures
-qglBindTexture
+glGenTextures
+glDeleteTextures
+glBindTexture
 
-qglTexParameter
+glTexParameter
 
-qglTexImage
-qglTexSubImage
+glTexImage
+glTexSubImage
 
-qglCopyTexImage
-qglCopyTexSubImage
+glCopyTexImage
+glCopyTexSubImage
 
-qglEnable( GL_TEXTURE_* )
-qglDisable( GL_TEXTURE_* )
+glEnable( GL_TEXTURE_* )
+glDisable( GL_TEXTURE_* )
 
 ====================================================================
 */
@@ -185,7 +180,8 @@ public:
 
 	void		CopyFramebuffer( int x, int y, int width, int height, bool useOversizedBuffer );
 
-	void		CopyDepthbuffer( int x, int y, int width, int height );
+	void		CopyDepthbuffer( int x, int y, int width, int height, bool useOversizedBuffer );
+
 
 	void		UploadScratch( const byte *pic, int width, int height );
 
@@ -418,6 +414,9 @@ public:
 	idImage *			specularTableImage;			// 1D intensity texture with our specular function
 	idImage *			specular2DTableImage;		// 2D intensity texture with our specular function with variable specularity
 	idImage *			borderClampImage;			// white inside, black outside
+
+
+	idImage *			currentDepthImage;			// #3877. Allow shaders to access scene depth
 
 	//--------------------------------------------------------
 
