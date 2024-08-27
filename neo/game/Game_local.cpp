@@ -2768,7 +2768,7 @@ idGameLocal::GetLevelMap
 ================
 */
 idMapFile *idGameLocal::GetLevelMap( void ) {
-	if ( mapFile && mapFile->HasPrimitiveData()) {
+	if ( mapFile && mapFile->HasPrimitiveData() && !mapFile->HasBeenResloved() ) {
 		return mapFile;
 	}
 	if ( !mapFileName.Length() ) {

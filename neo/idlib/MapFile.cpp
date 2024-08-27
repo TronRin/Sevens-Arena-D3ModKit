@@ -83,6 +83,13 @@ static void ComputeAxisBase( const idVec3 &normal, idVec3 &texS, idVec3 &texT ) 
 	texT[2] = -cos(RotY);
 }
 
+idMapFile::~idMapFile( void ) { 
+	entities.DeleteContents( true ); 
+	if ( cvarSystem->GetCVarBool( "developer" ) ) {
+		common->Printf( "^2done with .map file ^0%s\n", name.c_str() );
+	}
+}
+
 /*
 =================
 idMapBrushSide::GetTextureVectors
@@ -245,6 +252,15 @@ bool idMapPatch::Write( idFile *fp, int primitiveNum, const idVec3 &origin ) con
 
 /*
 ===============
+idMapPatch::AdjustOrigin
+===============
+*/
+void idMapPatch::AdjustOrigin( idVec3 &delta ) {
+	TranslateSelf( delta );
+}
+
+/*
+===============
 idMapPatch::GetGeometryCRC
 ===============
 */
@@ -374,6 +390,9 @@ idMapBrush *idMapBrush::Parse( idLexer &src, const idVec3 &origin, bool newForma
 		} else {
 			side->material = token;
 		}
+
+		// make sure the material is properly parsed
+		declManager->FindMaterial( token );
 
 		// Q2 allowed override of default flags and values, but we don't any more
 		if ( src.ReadTokenOnLine( &token ) ) {
@@ -525,6 +544,74 @@ unsigned int idMapBrush::GetGeometryCRC( void ) const {
 	}
 
 	return crc;
+}
+
+// This is taken from tools/radiant/EditorBrushPrimit.cpp
+float SarrusDet( idVec3 a, idVec3 b, idVec3 c ) {
+	return (float)a[0] * (float)b[1] * (float)c[2] + (float)b[0] * (float)c[1] * (float)a[2] + (float)c[0] * (float)a[1] * (float)b[2] - (float)c[0] * (float)b[1] * (float)a[2] - (float)a[1] * (float)b[0] * (float)c[2] -	(float)a[0] * (float)b[2] * (float)c[1];
+}
+
+/*
+===============
+idMapBrush::AdjustOrigin
+===============
+*/
+void idMapBrush::AdjustOrigin( idVec3 &delta ) {
+	int				i;
+	idMapBrushSide	*mapSide;
+
+	for ( i = 0; i < GetNumSides(); i++ ) {
+		mapSide = GetSide(i);
+
+		mapSide->SetPlane( mapSide->GetPlane().Translate( delta ) );
+
+		// This is taken from Face_MoveTexture_BrushPrimit() in tools/radiant/EditorBrushPrimit.cpp
+		idVec3	texS, texT;
+		float	tx, ty;
+		idVec3	M[3];	// columns of the matrix .. easier that way
+		float	det;
+		idVec3	D[2];
+
+		// compute plane axis base ( doesn't change with translation )
+		ComputeAxisBase( mapSide->GetPlane().Normal(), texS, texT);
+
+		// compute translation vector in plane axis base
+		tx = DotProduct( delta, texS );
+		ty = DotProduct( delta, texT );
+
+		// fill the data vectors
+		M[0][0] = tx;
+		M[0][1] = 1.0f + tx;
+		M[0][2] = tx;
+		M[1][0] = ty;
+		M[1][1] = ty;
+		M[1][2] = 1.0f + ty;
+		M[2][0] = 1.0f;
+		M[2][1] = 1.0f;
+		M[2][2] = 1.0f;
+
+		idVec3	tm[2];
+		mapSide->GetTextureMatrix( tm[0], tm[1] );
+
+		D[0][0] = tm[0][2];
+		D[0][1] = tm[0][0] + tm[0][2];
+		D[0][2] = tm[0][1] + tm[0][2];
+		D[1][0] = tm[1][2];
+		D[1][1] = tm[1][0] + tm[1][2];
+		D[1][2] = tm[1][1] + tm[1][2];
+
+		// solve
+		det = SarrusDet(M[0], M[1], M[2]);
+		if ( det != 0. ) {
+			tm[0][0] = SarrusDet(D[0], M[1], M[2]) / det;
+			tm[0][1] = SarrusDet(M[0], D[0], M[2]) / det;
+			tm[0][2] = SarrusDet(M[0], M[1], D[0]) / det;
+			tm[1][0] = SarrusDet(D[1], M[1], M[2]) / det;
+			tm[1][1] = SarrusDet(M[0], D[1], M[2]) / det;
+			tm[1][2] = SarrusDet(M[0], M[1], D[1]) / det;
+			mapSide->SetTextureMatrix(tm);
+		}
+	}
 }
 
 /*
@@ -699,9 +786,15 @@ unsigned int idMapEntity::GetGeometryCRC( void ) const {
 		switch( mapPrim->GetType() ) {
 			case idMapPrimitive::TYPE_BRUSH:
 				crc ^= static_cast<idMapBrush*>(mapPrim)->GetGeometryCRC();
+				if ( epairs.GetString( "model" ) ) {
+					crc ^= StringCRC( epairs.GetString( "model" ) );
+				}
 				break;
 			case idMapPrimitive::TYPE_PATCH:
 				crc ^= static_cast<idMapPatch*>(mapPrim)->GetGeometryCRC();
+				if ( epairs.GetString( "model" ) ) {
+					crc ^= StringCRC( epairs.GetString( "model" ) );
+				}
 				break;
 		}
 	}
@@ -757,10 +850,37 @@ bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 		if ( !mapEnt ) {
 			break;
 		}
+
+		if ( !mHasFuncGroups && !idStr::Icmp( mapEnt->epairs.GetString( "classname" ), "func_group" ) ) {
+			mHasFuncGroups = true;
+		}
+
 		entities.Append( mapEnt );
 	}
 
 	SetGeometryCRC();
+
+	if ( cvarSystem->GetCVarBool( "developer" ) ) {
+		common->Printf( "^2loaded .map file ^0%s\n", filename );
+	}
+	mHasBeenResolved = false;
+
+	hasPrimitiveData = true;
+	return true;
+}
+
+/*
+===============
+idMapFile::Resolve
+===============
+*/
+void idMapFile::Resolve( void ) {
+	int i, j, k;
+	idMapEntity *mapEnt;
+
+	if ( !hasPrimitiveData ) {
+		return;
+	}
 
 	// if the map has a worldspawn
 	if ( entities.Num() ) {
@@ -807,19 +927,27 @@ bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 		}
 
 		// move the primitives of any func_group entities to the worldspawn
-		if ( entities[0]->epairs.GetBool( "moveFuncGroups" ) ) {
-			for ( i = 1; i < entities.Num(); i++ ) {
-				mapEnt = entities[i];
-				if ( idStr::Icmp( mapEnt->epairs.GetString( "classname" ), "func_group" ) == 0 ) {
-					entities[0]->primitives.Append( mapEnt->primitives );
-					mapEnt->primitives.Clear();
+		for ( i = 1; i < entities.Num(); i++ ) {
+			mapEnt = entities[i];
+			if ( idStr::Icmp( mapEnt->epairs.GetString( "classname" ), "func_group" ) == 0 ) {
+				idVec3	delta;	
+				mapEnt->epairs.GetVector( "origin", "0 0 0", delta );
+				for( j = 0; j < mapEnt->primitives.Num(); j++ ) {
+					idMapPrimitive	*mapPrim = mapEnt->primitives[j];
+					mapPrim->AdjustOrigin( delta );
 				}
+				entities[0]->primitives.Append( mapEnt->primitives );
+				mapEnt->primitives.Clear();
 			}
 		}
+		RemoveEntities( "func_group" );
 	}
 
-	hasPrimitiveData = true;
-	return true;
+	mHasBeenResolved = true;
+
+	if ( cvarSystem->GetCVarBool( "developer" ) ) {
+		common->Printf( "^2idMapFile::Resolve has been run on ^0%s^2 so no func_groups exist.\n", name.c_str() );
+	}
 }
 
 /*
@@ -831,6 +959,7 @@ bool idMapFile::Write( const char *fileName, const char *ext, bool fromBasePath 
 	int i;
 	idStr qpath;
 	idFile *fp;
+	bool funcGroupFound = false;
 
 	qpath = fileName;
 	qpath.SetFileExtension( ext );
@@ -853,6 +982,13 @@ bool idMapFile::Write( const char *fileName, const char *ext, bool fromBasePath 
 
 	for ( i = 0; i < entities.Num(); i++ ) {
 		entities[i]->Write( fp, i );
+		if ( !idStr::Icmp( entities[i]->epairs.GetString( "classname" ), "func_group" ) ) {
+			funcGroupFound = true;
+		}
+	}
+
+	if ( mHasFuncGroups && !funcGroupFound && cvarSystem->GetCVarBool( "developer" ) ) {
+		common->Warning( "^5Did not find any ^2func_groups^0 during save, but there were ^2func_groups^0 found during loading.  Was this intended?\n");
 	}
 
 	idLib::fileSystem->CloseFile( fp );
@@ -966,6 +1102,10 @@ void idMapFile::RemovePrimitiveData() {
 		ent->RemovePrimitiveData();
 	}
 	hasPrimitiveData = false;
+
+	if ( cvarSystem->GetCVarBool( "developer" ) ) {
+		common->Printf( "^2Removed all primitive data from ^0%s\n", name.c_str() );
+	}
 }
 
 /*

@@ -547,10 +547,7 @@ void idEditEntities::DisplayEntities( void ) {
 			break;
 		case 2:
 			sit.typeInfo = &idSound::GetClassType();
-			sit.textKey = "s_shader";
-			selectableEntityClasses.Append( sit );
-			sit.typeInfo = &idLight::GetClassType();
-			sit.textKey = "texture";
+			sit.textKey = "s_shader|name";
 			selectableEntityClasses.Append( sit );
 			break;
 		case 3:
@@ -586,13 +583,15 @@ void idEditEntities::DisplayEntities( void ) {
 	idBounds viewTextBounds( gameLocal.GetLocalPlayer()->GetPhysics()->GetOrigin() );
 	idMat3 axis = gameLocal.GetLocalPlayer()->viewAngles.ToMat3();
 
-	viewBounds.ExpandSelf( 512 );
-	viewTextBounds.ExpandSelf( 128 );
+	viewBounds.ExpandSelf( g_editEntityDistance.GetFloat() );
+	viewTextBounds.ExpandSelf( g_editEntityTextDistance.GetFloat() );
 
 	cvarSystem->SetCVarInteger( "r_singleLight", -1 );
 	cvarSystem->SetCVarInteger( "r_showLights", 0 );
 
 	idStr textKey;
+	idStr textKey2;
+	idStr strOutput;
 
 	for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
 
@@ -603,7 +602,16 @@ void idEditEntities::DisplayEntities( void ) {
 			continue;
 		}
 
+		textKey2 = "";
+		int iIndex = textKey.Find( '|' );
+		if ( iIndex >= 0 ) {
+			textKey2 = textKey.Mid ( iIndex + 1, textKey.Length() - ( iIndex + 1 ) );	// hmmm, they emulate 99% of MS CString but don't have a single-param Mid() func?
+			textKey  = textKey.Left( iIndex );
+		}
+
 		bool drawArrows = false;
+		bool drawDirection = false;
+ 
 		if ( ent->GetType() == &idAFEntity_Base::GetClassType() ) {
 			if ( !static_cast<idAFEntity_Base *>(ent)->IsActiveAF() ) {
 				continue;
@@ -612,6 +620,7 @@ void idEditEntities::DisplayEntities( void ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
 			}
+			ent->UpdateSound();
 			const idSoundShader * ss = declManager->FindSound( ent->spawnArgs.GetString( textKey ) );
 			if ( ss->HasDefaultSound() || ss->base->GetState() == DS_DEFAULTED ) {
 				color.Set( 1.0f, 0.0f, 1.0f, 1.0f );
@@ -619,11 +628,12 @@ void idEditEntities::DisplayEntities( void ) {
 		} else if ( ent->GetType() == &idFuncEmitter::GetClassType() ) {
 			if ( ent->fl.selected ) {
 				drawArrows = true;
+				drawDirection = true;
 			}
 		} else if ( ent->GetType() == &idLight::GetClassType() ) {
-			// RB: use renderer backend to display light properties
 			if ( ent->fl.selected ) {
 				drawArrows = true;
+				drawDirection = true;
 
 				idLight* light = static_cast<idLight*>( ent );
 
@@ -684,10 +694,21 @@ void idEditEntities::DisplayEntities( void ) {
 			gameRenderWorld->DrawText( "z-", end + idVec3( 0, 0, -4 ), 0.15f, colorWhite, axis );
 		}
 
+		if ( drawDirection ) {
+			idVec3 start = ent->GetPhysics()->GetOrigin ( );
+			idVec3 end   = start + ent->GetPhysics()->GetAxis()[0] * 35.0f;
+			gameRenderWorld->DebugArrow ( colorYellow, start, end, 6 );
+		}
+
 		if ( textKey.Length() ) {
-			const char *text = ent->spawnArgs.GetString( textKey );
 			if ( viewTextBounds.ContainsPoint( ent->GetPhysics()->GetOrigin() ) ) {
-				gameRenderWorld->DrawText( text, ent->GetPhysics()->GetOrigin() + idVec3(0, 0, 12), 0.25, colorWhite, axis, 1 );
+				strOutput = ent->spawnArgs.GetString( textKey );
+				if ( !textKey2.IsEmpty() ) {
+					strOutput += " ( ";
+					strOutput += ent->spawnArgs.GetString( textKey2 );
+					strOutput += " )";
+				}
+				gameRenderWorld->DrawText( strOutput.c_str(), ent->GetPhysics()->GetOrigin() + idVec3( 0, 0, 12 ), 0.25, colorWhite, axis, 1 );
 			}
 		}
 	}
@@ -751,7 +772,10 @@ void idGameEdit::ClearEntitySelection() {
 	for( ent = gameLocal.spawnedEntities.Next(); ent != NULL; ent = ent->spawnNode.Next() ) {
 		ent->fl.selected = false;
 	}
-	gameLocal.editEntities->ClearSelectedEntities();
+
+	if ( gameLocal.editEntities ) {
+		gameLocal.editEntities->ClearSelectedEntities();
+	}
 }
 
 /*
@@ -760,7 +784,7 @@ idGameEdit::AddSelectedEntity
 ================
 */
 void idGameEdit::AddSelectedEntity( idEntity *ent ) {
-	if ( ent ) {
+	if ( ent && gameLocal.editEntities ) {
 		gameLocal.editEntities->AddSelectedEntity( ent );
 	}
 }
