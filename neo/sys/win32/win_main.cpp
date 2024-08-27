@@ -1093,10 +1093,6 @@ int main(int argc, char *argv[]) {
 				// GUI editor
 				GUIEditorRun();
 			} else {
-				if ( com_editors & EDITOR_LIGHT ) {
-					// in-game Light Editor
-					LightEditorRun();
-				}
 				if ( com_editors & EDITOR_SOUND ) {
 					// in-game Sound Editor
 					SoundEditorRun();

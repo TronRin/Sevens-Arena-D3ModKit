@@ -35,6 +35,10 @@ If you have questions concerning this license or the applicable additional terms
 
 #include "Session_local.h" // DG: For FT_IsDemo/isDemo() hack
 
+#ifdef ID_ALLOW_TOOLS
+#include "../tools/imgui/ImGuiTools.h"
+#endif
+
 #include "../tools/compilers/dmap/dmap.h"
 
 #define	MAX_PRINT_MSG_SIZE	4096
@@ -922,14 +926,8 @@ idCommonLocal::InitTool
 */
 void idCommonLocal::InitTool( const toolFlag_t tool, const idDict *dict ) {
 #ifdef ID_ALLOW_TOOLS
-	if ( tool & EDITOR_SOUND ) {
-		SoundEditorInit( dict );
-	} else if ( tool & EDITOR_LIGHT ) {
-		LightEditorInit( dict );
-	} else if ( tool & EDITOR_PARTICLE ) {
-		ParticleEditorInit( dict );
-	} else if ( tool & EDITOR_AF ) {
-		AFEditorInit( dict );
+	if ( imguiTools ) {
+		imguiTools->InitTool( tool, dict, NULL );
 	}
 #endif
 }
@@ -1151,8 +1149,11 @@ Com_EditLights_f
 ==================
 */
 static void Com_EditLights_f( const idCmdArgs &args ) {
-	LightEditorInit( NULL );
-	cvarSystem->SetCVarInteger( "g_editEntityMode", 1 );
+	if( cvarSystem->GetCVarInteger( "g_editEntityMode" ) != 1 ) {
+		cvarSystem->SetCVarInteger( "g_editEntityMode", 1 );
+	} else {
+		cvarSystem->SetCVarInteger( "g_editEntityMode", 0 );
+	}
 }
 
 /*
@@ -2242,11 +2243,11 @@ void idCommonLocal::InitCommands( void ) {
 #ifdef ID_ALLOW_TOOLS
 	// editors
 	cmdSystem->AddCommand( "editLights", Com_EditLights_f, CMD_FL_TOOL, "launches the in-game Light Editor" );
-	cmdSystem->AddCommand( "editSounds", Com_EditSounds_f, CMD_FL_TOOL, "launches the in-game Sound Editor" );
-	cmdSystem->AddCommand( "editDecls", Com_EditDecls_f, CMD_FL_TOOL, "launches the in-game Declaration Editor" );
+	//cmdSystem->AddCommand( "editSounds", Com_EditSounds_f, CMD_FL_TOOL, "launches the in-game Sound Editor" );
+	//cmdSystem->AddCommand( "editDecls", Com_EditDecls_f, CMD_FL_TOOL, "launches the in-game Declaration Editor" );
 	cmdSystem->AddCommand( "editAFs", Com_EditAFs_f, CMD_FL_TOOL, "launches the in-game Articulated Figure Editor" );
-	cmdSystem->AddCommand( "editParticles", Com_EditParticles_f, CMD_FL_TOOL, "launches the in-game Particle Editor" );
-	cmdSystem->AddCommand( "editScripts", Com_EditScripts_f, CMD_FL_TOOL, "launches the in-game Script Editor" );
+	//cmdSystem->AddCommand( "editParticles", Com_EditParticles_f, CMD_FL_TOOL, "launches the in-game Particle Editor" );
+	//cmdSystem->AddCommand( "editScripts", Com_EditScripts_f, CMD_FL_TOOL, "launches the in-game Script Editor" );
 	cmdSystem->AddCommand( "editGUIs", Com_EditGUIs_f, CMD_FL_TOOL, "launches the GUI Editor" );
 	cmdSystem->AddCommand( "debugger", Com_ScriptDebugger_f, CMD_FL_TOOL, "launches the Script Debugger" );
 #endif

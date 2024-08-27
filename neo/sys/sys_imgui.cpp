@@ -48,6 +48,8 @@ typedef char* (*MY_XGETDEFAULTFUN)(Display*, const char*, const char*);
 #include "../framework/Session_local.h" // sessLocal.GetActiveMenu()
 #include "../renderer/tr_local.h" // glconfig
 
+#include "../tools/imgui/ImGuiTools.h"
+
 extern void Com_DrawSettingsMenu();
 extern void Com_DrawOverlays();
 extern void Com_OpenCloseSettingsMenu( bool open ); // ditto
@@ -92,6 +94,55 @@ namespace DG {
 		@param[in] refStyle The ImGuiStyle file reference.
 	*/
 	extern ImGuiTextBuffer WriteImGuiStyleToCode( const ImGuiStyle &style, const ImGuiStyle *refStyle = nullptr );
+}
+
+// our custom ImGui functions from BFGimgui.h
+
+// like DragFloat3(), but with "X: ", "Y: " or "Z: " prepended to each display_format, for vectors
+// if !ignoreLabelWidth, it makes sure the label also fits into the current item width.
+//    note that this screws up alignment with consecutive "value+label widgets" (like Drag* or ColorEdit*)
+bool ImGui::DragVec3( const char* label, idVec3& v, float v_speed,
+					  float v_min, float v_max, const char* display_format, float power, bool ignoreLabelWidth )
+{
+	bool value_changed = false;
+	ImGui::BeginGroup();
+	ImGui::PushID( label );
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	float wholeWidth = ImGui::CalcItemWidth() - 2.0f * style.ItemSpacing.x;
+	float spacing = style.ItemInnerSpacing.x;
+	float labelWidth = ignoreLabelWidth ? 0.0f : ( ImGui::CalcTextSize( label, NULL, true ).x + spacing );
+	float coordWidth = ( wholeWidth - labelWidth - 2.0f * spacing ) * ( 1.0f / 3.0f ); // width of one x/y/z dragfloat
+
+	ImGui::PushItemWidth( coordWidth );
+	for( int i = 0; i < 3; i++ )
+	{
+		ImGui::PushID( i );
+		char format[64];
+		idStr::snPrintf( format, sizeof( format ), "%c: %s", "XYZ"[i], display_format );
+		value_changed |= ImGui::DragFloat( "##v", &v[i], v_speed, v_min, v_max, format, power );
+
+		ImGui::PopID();
+		ImGui::SameLine( 0.0f, spacing );
+	}
+	ImGui::PopItemWidth();
+	ImGui::PopID();
+
+	const char* labelEnd = strstr( label, "##" );
+	ImGui::TextUnformatted( label, labelEnd );
+
+	ImGui::EndGroup();
+
+	return value_changed;
+}
+
+// shortcut for DragXYZ with ignorLabelWidth = false
+// very similar, but adjusts width to width of label to make sure it's not cut off
+// sometimes useful, but might not align with consecutive "value+label widgets" (like Drag* or ColorEdit*)
+bool ImGui::DragVec3fitLabel( const char* label, idVec3& v, float v_speed,
+							  float v_min, float v_max, const char* display_format, float power )
+{
+	return ImGui::DragVec3( label, v, v_speed, v_min, v_max, display_format, power, false );
 }
 
 idImGuiLocal::idImGuiLocal() :
@@ -177,6 +228,10 @@ void idImGuiLocal::OpenWindow( idImGuiWindow win ) {
 
 	ImGui::SetNextWindowFocus();
 
+	if ( imguiTools && imguiTools->IsActive() ) {
+		imguiTools->OpenWindow( win );
+	}
+
 	switch ( win ) {
 		case WINDOW_SETTINGS:
 			Com_OpenCloseSettingsMenu( true );
@@ -190,6 +245,10 @@ void idImGuiLocal::OpenWindow( idImGuiWindow win ) {
 void idImGuiLocal::CloseWindow( idImGuiWindow win ) {
 	if ( ( openImguiWindows & win ) == 0 ) {
 		return; // already closed
+	}
+
+	if ( imguiTools ) {
+		imguiTools->CloseWindow( win );
 	}
 
 	switch ( win ) {
@@ -368,6 +427,10 @@ void idImGuiLocal::NewFrame( void ) {
 	ImGui_ImplSDL2_NewFrame();
 	ImGui::NewFrame();
 	haveNewFrame = true;
+
+	if( imguiTools ) {
+		imguiTools->DrawToolWindows();
+	}
 
 	UpdateWarningOverlay();
 

@@ -132,6 +132,8 @@ public:
 	int					FindKeyIndex( const char *key ) const;
 						// delete the key/value pair with the given key
 	void				Delete( const char *key );
+						// delete all keys with a "" value
+	void				DeleteEmptyKeys( void );
 						// finds the next key/value pair with the given key prefix.
 						// lastMatch can be used to do additional searches past the first match.
 	const idKeyValue *	MatchPrefix( const char *prefix, const idKeyValue *lastMatch = NULL ) const;

@@ -44,8 +44,6 @@ class	idInterpreter;
 // in-game Light Editor
 void	LightEditorInit( const idDict *spawnArgs );
 void	LightEditorShutdown( void );
-void	LightEditorRun( void );
-
 
 // in-game Sound Editor
 void	SoundEditorInit( const idDict *spawnArgs );

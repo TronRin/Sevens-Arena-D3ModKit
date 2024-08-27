@@ -303,93 +303,109 @@ set( src_tools
 # TODO: add_globbed_headers(src_tools "tools/guied")
 
 # Begin normal tools code
-if ( TOOLS AND MFC_FOUND AND MSVC )
-	set( ALLOWRESOURCES ON )
+if ( TOOLS )
+	if ( IMGUI )
+		# Tools
 
-	# Common files.
-	file( GLOB src_comafx ${CMAKE_SOURCE_DIR}/tools/comafx/*.cpp )
-	add_globbed_headers( src_comafx "tools/comafx" )
+		# Ligth Editor.
+		file( GLOB src_imgui_ligth_editor ${CMAKE_SOURCE_DIR}/tools/ligtheditor/*.cpp )
+		add_globbed_headers( src_imgui_ligth_editor "tools/ligtheditor" )
 
-	file( GLOB_RECURSE src_tools_common ${CMAKE_SOURCE_DIR}/tools/common/*.cpp )
-	add_globbed_headers( src_tools_common "tools/common" )
+		list( APPEND src_editor_tools
+			${src_imgui_ligth_editor}
+			${CMAKE_SOURCE_DIR}/tools/imgui/ImGuiTools.cpp
+			${CMAKE_SOURCE_DIR}/tools/imgui/ImGuiTools.h
+		)
+	endif()
 
-	# Compilers.
+	if ( MFC_FOUND AND MSVC ) 
+		set( ALLOWRESOURCES ON )
 
-	file( GLOB src_compiler_roqvq	  ${CMAKE_SOURCE_DIR}/tools/compilers/roqvq/*.cpp ) # FIXME: some of those were added before
-	add_globbed_headers( src_compiler_roqvq "tools/compilers/roqvq" )
+		# Common files.
+		file( GLOB src_comafx ${CMAKE_SOURCE_DIR}/tools/comafx/*.cpp )
+		add_globbed_headers( src_comafx "tools/comafx" )
 
-	# Tools
+		file( GLOB_RECURSE src_tools_common ${CMAKE_SOURCE_DIR}/tools/common/*.cpp )
+		add_globbed_headers( src_tools_common "tools/common" )
 
-	# Articulated Frame Editor.
-	file( GLOB src_afeditor ${CMAKE_SOURCE_DIR}/tools/af/*.cpp )
-	add_globbed_headers( src_afeditor "tools/af" )
+		# Compilers.
 
-	# Declaration Editor.
-	file( GLOB src_decleditor ${CMAKE_SOURCE_DIR}/tools/decl/*.cpp )
-	add_globbed_headers( src_decleditor "tools/decl" )
+		file( GLOB src_compiler_roqvq	  ${CMAKE_SOURCE_DIR}/tools/compilers/roqvq/*.cpp ) # FIXME: some of those were added before
+		add_globbed_headers( src_compiler_roqvq "tools/compilers/roqvq" )
 
-	# GUI Editor.
-	file( GLOB src_gui_editor ${CMAKE_SOURCE_DIR}/tools/guied/*.cpp )
-	add_globbed_headers(src_gui_editor "tools/guied" )
+		# Tools
 
-	# Material Editor.
-	file( GLOB src_materialeditor ${CMAKE_SOURCE_DIR}/tools/materialeditor/*.cpp )
-	add_globbed_headers( src_materialeditor "tools/materialeditor" )
+		# Articulated Frame Editor.
+		file( GLOB src_afeditor ${CMAKE_SOURCE_DIR}/tools/af/*.cpp )
+		add_globbed_headers( src_afeditor "tools/af" )
 
-	# Particle Editor.
-	file( GLOB src_particleeditor ${CMAKE_SOURCE_DIR}/tools/particle/*.cpp )
-	add_globbed_headers(src_particleeditor "tools/particle" )
+		# Declaration Editor.
+		file( GLOB src_decleditor ${CMAKE_SOURCE_DIR}/tools/decl/*.cpp )
+		add_globbed_headers( src_decleditor "tools/decl" )
+
+		# GUI Editor.
+		file( GLOB src_gui_editor ${CMAKE_SOURCE_DIR}/tools/guied/*.cpp )
+		add_globbed_headers(src_gui_editor "tools/guied" )
+
+		# Material Editor.
+		file( GLOB src_materialeditor ${CMAKE_SOURCE_DIR}/tools/materialeditor/*.cpp )
+		add_globbed_headers( src_materialeditor "tools/materialeditor" )
+
+		# Particle Editor.
+		file( GLOB src_particleeditor ${CMAKE_SOURCE_DIR}/tools/particle/*.cpp )
+		add_globbed_headers(src_particleeditor "tools/particle" )
 	
-	# Ligth Editor.
-	file( GLOB src_ligth_editor ${CMAKE_SOURCE_DIR}/tools/ligtheditor/*.cpp )
-	add_globbed_headers( src_gui_editor "tools/ligtheditor" )
+		# Ligth Editor.
+		file( GLOB src_ligth_editor ${CMAKE_SOURCE_DIR}/tools/ligtheditor/*.cpp )
+		add_globbed_headers( src_gui_editor "tools/ligtheditor" )
 
-	# Script Editor.
-	file( GLOB src_script_editor ${CMAKE_SOURCE_DIR}/tools/script/*.cpp )
-	add_globbed_headers(src_script_editor "tools/script" )
+		# Script Editor.
+		file( GLOB src_script_editor ${CMAKE_SOURCE_DIR}/tools/script/*.cpp )
+		add_globbed_headers(src_script_editor "tools/script" )
 	
-	# Sound Editor.
-	file( GLOB src_sound_editor ${CMAKE_SOURCE_DIR}/tools/sound/*.cpp )
-	add_globbed_headers( src_sound_editor "tools/sound" )
+		# Sound Editor.
+		file( GLOB src_sound_editor ${CMAKE_SOURCE_DIR}/tools/sound/*.cpp )
+		add_globbed_headers( src_sound_editor "tools/sound" )
 
-	# Script Debugger
-	set( src_debuggerClient
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerClient.h
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerClient.cpp
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerApp.h
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerApp.cpp
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerQuickWatchDlg.h
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerQuickWatchDlg.cpp
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerWindow.h
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerWindow.cpp
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerFindDlg.h
-		${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerFindDlg.cpp
-	)
-	set( src_script_debugger
-		${src_debuggerServer}
-		${src_debuggerClient}
-	)
+		# Script Debugger
+		set( src_debuggerClient
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerClient.h
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerClient.cpp
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerApp.h
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerApp.cpp
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerQuickWatchDlg.h
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerQuickWatchDlg.cpp
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerWindow.h
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerWindow.cpp
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerFindDlg.h
+			${CMAKE_SOURCE_DIR}/tools/debugger/DebuggerFindDlg.cpp
+		)
+		set( src_script_debugger
+			${src_debuggerServer}
+			${src_debuggerClient}
+		)
 
-	# The numerous tools in a nice list.
-	list( APPEND src_editor_tools
-		${src_comafx}
-		${src_tools_common}
-		${src_compiler_renderbump}
-		${src_afeditor}
-		${src_decleditor}
-		${src_gui_editor}
-		${src_materialeditor}
-		${src_particleeditor}
-		${src_pdaeditor}
-		${src_ligth_editor}
-		${src_script_editor}
-		${src_sound_editor}
-		${src_script_debugger}
-		${CMAKE_SOURCE_DIR}/tools/edit_public.h
-	)
+		# The numerous tools in a nice list.
+		list( APPEND src_editor_tools
+			${src_comafx}
+			${src_tools_common}
+			${src_compiler_renderbump}
+			${src_afeditor}
+			${src_decleditor}
+			${src_gui_editor}
+			${src_materialeditor}
+			${src_particleeditor}
+			${src_pdaeditor}
+			${src_ligth_editor}
+			${src_script_editor}
+			${src_sound_editor}
+			${src_script_debugger}
+			${CMAKE_SOURCE_DIR}/tools/edit_public.h
+		)
 
-	SET( CMAKE_MFC_FLAG 2 )
-	set( TOOLS_DEFINES "ID_ALLOW_TOOLS;_AFXDLL" )
+		set( CMAKE_MFC_FLAG 2 )
+		set( TOOLS_DEFINES "ID_ALLOW_TOOLS;_AFXDLL" )
+	endif()
 else()
 	set( src_editor_tools ${CMAKE_SOURCE_DIR}/tools/edit_stub.cpp ${CMAKE_SOURCE_DIR}/tools/edit_public.h ${CMAKE_SOURCE_DIR}/tools/debugger/debugger_common.h )
 	list( APPEND src_editor_tools

@@ -517,6 +517,23 @@ void idDict::Delete( const char *key ) {
 
 /*
 ================
+idDict::Delete
+================
+*/
+void idDict::DeleteEmptyKeys( void ) {
+	idList<idKeyValue> orig = args;
+
+	for ( int i = 0; i < orig.Num(); i++ ) {
+		const idKeyValue& kv = orig[ i ];
+
+		if( kv.GetValue().Length() == 0 ) {
+			Delete( kv.GetKey() );
+		}
+	}
+}
+
+/*
+================
 idDict::MatchPrefix
 ================
 */
