@@ -89,8 +89,6 @@ private:
 	void				DrawTextLeftAlign( float x, float &y, const char *text, ... );
 	void				DrawTextRightAlign( float x, float &y, const char *text, ... );
 
-	float				DrawFPS( float y );
-	float				DrawMemoryUsage( float y );
 	float				DrawAsyncStats( float y );
 	float				DrawSoundDecoders( float y );
 
@@ -201,65 +199,77 @@ void idConsoleLocal::DrawTextRightAlign( float x, float &y, const char *text, ..
 idConsoleLocal::DrawFPS
 ==================
 */
+
 #define	FPS_FRAMES	6
-float idConsoleLocal::DrawFPS( float y ) {
-	static int previousTimes[FPS_FRAMES];
-	static int index;
-	static int previous;
-	idStr showFPS;
+#define FPS_FRAMES_HISTORY 90
 
-	// don't use serverTime, because that will be drifting to
-	// correct for internet lag changes, timescales, timedemos, etc
-	int t = Sys_Milliseconds();
-	int frameTime = t - previous;
-	previous = t;
+void Com_DrawOverlays() {
+	bool toolActive = false;
 
-	previousTimes[index % FPS_FRAMES] = frameTime;
-	index++;
-	if ( index > FPS_FRAMES ) {
-		// average multiple frames together to smooth changes out a bit
-		int total = 0;
-		for ( int i = 0 ; i < FPS_FRAMES ; i++ ) {
-			total += previousTimes[i];
+	if ( com_showFPS.GetBool() ) {
+		static float previousTimes[FPS_FRAMES];
+		static int index = 0;
+		static int previous;
+		static int valuesOffset = 0;
+
+		// don't use serverTime, because that will be drifting to
+		// correct for internet lag changes, timescales, timedemos, etc
+		int t = Sys_Milliseconds();
+		int frameTime = t - previous;
+		previous = t;
+
+		int fps = 0;
+
+		const float milliSecondsPerFrame = 1000.0f / common->Get_com_engineHz_latched();
+
+		previousTimes[index % FPS_FRAMES] = frameTime;
+		valuesOffset = ( valuesOffset + 1 ) % FPS_FRAMES_HISTORY;
+		index++;
+		if ( index > FPS_FRAMES ) {
+			// average multiple frames together to smooth changes out a bit
+			int total = 0;
+			for ( int i = 0 ; i < FPS_FRAMES ; i++ ) {
+				total += previousTimes[i];
+			}
+			if ( !total ) {
+				total = 1;
+			}
+			fps = 1000000 * FPS_FRAMES / total;
+			fps = ( fps + 500 ) / 1000;
 		}
-		if ( !total ) {
-			total = 1;
-		}
-		int fps = 1000000 * FPS_FRAMES / total;
-		fps = ( fps + 500 ) / 1000;
 
-		showFPS = va( "%ifps\n", fps );
+#ifndef IMGUI_DISABLE
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.FramePadding = ImVec2(0, 0);
+		ImGui::SetNextWindowSize( ImVec2( 284, 80 ) );
+		ImGui::SetNextWindowPos( ImVec2( renderSystem->GetScreenWidth() - 325, 20 ) );
+		ImGui::Begin( "Framerate", &toolActive, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs );
+			ImGui::Text( "Frame Metrics" );
+			ImGui::LabelText( va( "%i", fps ), "Average FPS" );
+			ImGui::LabelText( va( "%i", time_gameFrame ), "Game Time (In ms)" );
+		ImGui::End();
+#endif
 	}
+	if ( com_showMemoryUsage.GetBool() ) {
+#ifndef IMGUI_DISABLE
+		memoryStats_t allocs, frees;
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.FramePadding = ImVec2(0, 0);
+		style.SeparatorTextAlign = ImVec2( 0.5f, 0.5f );
+		ImGui::SetNextWindowSize( ImVec2( 324, 145 ) );
+		ImGui::SetNextWindowPos( ImVec2( renderSystem->GetScreenWidth() - 975, 20 ) );
+		ImGui::Begin( "Memory Usage", &toolActive, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs );
+			ImGui::SeparatorText( "Alloc Stats" );
+			Mem_GetStats( allocs );
+			ImGui::LabelText( va( "%4d,%4dkB\n", allocs.num, allocs.totalSize >> 10 ), "Alloc Mem" );
+			ImGui::SeparatorText( "Frame Stats" );
+			Mem_GetFrameStats( allocs, frees );
+			ImGui::LabelText( va( "%4d,%4dkB %4d,%4dkB\n", allocs.num, allocs.totalSize >> 10, frees.num, frees.totalSize >> 10 ), "Alloc % Free" );
+		ImGui::End();
 
-	static idOverlayHandle handle;
-	PrintOverlay( handle, JUSTIFY_RIGHT, showFPS.c_str() );
-
-	return y + BIGCHAR_HEIGHT + 4;
-}
-
-/*
-==================
-idConsoleLocal::DrawMemoryUsage
-==================
-*/
-float idConsoleLocal::DrawMemoryUsage( float y ) {
-	memoryStats_t allocs, frees;
-	idStr showMemStats;
-
-	Mem_GetStats( allocs );
-	showMemStats = va( "Alloc Mem: %4d, %4dkB\n", allocs.num, allocs.totalSize >> 10 );
-
-	Mem_GetFrameStats( allocs, frees );
-	idStr frameStats;
-	frameStats = va( "Frame Alloc:%4d, %4dkB\nFrame Free:%4d, %4dkB\n", allocs.num, allocs.totalSize >> 10, frees.num, frees.totalSize >> 10 );
-	showMemStats += frameStats;
-
-	static idOverlayHandle handle;
-	PrintOverlay( handle, JUSTIFY_LEFT, showMemStats.c_str() );
-
-	Mem_ClearFrameStats();
-
-	return y + BIGCHAR_HEIGHT + 4;
+		Mem_ClearFrameStats();
+#endif
+	}
 }
 
 /*
@@ -1231,19 +1241,17 @@ void	idConsoleLocal::Draw( bool forceFullScreen ) {
 	float lefty = LOCALSAFE_TOP;
 	float righty = LOCALSAFE_TOP;
 	float centery = LOCALSAFE_TOP;
-	if ( com_showFPS.GetBool() ) {
-		lefty = DrawFPS( lefty );
-	}
-	if ( com_showMemoryUsage.GetBool() ) {
-		righty = DrawMemoryUsage( righty );
-	}
 	if ( com_showAsyncStats.GetBool() ) {
 		righty = DrawAsyncStats( righty );
 	}
 	if ( com_showSoundDecoders.GetBool() ) {
 		righty = DrawSoundDecoders( righty );
-
 	}
+
+	if ( imgui ) {
+		imgui->OpenWindow( idImGuiWindow::WINDOW_OVERLAYS );
+	}
+
 	DrawOverlayText( lefty, righty, centery );
 	DrawDebugGraphs();
 }

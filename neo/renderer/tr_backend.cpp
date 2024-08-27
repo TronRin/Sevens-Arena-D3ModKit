@@ -532,7 +532,9 @@ const void	RB_SwapBuffers( const void *data ) {
 		RB_ShowImages();
 	}
 
-	D3::ImGuiHooks::EndFrame();
+	if ( imgui ) {
+		imgui->EndFrame();	
+	}
 
 	int fillAlpha = r_fillWindowAlphaChan.GetInteger();
 	if ( fillAlpha == 1 || (fillAlpha == -1 && glConfig.shouldFillWindowAlpha) )

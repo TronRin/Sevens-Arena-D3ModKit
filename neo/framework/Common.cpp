@@ -2461,7 +2461,9 @@ void idCommonLocal::Frame( void ) {
 		}
 
 		// DG: prepare new ImGui frame - I guess this is a good place, as all new events should be available?
-		D3::ImGuiHooks::NewFrame();
+		if ( imgui ) {
+			imgui->NewFrame();
+		}
 
 		com_frameTime = Sys_Milliseconds();
 

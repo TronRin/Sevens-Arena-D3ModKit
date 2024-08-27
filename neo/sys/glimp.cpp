@@ -619,7 +619,9 @@ try_again:
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	// SDL1.2 has no context, and is not supported by ImGui anyway
-	D3::ImGuiHooks::Init(window, context);
+	if ( imgui ) {
+		imgui->Init( window, context );
+	}
 #endif
 
 	return true;
@@ -767,7 +769,10 @@ GLimp_Shutdown
 */
 void GLimp_Shutdown() {
 
-	D3::ImGuiHooks::Shutdown();
+	if ( imgui ) {
+		imgui->Shutdown();
+		imgui = NULL;
+	}
 
 	common->Printf("Shutting down OpenGL subsystem\n");
 

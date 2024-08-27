@@ -327,11 +327,11 @@ namespace {
 						bool nothingToClear = false;
 						if ( bindIdx == BIND_ALL ) {
 							if ( bindings.Num() == 0 ) {
-								D3::ImGuiHooks::ShowWarningOverlay( "No keys are bound to this command, so there's nothing to unbind" );
+								imguiLocal.ShowWarningOverlay( "No keys are bound to this command, so there's nothing to unbind" );
 								nothingToClear = true;
 							}
 						} else if ( bindIdx < 0 || bindIdx >= bindings.Num() || bindings[bindIdx].keyNum == -1 ) {
-							D3::ImGuiHooks::ShowWarningOverlay( "No bound key selected for unbind" );
+							imguiLocal.ShowWarningOverlay( "No bound key selected for unbind" );
 							nothingToClear = true;
 						}
 
@@ -829,7 +829,7 @@ namespace {
 			ImGuiIO& io = ImGui::GetIO();
 
 			if ( newOpen ) {
-				D3::ImGuiHooks::SetKeyBindMode( true );
+				imguiLocal.SetKeyBindMode( true );
 
 				// disable keyboard and gamepad input while the bind popup is open
 				// (the mouse can still be used to click the Cancel button, and Escape
@@ -873,7 +873,7 @@ namespace {
 					ImGui::CloseCurrentPopup();
 					ret = BESS_Selected;
 					io.ConfigFlags |= (ImGuiConfigFlags_NavEnableGamepad | ImGuiConfigFlags_NavEnableKeyboard);
-					D3::ImGuiHooks::SetKeyBindMode( false );
+					imguiLocal.SetKeyBindMode( false );
 				} else if ( !newOpen ) {
 					// find out if any key is pressed and bind that (except for Esc which can't be
 					// bound and is already handled though IsCancelKeyPressed() above)
@@ -905,7 +905,7 @@ namespace {
 							pressedKey = K_RIGHT_SHIFT;
 						}
 
-						D3::ImGuiHooks::SetKeyBindMode( false );
+						imguiLocal.SetKeyBindMode( false );
 
 						const char* oldBinding = idKeyInput::GetBinding( pressedKey );
 						if ( oldBinding[0] == '\0' ) {
@@ -920,7 +920,7 @@ namespace {
 								const char* keyName = GetKeyName( pressedKey );
 								idStr warning = idStr::Format( "Key '%s' is already bound to this command (%s)!",
 										keyName, displayName.c_str() );
-								D3::ImGuiHooks::ShowWarningOverlay( warning );
+								imguiLocal.ShowWarningOverlay( warning );
 								ret = BESS_Selected;
 								// TODO: select column with that specific binding?
 							} else {
@@ -1636,7 +1636,7 @@ namespace {
 					// this was just set with GLimp_SetSwapInterval(), no reason to set it again in R_CheckCvars()
 					r_swapInterval.ClearModified();
 				} else {
-					D3::ImGuiHooks::ShowWarningOverlay( "Setting VSync (GL SwapInterval) failed, maybe try another mode" );
+					imguiLocal.ShowWarningOverlay( "Setting VSync (GL SwapInterval) failed, maybe try another mode" );
 				}
 			} else {
 				AddTooltip( "r_swapInterval" );
@@ -1685,7 +1685,7 @@ namespace {
 				cvar.SetBool( enable );
 				if ( enable && r_enableDepthCapture.GetInteger() == 0 ) {
 					r_enableDepthCapture.SetInteger(-1);
-					D3::ImGuiHooks::ShowWarningOverlay( "Capturing the Depth Buffer was disabled.\nEnabled it because soft particles need it!" );
+					imguiLocal.ShowWarningOverlay( "Capturing the Depth Buffer was disabled.\nEnabled it because soft particles need it!" );
 				}
 			}
 			const char* descr = "! Can slow down rendering !\nSoften particle transitions when player walks through them or they cross solid geometry. Needs r_enableDepthCapture.";
@@ -1700,7 +1700,7 @@ namespace {
 				cvar.SetInteger( sel );
 				if ( sel == 0 && r_useSoftParticles.GetBool() ) {
 					r_useSoftParticles.SetBool( false );
-					D3::ImGuiHooks::ShowWarningOverlay( "You disabled capturing the Depth Buffer.\nDisabling Soft Particles because they need the depth buffer texture." );
+					imguiLocal.ShowWarningOverlay( "You disabled capturing the Depth Buffer.\nDisabling Soft Particles because they need the depth buffer texture." );
 				}
 			}
 			AddCVarOptionTooltips( cvar );
@@ -2030,7 +2030,7 @@ namespace {
 			} else {
 				idSoundSystemLocal::s_device.SetString( alDevices[selAlDevice] );
 			}
-			D3::ImGuiHooks::ShowWarningOverlay( "Changing the sound device only takes effect after restarting the game!" );
+			imguiLocal.ShowWarningOverlay( "Changing the sound device only takes effect after restarting the game!" );
 		}
 		AddTooltip( "s_device" );
 
@@ -2045,7 +2045,7 @@ namespace {
 			if ( ImGui::Checkbox( "Use EAX/EFX Reverb Effects", &useReverb ) ) {
 				idSoundSystemLocal::s_useEAXReverb.SetBool( useReverb );
 				if ( useReverb != idSoundSystemLocal::useEFXReverb ) {
-					D3::ImGuiHooks::ShowWarningOverlay( "Enabling/disabling EFX only takes effect after restarting the game!" );
+					imguiLocal.ShowWarningOverlay( "Enabling/disabling EFX only takes effect after restarting the game!" );
 				}
 			}
 			AddTooltip( "s_useEAXReverb" );
@@ -2289,7 +2289,7 @@ namespace {
 				// and possibly containing '?' from non-translatable unicode chars
 				D3_ISO8859_1toUTF8( ui_nameVar->GetString(), playerNameBuf, sizeof(playerNameBuf) );
 			} else {
-				D3::ImGuiHooks::ShowWarningOverlay( "Player Name way too long (max 40 chars) or contains invalid UTF-8 encoding!" );
+				imguiLocal.ShowWarningOverlay( "Player Name way too long (max 40 chars) or contains invalid UTF-8 encoding!" );
 				playerNameBuf[0] = '\0';
 			}
 		}
@@ -2303,13 +2303,13 @@ namespace {
 
 	static void DrawOtherOptionsMenu( void ) {
 		ImGui::Spacing();
-		float scale = D3::ImGuiHooks::GetScale();
+		float scale = imguiLocal.GetScale();
 		if ( ImGui::DragFloat("ImGui scale", &scale, 0.005f, 0.25f, 8.0f, "%.3f") ) {
-			D3::ImGuiHooks::SetScale( scale );
+			imguiLocal.SetScale( scale );
 		}
 		ImGui::SameLine();
 		if ( ImGui::Button("Reset") ) {
-			D3::ImGuiHooks::SetScale( -1.0f );
+			imguiLocal.SetScale( -1.0f );
 		}
 
 		int style_idx = imgui_style.GetInteger();
@@ -2317,9 +2317,9 @@ namespace {
 		{
 			switch( style_idx )
 			{
-				case 0: D3::ImGuiHooks::SetImGuiStyle( D3::ImGuiHooks::Style::Dhewm3 ); break;
-				case 1: D3::ImGuiHooks::SetImGuiStyle( D3::ImGuiHooks::Style::ImGui_Default ); break;
-				case 2: D3::ImGuiHooks::SetImGuiStyle( D3::ImGuiHooks::Style::User ); break;
+				case 0: imguiLocal.SetImGuiStyle( idImGuiStyle::Dhewm3 ); break;
+				case 1: imguiLocal.SetImGuiStyle( idImGuiStyle::ImGui_Default ); break;
+				case 2: imguiLocal.SetImGuiStyle( idImGuiStyle::User ); break;
 			}
 			imgui_style.SetInteger( style_idx );
 		}
@@ -2331,14 +2331,14 @@ namespace {
 		ImGui::SameLine();
 
 		if ( ImGui::Button( "Write Userstyle" ) ) {
-			D3::ImGuiHooks::WriteUserStyle();
+			imguiLocal.WriteUserStyle();
 			imgui_style.SetInteger( 2 );
 		}
 		AddTooltip( "Writes the current style settings (incl. colors) as userstyle" );
 
 		static bool onlyChanges = false;
 		if ( ImGui::Button( "Copy style code to clipboard" ) ) {
-			D3::ImGuiHooks::CopyCurrentStyle( onlyChanges );
+			imguiLocal.CopyCurrentStyle( onlyChanges );
 		}
 		AddTooltip( "Generates C++ code for the current style settings (incl. colors) and copies it into the clipboard" );
 
@@ -2350,7 +2350,7 @@ namespace {
 		ImGui::Spacing();
 
 		if ( ImGui::Button( "Show ImGui Demo" ) ) {
-			D3::ImGuiHooks::OpenWindow( D3::ImGuiHooks::D3_ImGuiWin_Demo );
+			imguiLocal.OpenWindow( idImGuiWindow::WINDOW_DEMO );
 		}
 	}
 } //anon namespace
@@ -2386,7 +2386,7 @@ static void InitSettingsMenu( void ) {
 	settingsWinInitialized = true;
 }
 
-// called from D3::ImGuiHooks::NewFrame() (if this window is enabled)
+// called from imguiLocal.NewFrame() (if this window is enabled)
 void Com_DrawSettingsMenu( void ) {
 	bool showSettingsWindow = true;
 
@@ -2469,14 +2469,14 @@ void Com_DrawSettingsMenu( void ) {
 
 	ImGui::End();
 	if ( !showSettingsWindow ) {
-		D3::ImGuiHooks::CloseWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings );
+		imguiLocal.CloseWindow( idImGuiWindow::WINDOW_SETTINGS );
 	}
 }
 
 /*!
 	WARNING: Don't call this function directly, always use
-			 D3::ImGuiHooks::OpenWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings )
-			 or D3::ImGuiHooks::CloseWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings )
+			 imguiLocal.OpenWindow( idImGuiWindow::WINDOW_SETTINGS )
+			 or imguiLocal.CloseWindow( idImGuiWindow::WINDOW_SETTINGS )
 			 (unless you're implementing those two functions, they call this..)
 */
 void Com_OpenCloseSettingsMenu( bool open ) {
@@ -2505,14 +2505,14 @@ void Com_OpenCloseSettingsMenu( bool open ) {
 }
 
 void Com_Settings_f( const idCmdArgs &args ) {
-	bool menuOpen = ( D3::ImGuiHooks::GetOpenWindowsMask() & D3::ImGuiHooks::D3_ImGuiWin_Settings ) != 0;
+	bool menuOpen = ( imguiLocal.GetOpenWindowsMask() & idImGuiWindow::WINDOW_SETTINGS ) != 0;
 	if ( !menuOpen ) {
-		D3::ImGuiHooks::OpenWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings );
+		imguiLocal.OpenWindow( idImGuiWindow::WINDOW_SETTINGS );
 	} else {
 		if ( ImGui::IsWindowFocused( ImGuiFocusedFlags_AnyWindow ) ) {
 			// if the settings window is open and an ImGui window has focus,
 			// close the settings window when "settings" is executed
-			D3::ImGuiHooks::CloseWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings );
+			imguiLocal.CloseWindow( idImGuiWindow::WINDOW_SETTINGS );
 		} else {
 			// if the settings window is open but no ImGui window has focus,
 			// give focus to one of the ImGui windows.

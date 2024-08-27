@@ -1116,7 +1116,7 @@ sysEvent_t Sys_GetEvent() {
 
 	// loop until there is an event we care about (will return then) or no more events
 	while(SDL_PollEvent(&ev)) {
-		if(D3::ImGuiHooks::ProcessEvent(&ev)) {
+		if( imgui && imgui->ProcessEvent( &ev ) ) {
 			// ImGui has used the event, so it shouldn't also be handled by the game
 			continue;
 		}
@@ -1564,7 +1564,7 @@ static void handleMouseGrab() {
 	bool relativeMouse = false;
 
 	// if com_editorActive, release everything, just like when we have no focus
-	if ( in_hasFocus && !com_editorActive && !D3::ImGuiHooks::ShouldShowCursor() ) {
+	if ( in_hasFocus && !com_editorActive && ( imgui && !imgui->ShouldShowCursor() ) ) {
 		// Note: this generally handles fullscreen menus, but not the PDA, because the PDA
 		//       is an ugly hack in gamecode that doesn't go through sessLocal.guiActive.
 		//       It goes through weapon input code or sth? That's also the reason only

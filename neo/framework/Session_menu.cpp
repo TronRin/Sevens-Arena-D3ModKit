@@ -990,7 +990,9 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 		}
 
 		if ( !idStr::Icmp( cmd, "options" ) ) {
-			D3::ImGuiHooks::OpenWindow( D3::ImGuiHooks::D3_ImGuiWin_Settings );
+			if ( imgui ) {
+				imgui->OpenWindow( idImGuiWindow::WINDOW_SETTINGS );
+			}
 			continue;
 		}
 	}

@@ -143,7 +143,7 @@ set_source_files_properties(
 add_globbed_headers( src_mikktspace "mikktspace" )
 
 if( IMGUI )
-	set( src_imgui
+	set( src_imgui_base
 		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_sdl2.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/backends/imgui_impl_opengl2.cpp
 
@@ -154,6 +154,10 @@ if( IMGUI )
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+	)
+
+	set( src_imgui
+		${src_imgui_base}
 
 		sys_imgui.h
 		sys_imgui.cpp
@@ -169,6 +173,11 @@ if( IMGUI )
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_tables.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 		${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+		${CMAKE_SOURCE_DIR}/libs/implot/implot.h
+		${CMAKE_SOURCE_DIR}/libs/implot/implot.cpp
+		${CMAKE_SOURCE_DIR}/libs/implot/implot_demo.cpp
+		${CMAKE_SOURCE_DIR}/libs/implot/implot_internal.cpp
+		${CMAKE_SOURCE_DIR}/libs/implot/implot_items.cpp
 		PROPERTIES
 		SKIP_PRECOMPILE_HEADERS ON
 	)

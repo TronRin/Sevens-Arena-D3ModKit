@@ -68,8 +68,6 @@ float Win_GetWindowScalingFactor(HWND window);
 // non-portable system services
 #include "sys/platform.h"
 #include "sys/sys_public.h"
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "sys/sys_imgui.h"
 
 // id lib
 #include "idlib/Lib.h"
@@ -77,6 +75,10 @@ float Win_GetWindowScalingFactor(HWND window);
 // SDL2
 #include <SDL.h>
 #include <SDL_endian.h>
+
+// ImGui
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "sys/sys_imgui.h"
 
 // framework
 #include "framework/CmdSystem.h"
