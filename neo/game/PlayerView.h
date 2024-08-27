@@ -149,31 +149,6 @@ public:
 
 /*
 ==================
-FullscreenFX_Helltime
-==================
-*/
-class FullscreenFX_Helltime : public FullscreenFX {
-	const idMaterial*		acInitMaterials[3];
-	const idMaterial*		acCaptureMaterials[3];
-	const idMaterial*		acDrawMaterials[3];
-	const idMaterial*		crCaptureMaterials[3];
-	const idMaterial*		crDrawMaterials[3];
-	bool					clearAccumBuffer;
-
-	int						DetermineLevel();
-
-public:
-	virtual void			Initialize();
-	virtual bool			Active();
-	virtual void			HighQuality();
-	virtual void			AccumPass( const renderView_t *view );
-	virtual bool			HasAccum()		{ return true; };
-
-	virtual void			Restore( idRestoreGame *savefile );
-};
-
-/*
-==================
 FullscreenFX_Multiplayer
 ==================
 */
@@ -218,20 +193,6 @@ public:
 
 	virtual void			Save( idSaveGame *savefile );
 	virtual void			Restore( idRestoreGame *savefile );
-};
-
-/*
-==================
-FullscreenFX_EnviroSuit
-==================
-*/
-class FullscreenFX_EnviroSuit : public FullscreenFX {
-	const idMaterial*		material;
-
-public:
-	virtual void			Initialize();
-	virtual bool			Active();
-	virtual void			HighQuality();
 };
 
 /*

@@ -612,7 +612,7 @@ bool idProjectile::Collide( const trace_t &collision, const idVec3 &velocity ) {
 			if ( ent->IsType( idActor::GetClassType() ) ) {
 				idPlayer *player = static_cast<idPlayer *>( owner.GetEntity() );
 				player->AddProjectileHits( 1 );
-				damageScale *= player->PowerUpModifier( PROJECTILE_DAMAGE );
+				damageScale *= 1.0f;
 			}
 		}
 

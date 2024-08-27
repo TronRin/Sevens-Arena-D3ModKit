@@ -357,48 +357,6 @@ void Cmd_Give_f( const idCmdArgs &args ) {
 		}
 	}
 
-	if ( idStr::Icmp( name, "berserk" ) == 0 ) {
-		player->GivePowerUp( BERSERK, SEC2MS( 30.0f ) );
-		return;
-	}
-
-	if ( idStr::Icmp( name, "invis" ) == 0 ) {
-		player->GivePowerUp( INVISIBILITY, SEC2MS( 30.0f ) );
-		return;
-	}
-
-#ifdef _D3XP
-	if ( idStr::Icmp( name, "invulnerability" ) == 0 ) {
-		if ( args.Argc() > 2 ) {
-			player->GivePowerUp( INVULNERABILITY, atoi( args.Argv( 2 ) ) );
-		}
-		else {
-			player->GivePowerUp( INVULNERABILITY, 30000 );
-		}
-		return;
-	}
-
-	if ( idStr::Icmp( name, "helltime" ) == 0 ) {
-		if ( args.Argc() > 2 ) {
-			player->GivePowerUp( HELLTIME, atoi( args.Argv( 2 ) ) );
-		}
-		else {
-			player->GivePowerUp( HELLTIME, 30000 );
-		}
-		return;
-	}
-
-	if ( idStr::Icmp( name, "envirosuit" ) == 0 ) {
-		if ( args.Argc() > 2 ) {
-			player->GivePowerUp( ENVIROSUIT, atoi( args.Argv( 2 ) ) );
-		}
-		else {
-			player->GivePowerUp( ENVIROSUIT, 30000 );
-		}
-		return;
-	}
-#endif
-
 	if ( !give_all && !player->Give( args.Argv(1), args.Argv(2) ) ) {
 		gameLocal.Printf( "unknown item\n" );
 	}

@@ -1169,7 +1169,6 @@ void idClass::RegisterClasses( void ) {
 	REGISTER(idLight)
 	REGISTER(idWorldspawn)
 	REGISTER(idItem)
-	REGISTER(idItemPowerup)
 	REGISTER(idItemTeam)
 	REGISTER(idMoveableItem)
 	REGISTER(idItemRemover)

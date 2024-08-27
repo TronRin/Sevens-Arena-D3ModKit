@@ -83,30 +83,6 @@ struct idLevelTriggerInfo {
 	idStr triggerName;
 };
 
-// powerups - the "type" in item .def must match
-enum {
-	BERSERK = 0,
-	INVISIBILITY,
-	MEGAHEALTH,
-	ADRENALINE,
-#ifdef _D3XP
-	INVULNERABILITY,
-	HELLTIME,
-	ENVIROSUIT,
-	//HASTE,
-	ENVIROTIME,
-#endif
-	MAX_POWERUPS
-};
-
-// powerup modifiers
-enum {
-	SPEED = 0,
-	PROJECTILE_DAMAGE,
-	MELEE_DAMAGE,
-	MELEE_DISTANCE
-};
-
 // influence levels
 enum {
 	INFLUENCE_NONE = 0,			// none
@@ -132,12 +108,10 @@ class idInventory {
 public:
 	int						maxHealth;
 	int						weapons;
-	int						powerups;
 	int						armor;
 	int						maxarmor;
 	int						ammo[ AMMO_NUMTYPES ];
 	int						clip[ MAX_WEAPONS ];
-	int						powerupEndTime[ MAX_POWERUPS ];
 
 #ifdef _D3XP
 	RechargeAmmo_t			rechargeAmmo[ AMMO_NUMTYPES ];
@@ -168,8 +142,6 @@ public:
 	void					Restore( idRestoreGame *savefile );					// unarchives object from save game file
 
 	void					Clear( void );
-	void					GivePowerUp( idPlayer *player, int powerup, int msec );
-	void					ClearPowerUps( void );
 	void					GetPersistantData( idDict &dict );
 	void					RestoreInventory( idPlayer *owner, const idDict &dict );
 	bool					Give( idPlayer *owner, const idDict &spawnArgs, const char *statname, const char *value, int *idealWeapon, bool updateHud );
@@ -219,7 +191,6 @@ public:
 		EVENT_IMPULSE = idEntity::EVENT_MAXEVENTS,
 		EVENT_EXIT_TELEPORTER,
 		EVENT_ABORT_TELEPORTER,
-		EVENT_POWERUP,
 		EVENT_SPECTATE,
 #ifdef _D3XP
 		EVENT_PICKUPNAME,
@@ -441,11 +412,6 @@ public:
 	void					RemoveInventoryItem( const char *name );
 	idDict *				FindInventoryItem( const char *name );
 
-	bool					GivePowerUp( int powerup, int time );
-	void					ClearPowerUps( void );
-	bool					PowerUpActive( int powerup ) const;
-	float					PowerUpModifier( int type );
-
 	int						SlotForWeapon( const char *weaponName );
 	void					Reload( void );
 	void					NextWeapon( void );
@@ -471,10 +437,6 @@ public:
 	int						GetBaseHeartRate( void );
 	void					UpdateAir( void );
 	void					PlaySwimmingSplashSound( const char *soundName );
-
-#ifdef _D3XP
-	void					UpdatePowerupHud();
-#endif
 
 	virtual bool			HandleSingleGuiCommand( idEntity *entityGui, idLexer *src );
 	bool					GuiActive( void ) { return focusGUIent != NULL; }
@@ -542,9 +504,6 @@ public:
 	idStr					GetCurrentWeapon();
 
 	bool					CanGive( const char *statname, const char *value );
-
-	void					StopHelltime( bool quick = true );
-	void					PlayHelltimeStopSound();
 #endif
 
 #ifdef CTF
@@ -589,7 +548,6 @@ private:
 	bool					showWeaponViewModel;
 
 	const idDeclSkin *		skin;
-	const idDeclSkin *		powerUpSkin;
 	idStr					baseSkinName;
 
 	int						numProjectilesFired;	// number of projectiles fired
@@ -647,10 +605,6 @@ private:
 
 #ifdef _D3XP
 	idHashTable<WeaponToggle_t>	weaponToggles;
-
-	int						hudPowerup;
-	int						lastHudPowerup;
-	int						hudPowerupDuration;
 #endif
 
 	// mp
@@ -696,9 +650,7 @@ private:
 	void					InitAASLocation( void );
 	void					SetAASLocation( void );
 	void					Move( void );
-	void					UpdatePowerUps( void );
 	void					UpdateDeathSkin( bool state_hitch );
-	void					ClearPowerup( int i );
 	void					SetSpectateOrigin( void );
 
 	void					ClearFocus( void );
@@ -727,16 +679,13 @@ private:
 	void					Event_LevelTrigger( void );
 	void					Event_Gibbed( void );
 
-#ifdef _D3XP //BSM: Event to remove inventory items. Useful with powercells.
+#ifdef _D3XP //BSM: Event to remove inventory items.
 	void					Event_GiveInventoryItem( const char* name );
 	void					Event_RemoveInventoryItem( const char* name );
 
 	void					Event_GetIdealWeapon( void );
 	void					Event_WeaponAvailable( const char* name );
-	void					Event_SetPowerupTime( int powerup, int time );
-	void					Event_IsPowerupActive( int powerup );
 	void					Event_StartWarp();
-	void					Event_StopHelltime( int mode );
 #endif
 };
 

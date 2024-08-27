@@ -4784,10 +4784,7 @@ void idGameLocal::ComputeSlowMsec() {
 	player = GetLocalPlayer();
 	powerupOn = false;
 
-	if ( player && player->PowerUpActive( HELLTIME ) ) {
-		powerupOn = true;
-	}
-	else if ( g_enableSlowmo.GetBool() ) {
+	if ( g_enableSlowmo.GetBool() ) {
 		powerupOn = true;
 	}
 
@@ -4803,11 +4800,6 @@ void idGameLocal::ComputeSlowMsec() {
 	}
 	else if ( !powerupOn && slowmoState == SLOWMO_STATE_ON ) {
 		slowmoState = SLOWMO_STATE_RAMPDOWN;
-
-		// play the stop sound
-		if ( player ) {
-			player->PlayHelltimeStopSound();
-		}
 	}
 
 	// do any necessary ramping

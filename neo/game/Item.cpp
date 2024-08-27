@@ -572,76 +572,6 @@ void idItem::Event_RespawnFx( void ) {
 	}
 }
 
-/*
-===============================================================================
-
-  idItemPowerup
-
-===============================================================================
-*/
-
-/*
-===============
-idItemPowerup
-===============
-*/
-
-CLASS_DECLARATION( idItem, idItemPowerup )
-END_CLASS
-
-/*
-================
-idItemPowerup::idItemPowerup
-================
-*/
-idItemPowerup::idItemPowerup() {
-	time = 0;
-	type = 0;
-}
-
-/*
-================
-idItemPowerup::Save
-================
-*/
-void idItemPowerup::Save( idSaveGame *savefile ) const {
-	savefile->WriteInt( time );
-	savefile->WriteInt( type );
-}
-
-/*
-================
-idItemPowerup::Restore
-================
-*/
-void idItemPowerup::Restore( idRestoreGame *savefile ) {
-	savefile->ReadInt( time );
-	savefile->ReadInt( type );
-}
-
-/*
-================
-idItemPowerup::Spawn
-================
-*/
-void idItemPowerup::Spawn( void ) {
-	time = spawnArgs.GetInt( "time", "30" );
-	type = spawnArgs.GetInt( "type", "0" );
-}
-
-/*
-================
-idItemPowerup::GiveToPlayer
-================
-*/
-bool idItemPowerup::GiveToPlayer( idPlayer *player ) {
-	if ( player->spectating ) {
-		return false;
-	}
-	player->GivePowerUp( type, time * 1000 );
-	return true;
-}
-
 #ifdef CTF
 /*
 ===============================================================================
@@ -1428,7 +1358,6 @@ void idMoveableItem::Spawn( void ) {
 	idTraceModel trm;
 	float density, friction, bouncyness, tsize;
 	idStr clipModelName;
-	bool setClipModel = false;
 	idBounds bounds;
 #ifdef _D3XP
 	SetTimeState ts( timeGroup );
@@ -1443,35 +1372,13 @@ void idMoveableItem::Spawn( void ) {
 	// check if a clip model is set
 	spawnArgs.GetString( "clipmodel", "", clipModelName );
 	if ( !clipModelName[0] ) {
-		idVec3 size;
-		if ( spawnArgs.GetVector("mins", NULL, bounds[0] ) &&
-			spawnArgs.GetVector("maxs", NULL, bounds[1]) ) {
-			setClipModel = true;
-			if ( bounds[0][0] > bounds[1][0] || bounds[0][1] > bounds[1][1] || bounds[0][2] > bounds[1][2]) {
-				gameLocal.Error( "Invalid bounds '%s'-'%s' on moveable item '%s'", bounds[0].ToString(), bounds[1].ToString(), name.c_str() );
-			}
-		} else if ( spawnArgs.GetVector( "size", NULL, size ) ) {
-			if ( ( size.x < 0.0f ) || ( size.y < 0.0f ) || ( size.z < 0.0f ) ) {
-				gameLocal.Error( "Invalid size '%s' on moveable item '%s'", size.ToString(), name.c_str() );
-			}
-			bounds[0].Set( size.x * -0.5f, size.y * -0.5f, 0.0f );
-			bounds[1].Set( size.x * 0.5f, size.y * 0.5f, size.z );
-			setClipModel = true;
-		}
+		clipModelName = spawnArgs.GetString( "model" );		// use the visual model
 	}
 
-	if ( setClipModel ) {
-		trm.SetupBox( bounds );
-	} else {
-		if ( !clipModelName[0] ) {
-			clipModelName = spawnArgs.GetString( "model" );		// use the visual model
-		}
-		clipModelName.BackSlashesToSlashes();
-
-		if ( !collisionModelManager->TrmFromModel( gameLocal.GetMapName(), clipModelName, trm ) ) {
-			gameLocal.Error( "idMoveableItem '%s': cannot load collision model %s", name.c_str(), clipModelName.c_str() );
-			return;
-		}
+	// load the trace model
+	if ( !collisionModelManager->ModelFromTrm( CM_WORLD_MAP, clipModelName, trm, NULL ) ) {
+		gameLocal.Error( "idMoveableItem '%s': cannot load collision model %s", name.c_str(), clipModelName.c_str() );
+		return;
 	}
 
 	// if the model should be shrinked

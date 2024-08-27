@@ -760,152 +760,6 @@ void FullscreenFX::Restore( idRestoreGame *savefile ) {
 
 /*
 ==================
-FullscreenFX_Helltime::Initialize
-==================
-*/
-void FullscreenFX_Helltime::Initialize() {
-	acInitMaterials[0] = declManager->FindMaterial( "textures/smf/bloodorb1/ac_init" );
-	acInitMaterials[1] = declManager->FindMaterial( "textures/smf/bloodorb2/ac_init" );
-	acInitMaterials[2] = declManager->FindMaterial( "textures/smf/bloodorb3/ac_init" );
-
-	acCaptureMaterials[0] = declManager->FindMaterial( "textures/smf/bloodorb1/ac_capture" );
-	acCaptureMaterials[1] = declManager->FindMaterial( "textures/smf/bloodorb2/ac_capture" );
-	acCaptureMaterials[2] = declManager->FindMaterial( "textures/smf/bloodorb3/ac_capture" );
-
-	acDrawMaterials[0] = declManager->FindMaterial( "textures/smf/bloodorb1/ac_draw" );
-	acDrawMaterials[1] = declManager->FindMaterial( "textures/smf/bloodorb2/ac_draw" );
-	acDrawMaterials[2] = declManager->FindMaterial( "textures/smf/bloodorb3/ac_draw" );
-
-	crCaptureMaterials[0] = declManager->FindMaterial( "textures/smf/bloodorb1/cr_capture" );
-	crCaptureMaterials[1] = declManager->FindMaterial( "textures/smf/bloodorb2/cr_capture" );
-	crCaptureMaterials[2] = declManager->FindMaterial( "textures/smf/bloodorb3/cr_capture" );
-
-	crDrawMaterials[0] = declManager->FindMaterial( "textures/smf/bloodorb1/cr_draw" );
-	crDrawMaterials[1] = declManager->FindMaterial( "textures/smf/bloodorb2/cr_draw" );
-	crDrawMaterials[2] = declManager->FindMaterial( "textures/smf/bloodorb3/cr_draw" );
-
-	clearAccumBuffer = true;
-}
-
-/*
-==================
-FullscreenFX_Helltime::DetermineLevel
-==================
-*/
-int FullscreenFX_Helltime::DetermineLevel() {
-	idPlayer *player;
-	int testfx = g_testHelltimeFX.GetInteger();
-
-	// for testing purposes
-	if ( testfx >= 0 && testfx < 3 ) {
-		return testfx;
-	}
-
-	player = fxman->GetPlayer();
-
-	if ( player->PowerUpActive( INVULNERABILITY ) ) {
-		return 2;
-	}
-	else if ( player->PowerUpActive( BERSERK ) ) {
-		return 1;
-	}
-	else if ( player->PowerUpActive( HELLTIME ) ) {
-		return 0;
-	}
-
-	return -1;
-}
-
-/*
-==================
-FullscreenFX_Helltime::Active
-==================
-*/
-bool FullscreenFX_Helltime::Active() {
-
-	if ( gameLocal.inCinematic || gameLocal.isMultiplayer ) {
-		return false;
-	}
-
-	if ( DetermineLevel() >= 0 ) {
-		return true;
-	}
-	else {
-		// latch the clear flag
-		if ( fader.GetAlpha() == 0 ) {
-			clearAccumBuffer = true;
-		}
-	}
-
-	return false;
-}
-
-/*
-==================
-FullscreenFX_Helltime::AccumPass
-==================
-*/
-void FullscreenFX_Helltime::AccumPass( const renderView_t *view ) {
-	idVec2 shiftScale;
-	int level = DetermineLevel();
-
-	// for testing
-	if ( level < 0 || level > 2 ) {
-		level = 0;
-	}
-
-	shiftScale = fxman->GetShiftScale();
-	renderSystem->SetColor4( 1, 1, 1, 1 );
-
-	// capture pass
-	if ( clearAccumBuffer ) {
-		clearAccumBuffer = false;
-		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, acInitMaterials[level] );
-	}
-	else {
-		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, acCaptureMaterials[level] );
-		renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale.y, shiftScale.x, 0, crCaptureMaterials[level] );
-	}
-
-	renderSystem->CaptureRenderToImage( "_accum" );
-}
-
-/*
-==================
-FullscreenFX_Helltime::HighQuality
-==================
-*/
-void FullscreenFX_Helltime::HighQuality() {
-	idVec2 shiftScale;
-	int level = DetermineLevel();
-
-	// for testing
-	if ( level < 0 || level > 2 ) {
-		level = 0;
-	}
-
-	shiftScale = fxman->GetShiftScale();
-	renderSystem->SetColor4( 1, 1, 1, 1 );
-
-	// draw pass
-	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, 1, 0, acDrawMaterials[level] );
-	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, shiftScale.y, shiftScale.x, 0, crDrawMaterials[level] );
-}
-
-/*
-==================
-FullscreenFX_Helltime::Restore
-==================
-*/
-void FullscreenFX_Helltime::Restore( idRestoreGame *savefile ) {
-	FullscreenFX::Restore( savefile );
-
-	// latch the clear flag
-	clearAccumBuffer = true;
-}
-
-/*
-==================
 FullscreenFX_Multiplayer::Initialize
 ==================
 */
@@ -933,16 +787,6 @@ int FullscreenFX_Multiplayer::DetermineLevel() {
 	}
 
 	player = fxman->GetPlayer();
-
-	if ( player->PowerUpActive( INVULNERABILITY ) ) {
-		return 2;
-	}
-	//else if ( player->PowerUpActive( HASTE ) ) {
-	//	return 1;
-	//}
-	else if ( player->PowerUpActive( BERSERK ) ) {
-		return 0;
-	}
 
 	return -1;
 }
@@ -1194,42 +1038,6 @@ void FullscreenFX_Warp::HighQuality() {
 
 /*
 ==================
-FullscreenFX_EnviroSuit::Initialize
-==================
-*/
-void FullscreenFX_EnviroSuit::Initialize() {
-	material = declManager->FindMaterial( "textures/smf/enviro_suit" );
-}
-
-/*
-==================
-FullscreenFX_EnviroSuit::Active
-==================
-*/
-bool FullscreenFX_EnviroSuit::Active() {
-	idPlayer *player;
-
-	player = fxman->GetPlayer();
-
-	if ( player->PowerUpActive( ENVIROSUIT ) ) {
-		return true;
-	}
-
-	return false;
-}
-
-/*
-==================
-FullscreenFX_EnviroSuit::HighQuality
-==================
-*/
-void FullscreenFX_EnviroSuit::HighQuality() {
-	renderSystem->SetColor4( 1, 1, 1, 1 );
-	renderSystem->DrawStretchPic( 0.0f, 0.0f, 640.0f, 480.0f, 0.0f, 0.0f, 1.0f, 1.0f, material );
-}
-
-/*
-==================
 FullscreenFX_DoubleVision::Initialize
 ==================
 */
@@ -1285,17 +1093,7 @@ void FullscreenFX_DoubleVision::HighQuality() {
 	float shift = scale * sin( sqrtf( (float)offset ) * g_dvFrequency.GetFloat() );
 	shift = fabs( shift );
 
-	// carry red tint if in berserk mode
 	idVec4 color(1, 1, 1, 1);
-	if ( gameLocal.fast.time < player->inventory.powerupEndTime[ BERSERK ] ) {
-		color.y = 0;
-		color.z = 0;
-	}
-
-	if ( !gameLocal.isMultiplayer && (gameLocal.fast.time < player->inventory.powerupEndTime[ HELLTIME ] || gameLocal.fast.time < player->inventory.powerupEndTime[ INVULNERABILITY ])) {
-		color.y = 0;
-		color.z = 0;
-	}
 
 	renderSystem->SetColor4( color.x, color.y, color.z, 1.0f );
 	renderSystem->DrawStretchPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, shift, shiftScale.y, shiftScale.x, 0, material );
@@ -1665,14 +1463,8 @@ FullscreenFXManager::CreateFX
 void FullscreenFXManager::CreateFX( idStr name, idStr fxtype, int fade ) {
 	FullscreenFX *pfx = NULL;
 
-	if ( fxtype == "helltime" ) {
-		pfx = new FullscreenFX_Helltime;
-	}
-	else if ( fxtype == "warp" ) {
+	if ( fxtype == "warp" ) {
 		pfx = new FullscreenFX_Warp;
-	}
-	else if ( fxtype == "envirosuit" ) {
-		pfx = new FullscreenFX_EnviroSuit;
 	}
 	else if ( fxtype == "doublevision" ) {
 		pfx = new FullscreenFX_DoubleVision;
@@ -1710,9 +1502,7 @@ void FullscreenFXManager::Initialize( idPlayerView *pv ) {
 	blendBackMaterial = declManager->FindMaterial( "textures/smf/blendBack" );
 
 	// allocate the fx
-	CreateFX( "helltime", "helltime", 1000 );
 	CreateFX( "warp", "warp", 0 );
-	CreateFX( "envirosuit", "envirosuit", 500 );
 	CreateFX( "doublevision", "doublevision", 0 );
 	CreateFX( "multiplayer", "multiplayer", 1000 );
 	CreateFX( "influencevision", "influencevision", 1000 );

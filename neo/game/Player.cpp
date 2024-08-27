@@ -78,8 +78,6 @@ const idEventDef EV_SpectatorTouch( "spectatorTouch", "et" );
 const idEventDef EV_Player_GiveInventoryItem( "giveInventoryItem", "s" );
 const idEventDef EV_Player_RemoveInventoryItem( "removeInventoryItem", "s" );
 const idEventDef EV_Player_GetIdealWeapon( "getIdealWeapon", NULL, 's' );
-const idEventDef EV_Player_SetPowerupTime( "setPowerupTime", "dd" );
-const idEventDef EV_Player_IsPowerupActive( "isPowerupActive", "d", 'd' );
 const idEventDef EV_Player_WeaponAvailable( "weaponAvailable", "s", 'd');
 const idEventDef EV_Player_StartWarp( "startWarp" );
 const idEventDef EV_Player_StopHelltime( "stopHelltime", "d" );
@@ -105,10 +103,7 @@ CLASS_DECLARATION( idActor, idPlayer )
 	EVENT( EV_Player_RemoveInventoryItem,	idPlayer::Event_RemoveInventoryItem )
 	EVENT( EV_Player_GetIdealWeapon,		idPlayer::Event_GetIdealWeapon )
 	EVENT( EV_Player_WeaponAvailable,		idPlayer::Event_WeaponAvailable )
-	EVENT( EV_Player_SetPowerupTime,		idPlayer::Event_SetPowerupTime )
-	EVENT( EV_Player_IsPowerupActive,		idPlayer::Event_IsPowerupActive )
 	EVENT( EV_Player_StartWarp,				idPlayer::Event_StartWarp )
-	EVENT( EV_Player_StopHelltime,			idPlayer::Event_StopHelltime )
 #endif
 END_CLASS
 
@@ -142,7 +137,6 @@ idInventory::Clear
 void idInventory::Clear( void ) {
 	maxHealth		= 0;
 	weapons			= 0;
-	powerups		= 0;
 	armor			= 0;
 	maxarmor		= 0;
 	deplete_armor	= 0;
@@ -151,8 +145,6 @@ void idInventory::Clear( void ) {
 	nextArmorDepleteTime = 0;
 
 	memset( ammo, 0, sizeof( ammo ) );
-
-	ClearPowerUps();
 
 	// set to -1 so that the gun knows to have a full clip the first time we get it and at the start of the level
 	memset( clip, -1, sizeof( clip ) );
@@ -177,57 +169,6 @@ void idInventory::Clear( void ) {
 
 /*
 ==============
-idInventory::GivePowerUp
-==============
-*/
-void idInventory::GivePowerUp( idPlayer *player, int powerup, int msec ) {
-	if ( !msec ) {
-		// get the duration from the .def files
-		const idDeclEntityDef *def = NULL;
-		switch ( powerup ) {
-			case BERSERK:
-				def = gameLocal.FindEntityDef( "powerup_berserk", false );
-				break;
-			case INVISIBILITY:
-				def = gameLocal.FindEntityDef( "powerup_invisibility", false );
-				break;
-			case MEGAHEALTH:
-				def = gameLocal.FindEntityDef( "powerup_megahealth", false );
-				break;
-			case ADRENALINE:
-				def = gameLocal.FindEntityDef( "powerup_adrenaline", false );
-				break;
-#ifdef _D3XP
-			case INVULNERABILITY:
-				def = gameLocal.FindEntityDef( "powerup_invulnerability", false );
-				break;
-			/*case HASTE:
-				def = gameLocal.FindEntityDef( "powerup_haste", false );
-				break;*/
-#endif
-		}
-		assert( def );
-		msec = def->dict.GetInt( "time" ) * 1000;
-	}
-	powerups |= 1 << powerup;
-	powerupEndTime[ powerup ] = gameLocal.time + msec;
-}
-
-/*
-==============
-idInventory::ClearPowerUps
-==============
-*/
-void idInventory::ClearPowerUps( void ) {
-	int i;
-	for ( i = 0; i < MAX_POWERUPS; i++ ) {
-		powerupEndTime[ i ] = 0;
-	}
-	powerups = 0;
-}
-
-/*
-==============
 idInventory::GetPersistantData
 ==============
 */
@@ -242,7 +183,7 @@ void idInventory::GetPersistantData( idDict &dict ) {
 	// armor
 	dict.SetInt( "armor", armor );
 
-	// don't bother with powerups, maxhealth, maxarmor, or the clip
+	// don't bother with maxhealth, maxarmor, or the clip
 
 	// ammo
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
@@ -313,7 +254,7 @@ void idInventory::RestoreInventory( idPlayer *owner, const idDict &dict ) {
 	deplete_rate	= dict.GetFloat( "deplete_rate", "2.0" );
 	deplete_ammount	= dict.GetInt( "deplete_ammount", "1" );
 
-	// the clip and powerups aren't restored
+	// the clips aren't restored
 
 	// ammo
 	for( i = 0; i < AMMO_NUMTYPES; i++ ) {
@@ -377,7 +318,6 @@ void idInventory::Save( idSaveGame *savefile ) const {
 
 	savefile->WriteInt( maxHealth );
 	savefile->WriteInt( weapons );
-	savefile->WriteInt( powerups );
 	savefile->WriteInt( armor );
 	savefile->WriteInt( maxarmor );
 	savefile->WriteInt( ammoPredictTime );
@@ -391,9 +331,6 @@ void idInventory::Save( idSaveGame *savefile ) const {
 	}
 	for( i = 0; i < MAX_WEAPONS; i++ ) {
 		savefile->WriteInt( clip[ i ] );
-	}
-	for( i = 0; i < MAX_POWERUPS; i++ ) {
-		savefile->WriteInt( powerupEndTime[ i ] );
 	}
 
 	savefile->WriteInt( items.Num() );
@@ -442,7 +379,6 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 
 	savefile->ReadInt( maxHealth );
 	savefile->ReadInt( weapons );
-	savefile->ReadInt( powerups );
 	savefile->ReadInt( armor );
 	savefile->ReadInt( maxarmor );
 	savefile->ReadInt( ammoPredictTime );
@@ -456,9 +392,6 @@ void idInventory::Restore( idRestoreGame *savefile ) {
 	}
 	for( i = 0; i < MAX_WEAPONS; i++ ) {
 		savefile->ReadInt( clip[ i ] );
-	}
-	for( i = 0; i < MAX_POWERUPS; i++ ) {
-		savefile->ReadInt( powerupEndTime[ i ] );
 	}
 
 	savefile->ReadInt( num );
@@ -672,24 +605,6 @@ bool idInventory::Give( idPlayer *owner, const idDict &spawnArgs, const char *st
 			clip[ i ] = atoi( value );
 #endif
 		}
-#ifdef _D3XP
-	} else if ( !idStr::Icmp( statname, "invulnerability" ) ) {
-		owner->GivePowerUp( INVULNERABILITY, SEC2MS( atof( value ) ) );
-	} else if ( !idStr::Icmp( statname, "helltime" ) ) {
-		owner->GivePowerUp( HELLTIME, SEC2MS( atof( value ) ) );
-	} else if ( !idStr::Icmp( statname, "envirosuit" ) ) {
-		owner->GivePowerUp( ENVIROSUIT, SEC2MS( atof( value ) ) );
-		owner->GivePowerUp( ENVIROTIME, SEC2MS( atof( value ) ) );
-	} else if ( !idStr::Icmp( statname, "berserk" ) ) {
-		owner->GivePowerUp( BERSERK, SEC2MS( atof( value ) ) );
-	//} else if ( !idStr::Icmp( statname, "haste" ) ) {
-	//	owner->GivePowerUp( HASTE, SEC2MS( atof( value ) ) );
-#else
-	} else if ( !idStr::Icmp( statname, "berserk" ) ) {
-		GivePowerUp( owner, BERSERK, SEC2MS( atof( value ) ) );
-#endif
-	} else if ( !idStr::Icmp( statname, "mega" ) ) {
-		GivePowerUp( owner, MEGAHEALTH, SEC2MS( atof( value ) ) );
 	} else if ( !idStr::Icmp( statname, "weapon" ) ) {
 		tookWeapon = false;
 		for( pos = value; pos != NULL; pos = end ) {
@@ -1078,15 +993,10 @@ idPlayer::idPlayer() {
 	weaponSwitchTime		=  0;
 	weaponEnabled			= true;
 	weapon_fists			= -1;
-#ifdef _D3XP
-	hudPowerup				= -1;
-	lastHudPowerup			= -1;
-	hudPowerupDuration		= 0;
-#endif
+
 	showWeaponViewModel		= true;
 
 	skin					= NULL;
-	powerUpSkin				= NULL;
 	baseSkinName			= "";
 
 	numProjectilesFired		= 0;
@@ -1289,9 +1199,6 @@ void idPlayer::Init( void ) {
 	rechargeSpeed			= 500;
 	new_g_damageScale		= 1.f;
 	inventory.InitRechargeAmmo(this);
-	hudPowerup				= -1;
-	lastHudPowerup			= -1;
-	hudPowerupDuration		= 0;
 #endif
 
 	currentLoggedAccel		= 0;
@@ -1736,11 +1643,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteUserInterface( hud, false );
 
 	savefile->WriteInt( weapon_fists );
-#ifdef _D3XP
-	savefile->WriteInt( hudPowerup );
-	savefile->WriteInt( lastHudPowerup );
-	savefile->WriteInt( hudPowerupDuration );
-#endif
 
 	savefile->WriteInt( heartRate );
 
@@ -1828,7 +1730,6 @@ void idPlayer::Save( idSaveGame *savefile ) const {
 	savefile->WriteBool( showWeaponViewModel );
 
 	savefile->WriteSkin( skin );
-	savefile->WriteSkin( powerUpSkin );
 	savefile->WriteString( baseSkinName );
 
 	savefile->WriteInt( numProjectilesFired );
@@ -1969,11 +1870,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadUserInterface( hud );
 
 	savefile->ReadInt( weapon_fists );
-#ifdef _D3XP
-	savefile->ReadInt( hudPowerup );
-	savefile->ReadInt( lastHudPowerup );
-	savefile->ReadInt( hudPowerupDuration );
-#endif
 
 	savefile->ReadInt( heartRate );
 
@@ -2069,7 +1965,6 @@ void idPlayer::Restore( idRestoreGame *savefile ) {
 	savefile->ReadBool( showWeaponViewModel );
 
 	savefile->ReadSkin( skin );
-	savefile->ReadSkin( powerUpSkin );
 	savefile->ReadString( baseSkinName );
 
 	savefile->ReadInt( numProjectilesFired );
@@ -2212,7 +2107,6 @@ idPlayer::PrepareForRestart
 ================
 */
 void idPlayer::PrepareForRestart( void ) {
-	ClearPowerUps();
 	Spectate( true );
 	forceRespawn = true;
 
@@ -2530,16 +2424,6 @@ void idPlayer::UpdateSkinSetup( bool restart ) {
 		colorBarIndex = 0;
 	}
 	colorBar = colorBarTable[ colorBarIndex ];
-	if ( PowerUpActive( BERSERK ) ) {
-		powerUpSkin = declManager->FindSkin( baseSkinName + "_berserk" );
-	}
-#ifdef _D3XP
-	else if ( PowerUpActive( INVULNERABILITY ) ) {
-		powerUpSkin = declManager->FindSkin( baseSkinName + "_invuln" );
-	//} else if ( PowerUpActive( HASTE ) ) {
-	//	powerUpSkin = declManager->FindSkin( baseSkinName + "_haste" );
-	}
-#endif
 }
 
 /*
@@ -2714,10 +2598,6 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 
 	_hud->HandleNamedEvent( "updateArmorHealthAir" );
 
-#ifdef _D3XP
-	_hud->HandleNamedEvent( "updatePowerup" );
-#endif
-
 	if ( healthPulse ) {
 		_hud->HandleNamedEvent( "healthPulse" );
 		StartSound( "snd_healthpulse", SND_CHANNEL_ITEM, 0, false, NULL );
@@ -2846,12 +2726,6 @@ idPlayer::EnterCinematic
 ===============
 */
 void idPlayer::EnterCinematic( void ) {
-#ifdef _D3XP
-	if ( PowerUpActive( HELLTIME ) ) {
-		StopHelltime();
-	}
-#endif
-
 	Hide();
 
 	physicsObj.SetLinearVelocity( vec3_origin );
@@ -3086,18 +2960,8 @@ bool idPlayer::Give( const char *statname, const char *value ) {
 		if ( airTics > pm_airTics.GetInteger() ) {
 			airTics = pm_airTics.GetInteger();
 		}
-#ifdef _D3XP
-	} else if ( !idStr::Icmp( statname, "enviroTime" ) ) {
-		if ( PowerUpActive( ENVIROTIME ) ) {
-			inventory.powerupEndTime[ ENVIROTIME ] += (atof(value) * 1000);
-		} else {
-			GivePowerUp( ENVIROTIME, atoi(value)*1000 );
-		}
 	} else {
 		return inventory.Give( this, spawnArgs, statname, value, &idealWeapon, true );
-#else
-		return inventory.Give( this, spawnArgs, statname, value, &idealWeapon, true );
-#endif
 	}
 	return true;
 }
@@ -3169,427 +3033,6 @@ bool idPlayer::GiveItem( idItem *item ) {
 	}
 
 	return gave;
-}
-
-/*
-===============
-idPlayer::PowerUpModifier
-===============
-*/
-float idPlayer::PowerUpModifier( int type ) {
-	float mod = 1.0f;
-
-	if ( PowerUpActive( BERSERK ) ) {
-		switch( type ) {
-			case SPEED: {
-				mod *= 1.7f;
-				break;
-			}
-			case PROJECTILE_DAMAGE: {
-				mod *= 2.0f;
-				break;
-			}
-			case MELEE_DAMAGE: {
-				mod *= 30.0f;
-				break;
-			}
-			case MELEE_DISTANCE: {
-				mod *= 2.0f;
-				break;
-			}
-		}
-	}
-
-	if ( gameLocal.isMultiplayer && !gameLocal.isClient ) {
-		if ( PowerUpActive( MEGAHEALTH ) ) {
-			if ( healthPool <= 0 ) {
-				GiveHealthPool( 100 );
-			}
-		} else {
-			healthPool = 0;
-		}
-
-#ifdef _D3XP
-		/*if( PowerUpActive( HASTE ) ) {
-			switch( type ) {
-			case SPEED: {
-				mod = 1.7f;
-				break;
-						}
-			}
-		}*/
-#endif
-	}
-
-	return mod;
-}
-
-/*
-===============
-idPlayer::PowerUpActive
-===============
-*/
-bool idPlayer::PowerUpActive( int powerup ) const {
-	return ( inventory.powerups & ( 1 << powerup ) ) != 0;
-}
-
-/*
-===============
-idPlayer::GivePowerUp
-===============
-*/
-bool idPlayer::GivePowerUp( int powerup, int time ) {
-	const char *sound;
-	const char *skin;
-
-	if ( powerup >= 0 && powerup < MAX_POWERUPS ) {
-
-		if ( gameLocal.isServer ) {
-			idBitMsg	msg;
-			byte		msgBuf[MAX_EVENT_PARAM_SIZE];
-
-			msg.Init( msgBuf, sizeof( msgBuf ) );
-			msg.WriteShort( powerup );
-			msg.WriteBits( 1, 1 );
-			ServerSendEvent( EVENT_POWERUP, &msg, false, -1 );
-		}
-
-		if ( powerup != MEGAHEALTH ) {
-			inventory.GivePowerUp( this, powerup, time );
-		}
-
-		const idDeclEntityDef *def = NULL;
-
-		switch( powerup ) {
-			case BERSERK: {
-				if(gameLocal.isMultiplayer && !gameLocal.isClient) {
-					inventory.AddPickupName("#str_00100627", "", this);
-				}
-
-				if(gameLocal.isMultiplayer) {
-					if ( spawnArgs.GetString( "snd_berserk_third", "", &sound ) ) {
-						StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
-					}
-				}
-
-
-				if ( baseSkinName.Length() ) {
-					powerUpSkin = declManager->FindSkin( baseSkinName + "_berserk" );
-				}
-				if ( !gameLocal.isClient ) {
-#ifdef _D3XP
-					if( !gameLocal.isMultiplayer ) {
-						// Trying it out without the health boost (1/3/05)
-						// Give the player full health in single-player
-						// health = 100;
-					} else {
-						// Switch to fists in multiplayer
-						idealWeapon = 1;
-					}
-#else
-					idealWeapon = 0;
-#endif
-				}
-				break;
-			}
-			case INVISIBILITY: {
-				if(gameLocal.isMultiplayer && !gameLocal.isClient) {
-					inventory.AddPickupName("#str_00100628", "", this);
-				}
-				spawnArgs.GetString( "skin_invisibility", "", &skin );
-				powerUpSkin = declManager->FindSkin( skin );
-				// remove any decals from the model
-				if ( modelDefHandle != -1 ) {
-					gameRenderWorld->RemoveDecals( modelDefHandle );
-				}
-				if ( weapon.GetEntity() ) {
-					weapon.GetEntity()->UpdateSkin();
-				}
-/*				if ( spawnArgs.GetString( "snd_invisibility", "", &sound ) ) {
-					StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL );
-				} */
-				break;
-			}
-			case ADRENALINE: {
-#ifdef _D3XP
-				inventory.AddPickupName("#str_00100799", "", this);
-#endif
-				stamina = 100.0f;
-				break;
-			 }
-			case MEGAHEALTH: {
-				if(gameLocal.isMultiplayer && !gameLocal.isClient) {
-					inventory.AddPickupName("#str_00100629", "", this);
-				}
-				if ( spawnArgs.GetString( "snd_megahealth", "", &sound ) ) {
-					StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_ANY, 0, false, NULL );
-				}
-				def = gameLocal.FindEntityDef( "powerup_megahealth", false );
-				if ( def ) {
-					health = def->dict.GetInt( "inv_health" );
-				}
-				break;
-			 }
-#ifdef _D3XP
-			case HELLTIME: {
-				if ( spawnArgs.GetString( "snd_helltime_start", "", &sound ) ) {
-					PostEventMS( &EV_StartSoundShader, 0, sound, SND_CHANNEL_ANY );
-				}
-				if ( spawnArgs.GetString( "snd_helltime_loop", "", &sound ) ) {
-					PostEventMS( &EV_StartSoundShader, 0, sound, SND_CHANNEL_DEMONIC );
-				}
-				break;
-			}
-			case ENVIROSUIT: {
-				// Turn on the envirosuit sound
-				if ( gameSoundWorld ) {
-					gameSoundWorld->SetEnviroSuit( true );
-				}
-
-				// Put the helmet and lights on the player
-				idDict	args;
-
-				// Light
-				const idDict *lightDef = gameLocal.FindEntityDefDict( "envirosuit_light", false );
-				if ( lightDef ) {
-					idEntity *temp;
-					gameLocal.SpawnEntityDef( *lightDef, &temp, false );
-
-					idLight *eLight = static_cast<idLight *>(temp);
-					eLight->GetPhysics()->SetOrigin( firstPersonViewOrigin );
-					eLight->UpdateVisuals();
-					eLight->Present();
-
-					enviroSuitLight = eLight;
-				}
-				break;
-			}
-			case ENVIROTIME: {
-				hudPowerup = ENVIROTIME;
-				// The HUD display bar is fixed at 60 seconds
-				hudPowerupDuration = 60000;
-				break;
-			}
-			case INVULNERABILITY: {
-				if(gameLocal.isMultiplayer && !gameLocal.isClient) {
-					inventory.AddPickupName("#str_00100630", "", this);
-				}
-				if(gameLocal.isMultiplayer) {
-					/*if ( spawnArgs.GetString( "snd_invulnerable", "", &sound ) ) {
-						StartSoundShader( declManager->FindSound( sound ), SND_CHANNEL_DEMONIC, 0, false, NULL );
-					}*/
-					if ( baseSkinName.Length() ) {
-						powerUpSkin = declManager->FindSkin( baseSkinName + "_invuln" );
-					}
-				}
-				break;
-			}
-			/*case HASTE: {
-				if(gameLocal.isMultiplayer && !gameLocal.isClient) {
-					inventory.AddPickupName("#str_00100631", "", this);
-				}
-
-				if ( baseSkinName.Length() ) {
-					powerUpSkin = declManager->FindSkin( baseSkinName + "_haste" );
-				}
-				break;
-			}*/
-#endif
-		}
-
-		if ( hud ) {
-			hud->HandleNamedEvent( "itemPickup" );
-		}
-
-		return true;
-	} else {
-		gameLocal.Warning( "Player given power up %i\n which is out of range", powerup );
-	}
-	return false;
-}
-
-/*
-==============
-idPlayer::ClearPowerup
-==============
-*/
-void idPlayer::ClearPowerup( int i ) {
-
-	if ( gameLocal.isServer ) {
-		idBitMsg	msg;
-		byte		msgBuf[MAX_EVENT_PARAM_SIZE];
-
-		msg.Init( msgBuf, sizeof( msgBuf ) );
-		msg.WriteShort( i );
-		msg.WriteBits( 0, 1 );
-		ServerSendEvent( EVENT_POWERUP, &msg, false, -1 );
-	}
-
-	powerUpSkin = NULL;
-	inventory.powerups &= ~( 1 << i );
-	inventory.powerupEndTime[ i ] = 0;
-	switch( i ) {
-		case BERSERK: {
-			if(gameLocal.isMultiplayer) {
-				StopSound( SND_CHANNEL_DEMONIC, false );
-			}
-#ifdef _D3XP
-			if(!gameLocal.isMultiplayer) {
-				StopHealthRecharge();
-			}
-#endif
-			break;
-		}
-		case INVISIBILITY: {
-			if ( weapon.GetEntity() ) {
-				weapon.GetEntity()->UpdateSkin();
-			}
-			break;
-		}
-#ifdef _D3XP
-		case HELLTIME: {
-			StopSound( SND_CHANNEL_DEMONIC, false );
-			break;
-		}
-		case ENVIROSUIT: {
-
-			hudPowerup = -1;
-
-			// Turn off the envirosuit sound
-			if ( gameSoundWorld ) {
-				gameSoundWorld->SetEnviroSuit( false );
-			}
-
-			// Take off the helmet and lights
-			if ( enviroSuitLight.IsValid() ) {
-				enviroSuitLight.GetEntity()->PostEventMS( &EV_Remove, 0 );
-			}
-			enviroSuitLight = NULL;
-			break;
-		}
-		case INVULNERABILITY: {
-			if(gameLocal.isMultiplayer) {
-				StopSound( SND_CHANNEL_DEMONIC, false );
-			}
-		}
-		/*case HASTE: {
-			if(gameLocal.isMultiplayer) {
-				StopSound( SND_CHANNEL_DEMONIC, false );
-			}
-		}*/
-#endif
-	}
-}
-
-/*
-==============
-idPlayer::UpdatePowerUps
-==============
-*/
-void idPlayer::UpdatePowerUps( void ) {
-	int i;
-
-	if ( !gameLocal.isClient ) {
-		for ( i = 0; i < MAX_POWERUPS; i++ ) {
-#ifdef _D3XP
-			if ( ( inventory.powerups & ( 1 << i ) ) && inventory.powerupEndTime[i] > gameLocal.time ) {
-				switch( i ) {
-					case ENVIROSUIT: {
-						if ( enviroSuitLight.IsValid() ) {
-							idAngles lightAng = firstPersonViewAxis.ToAngles();
-							idVec3 lightOrg = firstPersonViewOrigin;
-							const idDict *lightDef = gameLocal.FindEntityDefDict( "envirosuit_light", false );
-
-							idVec3 enviroOffset = lightDef->GetVector( "enviro_offset" );
-							idVec3 enviroAngleOffset = lightDef->GetVector( "enviro_angle_offset" );
-
-							lightOrg += (enviroOffset.x * firstPersonViewAxis[0]);
-							lightOrg += (enviroOffset.y * firstPersonViewAxis[1]);
-							lightOrg += (enviroOffset.z * firstPersonViewAxis[2]);
-							lightAng.pitch += enviroAngleOffset.x;
-							lightAng.yaw += enviroAngleOffset.y;
-							lightAng.roll += enviroAngleOffset.z;
-
-							enviroSuitLight.GetEntity()->GetPhysics()->SetOrigin( lightOrg );
-							enviroSuitLight.GetEntity()->GetPhysics()->SetAxis( lightAng.ToMat3() );
-							enviroSuitLight.GetEntity()->UpdateVisuals();
-							enviroSuitLight.GetEntity()->Present();
-						}
-						break;
-					}
-					default: {
-						break;
-					}
-				}
-			}
-#endif
-			if ( PowerUpActive( i ) && inventory.powerupEndTime[i] <= gameLocal.time ) {
-				ClearPowerup( i );
-			}
-		}
-	}
-
-	if ( health > 0 ) {
-		if ( powerUpSkin ) {
-			renderEntity.customSkin = powerUpSkin;
-		} else {
-			renderEntity.customSkin = skin;
-		}
-	}
-
-	if ( healthPool && gameLocal.time > nextHealthPulse && !AI_DEAD && health > 0 ) {
-		assert( !gameLocal.isClient );	// healthPool never be set on client
-		int amt = ( healthPool > 5 ) ? 5 : healthPool;
-		health += amt;
-		if ( health > inventory.maxHealth ) {
-			health = inventory.maxHealth;
-			healthPool = 0;
-		} else {
-			healthPool -= amt;
-		}
-		nextHealthPulse = gameLocal.time + HEALTHPULSE_TIME;
-		healthPulse = true;
-	}
-
-	if ( !gameLocal.inCinematic && influenceActive == 0 && g_skill.GetInteger() == 3 && gameLocal.time > nextHealthTake && !AI_DEAD && health > g_healthTakeLimit.GetInteger() ) {
-		assert( !gameLocal.isClient );	// healthPool never be set on client
-
-#ifdef _D3XP
-		if(!PowerUpActive(INVULNERABILITY)) {
-#endif
-		health -= g_healthTakeAmt.GetInteger();
-		if ( health < g_healthTakeLimit.GetInteger() ) {
-			health = g_healthTakeLimit.GetInteger();
-		}
-#ifdef _D3XP
-		}
-#endif
-		nextHealthTake = gameLocal.time + g_healthTakeTime.GetInteger() * 1000;
-		healthTake = true;
-	}
-}
-
-/*
-===============
-idPlayer::ClearPowerUps
-===============
-*/
-void idPlayer::ClearPowerUps( void ) {
-	int i;
-	for ( i = 0; i < MAX_POWERUPS; i++ ) {
-		if ( PowerUpActive( i ) ) {
-			ClearPowerup( i );
-		}
-	}
-	inventory.ClearPowerUps();
-
-#ifdef _D3XP
-	if ( gameLocal.isMultiplayer ) {
-		if ( enviroSuitLight.IsValid() ) {
-			enviroSuitLight.GetEntity()->PostEventMS( &EV_Remove, 0 );
-		}
-	}
-#endif
 }
 
 /*
@@ -5251,14 +4694,10 @@ void idPlayer::SetCurrentHeartRate( void ) {
 
 	int base = idMath::FtoiFast( ( BASE_HEARTRATE + LOWHEALTH_HEARTRATE_ADJ ) - ( (float) health / 100.0f ) * LOWHEALTH_HEARTRATE_ADJ );
 
-	if ( PowerUpActive( ADRENALINE )) {
-		heartRate = 135;
-	} else {
-		heartRate = idMath::FtoiFast( heartInfo.GetCurrentValue( gameLocal.time ) );
-		int currentRate = GetBaseHeartRate();
-		if ( health >= 0 && gameLocal.time > lastHeartAdjust + 2500 ) {
-			AdjustHeartRate( currentRate, 2.5f, 0.0f, false );
-		}
+	heartRate = idMath::FtoiFast( heartInfo.GetCurrentValue( gameLocal.time ) );
+	int currentRate = GetBaseHeartRate();
+	if ( health >= 0 && gameLocal.time > lastHeartAdjust + 2500 ) {
+		AdjustHeartRate( currentRate, 2.5f, 0.0f, false );
 	}
 
 	int bps = idMath::FtoiFast( 60.0f / heartRate * 1000.0f );
@@ -5386,12 +4825,6 @@ void idPlayer::UpdateAir( void ) {
 		}
 	}
 
-#ifdef _D3XP
-	if ( PowerUpActive( ENVIROTIME ) ) {
-		newAirless = false;
-	}
-#endif
-
 	if ( newAirless ) {
 		if ( !airless ) {
 			if ( isUnderWater ) {
@@ -5443,42 +4876,6 @@ void idPlayer::UpdateAir( void ) {
 	}
 }
 
-void idPlayer::UpdatePowerupHud() {
-
-	if ( health <= 0 ) {
-		return;
-	}
-
-	if(lastHudPowerup != hudPowerup) {
-
-		if(hudPowerup == -1) {
-			//The powerup hud should be turned off
-			if ( hud ) {
-				hud->HandleNamedEvent( "noPowerup" );
-			}
-		} else {
-			//Turn the pwoerup hud on
-			if ( hud ) {
-				hud->HandleNamedEvent( "Powerup" );
-			}
-		}
-
-		lastHudPowerup = hudPowerup;
-	}
-
-	if(hudPowerup != -1) {
-		if(PowerUpActive(hudPowerup)) {
-			int remaining = inventory.powerupEndTime[ hudPowerup ] - gameLocal.time;
-			int filledbar = idMath::ClampInt( 0, hudPowerupDuration, remaining );
-
-			if ( hud ) {
-				hud->SetStateInt( "player_powerup", 100 * filledbar / hudPowerupDuration );
-				hud->SetStateInt( "player_poweruptime", remaining / 1000 );
-			}
-		}
-	}
-}
-
 /*
 ==============
 idPlayer::ToggleScoreboard
@@ -5516,7 +4913,6 @@ void idPlayer::Spectate( bool spectate ) {
 
 	if ( spectating ) {
 		// join the spectators
-		ClearPowerUps();
 		spectator = this->entityNumber;
 		Init();
 		StopRagdoll();
@@ -5779,7 +5175,7 @@ void idPlayer::AdjustSpeed( void ) {
 		speed = pm_noclipspeed.GetFloat();
 		bobFrac = 0.0f;
 	} else if ( !physicsObj.OnLadder() && ( usercmd.buttons & BUTTON_RUN ) && ( usercmd.forwardmove || usercmd.rightmove ) && ( usercmd.upmove >= 0 ) ) {
-		if ( !gameLocal.isMultiplayer && !physicsObj.IsCrouching() && !PowerUpActive( ADRENALINE ) ) {
+		if ( !gameLocal.isMultiplayer && !physicsObj.IsCrouching() ) {
 			stamina -= MS2SEC( gameLocal.msec );
 		}
 		if ( stamina < 0 ) {
@@ -5809,7 +5205,7 @@ void idPlayer::AdjustSpeed( void ) {
 		bobFrac = 0.0f;
 	}
 
-	speed *= PowerUpModifier(SPEED);
+	speed *= 1.0f;
 
 	if ( influenceActive == INFLUENCE_LEVEL3 ) {
 		speed *= 0.33f;
@@ -6443,13 +5839,7 @@ void idPlayer::Think( void ) {
 
 	UpdateAir();
 
-#ifdef _D3XP
-	UpdatePowerupHud();
-#endif
-
 	UpdateHud();
-
-	UpdatePowerUps();
 
 	UpdateDeathSkin( false );
 
@@ -6625,53 +6015,6 @@ bool idPlayer::CanGive( const char *statname, const char *value ) {
 
 	return inventory.CanGive( this, spawnArgs, statname, value, &idealWeapon );
 }
-
-/*
-=================
-idPlayer::StopHelltime
-
-provides a quick non-ramping way of stopping helltime
-=================
-*/
-void idPlayer::StopHelltime( bool quick ) {
-	if ( !PowerUpActive( HELLTIME ) ) {
-		return;
-	}
-
-	// take away the powerups
-	if ( PowerUpActive( INVULNERABILITY ) ) {
-		ClearPowerup( INVULNERABILITY );
-	}
-
-	if ( PowerUpActive( BERSERK ) ) {
-		ClearPowerup( BERSERK );
-	}
-
-	if ( PowerUpActive( HELLTIME ) ) {
-		ClearPowerup( HELLTIME );
-	}
-
-	// stop the looping sound
-	StopSound( SND_CHANNEL_DEMONIC, false );
-
-	// reset the game vars
-	if ( quick ) {
-		gameLocal.QuickSlowmoReset();
-	}
-}
-
-/*
-=================
-idPlayer::PlayHelltimeStopSound
-=================
-*/
-void idPlayer::PlayHelltimeStopSound() {
-	const char* sound;
-
-	if ( spawnArgs.GetString( "snd_helltime_stop", "", &sound ) ) {
-		PostEventMS( &EV_StartSoundShader, 0, sound, SND_CHANNEL_ANY );
-	}
-}
 #endif
 
 /*
@@ -6812,7 +6155,7 @@ void idPlayer::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 		// no gibbing in MP. Event_Gib will early out in MP
 		if ( attacker->IsType( idPlayer::GetClassType() ) ) {
 			killer = static_cast<idPlayer*>(attacker);
-			if ( health < -20 || killer->PowerUpActive( BERSERK ) ) {
+			if ( health < -20 ) {
 				gibDeath = true;
 				gibsDir = dir;
 				gibsLaunched = false;
@@ -6822,8 +6165,6 @@ void idPlayer::Killed( idEntity *inflictor, idEntity *attacker, int damage, cons
 	} else {
 		physicsObj.SetContents( CONTENTS_CORPSE | CONTENTS_MONSTERCLIP );
 	}
-
-	ClearPowerUps();
 
 	UpdateVisuals();
 
@@ -6860,7 +6201,7 @@ callback function for when another entity received damage from this entity.  dam
 */
 void idPlayer::DamageFeedback( idEntity *victim, idEntity *inflictor, int &damage ) {
 	assert( !gameLocal.isClient );
-	damage *= PowerUpModifier( BERSERK );
+	damage *= 1.0f;
 	if ( damage && ( victim != this ) && ( victim->IsType( idActor::GetClassType() ) || victim->IsType( idDamagable::GetClassType() ) ) ) {
 
 		idPlayer *victimPlayer = NULL;
@@ -6936,12 +6277,6 @@ void idPlayer::CalcDamagePoints( idEntity *inflictor, idEntity *attacker, const 
 		if ( godmode ) {
 			damage = 0;
 		}
-#ifdef _D3XP
-		//Invulnerability is just like god mode
-		if( PowerUpActive( INVULNERABILITY ) ) {
-			damage = 0;
-		}
-#endif
 	}
 
 	// inform the attacker that they hit someone
@@ -7030,11 +6365,6 @@ void idPlayer::Damage( idEntity *inflictor, idEntity *attacker, const idVec3 &di
 	}
 
 	if ( attacker->IsType( idAI::GetClassType() ) ) {
-#ifndef _D3XP
-		if ( PowerUpActive( BERSERK ) ) {
-			return;
-		}
-#endif
 		// don't take damage from monsters during influences
 		if ( influenceActive != 0 ) {
 			return;
@@ -7234,12 +6564,6 @@ void idPlayer::Teleport( const idVec3 &origin, const idAngles &angles, idEntity 
 			gameLocal.KillBox( this, true );
 		}
 	}
-
-#ifdef _D3XP
-	if ( PowerUpActive( HELLTIME ) ) {
-		StopHelltime();
-	}
-#endif
 }
 
 /*
@@ -7960,47 +7284,11 @@ void idPlayer::Event_GetIdealWeapon( void ) {
 
 /*
 ==================
-idPlayer::Event_SetPowerupTime
-==================
-*/
-void idPlayer::Event_SetPowerupTime( int powerup, int time ) {
-	if ( time > 0 ) {
-		GivePowerUp( powerup, time );
-	} else {
-		ClearPowerup( powerup );
-	}
-}
-
-/*
-==================
-idPlayer::Event_IsPowerupActive
-==================
-*/
-void idPlayer::Event_IsPowerupActive( int powerup ) {
-	idThread::ReturnInt(this->PowerUpActive(powerup) ? 1 : 0);
-}
-
-/*
-==================
 idPlayer::Event_StartWarp
 ==================
 */
 void idPlayer::Event_StartWarp() {
 	playerView.AddWarp( idVec3( 0, 0, 0 ), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 100, 1000 );
-}
-
-/*
-==================
-idPlayer::Event_StopHelltime
-==================
-*/
-void idPlayer::Event_StopHelltime( int mode ) {
-	if ( mode == 1 ) {
-		StopHelltime( true );
-	}
-	else {
-		StopHelltime( false );
-	}
 }
 
 /*
@@ -8261,10 +7549,6 @@ void idPlayer::ClientPredictionThink( void ) {
 
 	UpdateHud();
 
-	if ( gameLocal.isNewFrame ) {
-		UpdatePowerUps();
-	}
-
 	UpdateDeathSkin( false );
 
 	if ( head.GetEntity() ) {
@@ -8520,7 +7804,6 @@ void idPlayer::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 		}
 		// die
 		AI_DEAD = true;
-		ClearPowerUps();
 		SetAnimState( ANIMCHANNEL_LEGS, "Legs_Death", 4 );
 		SetAnimState( ANIMCHANNEL_TORSO, "Torso_Death", 4 );
 		SetWaitState( "" );
@@ -8557,7 +7840,7 @@ void idPlayer::ReadFromSnapshot( const idBitMsgDelta &msg ) {
 				common->Warning( "NET: no damage def for damage feedback '%d'\n", lastDamageDef );
 			}
 		}
-	} else if ( health > oldHealth && PowerUpActive( MEGAHEALTH ) && !stateHitch ) {
+	} else if ( health > oldHealth && !stateHitch ) {
 		// just pulse, for any health raise
 		healthPulse = true;
 	}
@@ -8673,9 +7956,6 @@ idPlayer::ClientReceiveEvent
 ================
 */
 bool idPlayer::ClientReceiveEvent( int event, int time, const idBitMsg &msg ) {
-	int powerup;
-	bool start;
-
 	switch ( event ) {
 		case EVENT_EXIT_TELEPORTER:
 			Event_ExitTeleporter();
@@ -8683,16 +7963,6 @@ bool idPlayer::ClientReceiveEvent( int event, int time, const idBitMsg &msg ) {
 		case EVENT_ABORT_TELEPORTER:
 			SetPrivateCameraView( NULL );
 			return true;
-		case EVENT_POWERUP: {
-			powerup = msg.ReadShort();
-			start = msg.ReadBits( 1 ) != 0;
-			if ( start ) {
-				GivePowerUp( powerup, 0 );
-			} else {
-				ClearPowerup( powerup );
-			}
-			return true;
-		}
 #ifdef _D3XP
 		case EVENT_PICKUPNAME: {
 			char buf[MAX_EVENT_PARAM_SIZE];

@@ -3328,7 +3328,7 @@ bool idWeapon::Melee( void ) {
 
 	if ( !gameLocal.isClient ) {
 		idVec3 start = playerViewOrigin;
-		idVec3 end = start + playerViewAxis[0] * ( meleeDistance * owner->PowerUpModifier( MELEE_DISTANCE ) );
+		idVec3 end = start + playerViewAxis[0] * meleeDistance;
 		gameLocal.clip.TracePoint( tr, start, end, MASK_SHOT_RENDERMODEL, owner );
 		if ( tr.fraction < 1.0f ) {
 			ent = gameLocal.GetTraceEntity( tr );
@@ -3349,7 +3349,7 @@ bool idWeapon::Melee( void ) {
 		if ( ent ) {
 
 			float push = meleeDef->dict.GetFloat( "push" );
-			idVec3 impulse = -push * owner->PowerUpModifier( SPEED ) * tr.c.normal;
+			idVec3 impulse = -push * tr.c.normal;
 
 			if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) && ( ent->IsType( idActor::GetClassType() ) || ent->IsType( idAFAttachment::GetClassType()) ) ) {
 				return 0;
@@ -3361,7 +3361,6 @@ bool idWeapon::Melee( void ) {
 			if ( gameLocal.isMultiplayer
 				&& weaponDef && weaponDef->dict.GetBool( "stealing" )
 				&& ent->IsType( idPlayer::GetClassType() )
-				&& !owner->PowerUpActive( BERSERK )
 				&& ( ( gameLocal.gameType != GAME_TDM ) || gameLocal.serverInfo.GetBool( "si_teamDamage" ) || ( owner->team != static_cast< idPlayer * >( ent )->team ) )
 				) {
 #ifdef CTF      /* Code is formed oddly for easy merge */
@@ -3379,7 +3378,7 @@ bool idWeapon::Melee( void ) {
 				globalKickDir = muzzleAxis * kickDir;
 #ifdef _D3XP
 				//Adjust the melee powerup modifier for the invulnerability boss fight
-				float mod = owner->PowerUpModifier( MELEE_DAMAGE );
+				float mod = 1.0f;
 				if( !strcmp( ent->GetEntityDefName(), "monster_hunter_invul" ) ) {
 					//Only do a quater of the damage mod
 					mod *= 0.25f;
@@ -3403,7 +3402,7 @@ bool idWeapon::Melee( void ) {
 
 				if ( ent->spawnArgs.GetBool( "bleed" ) ) {
 
-					hitSound = meleeDef->dict.GetString( owner->PowerUpActive( BERSERK ) ? "snd_hit_berserk" : "snd_hit" );
+					hitSound = meleeDef->dict.GetString( "snd_hit" );
 
 					ent->AddDamageEffect( tr, impulse, meleeDef->dict.GetString( "classname" ) );
 
@@ -3524,7 +3523,7 @@ float idWeapon::IsInvisible( void ) {
 	if ( !owner ) {
 		return 0;
 	}
-	return owner->PowerUpActive( INVISIBILITY ) ? 1 : 0;
+	return 1;
 }
 
 /*
