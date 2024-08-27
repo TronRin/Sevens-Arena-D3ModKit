@@ -62,6 +62,8 @@ public:
 	virtual					~idMapPrimitive( void ) { }
 	int						GetType( void ) const { return type; }
 
+	virtual void			AdjustOrigin( idVec3 &delta ) {}
+
 protected:
 	int						type;
 };
@@ -107,6 +109,7 @@ public:
 	int						AddSide( idMapBrushSide *side ) { return sides.Append( side ); }
 	idMapBrushSide *		GetSide( int i ) const { return sides[i]; }
 	unsigned int			GetGeometryCRC( void ) const;
+	virtual void			AdjustOrigin( idVec3 &delta );
 
 protected:
 	int						numSides;
@@ -130,6 +133,8 @@ public:
 	void					SetVertSubdivisions( int n ) { vertSubdivisions = n; }
 	void					SetExplicitlySubdivided( bool b ) { explicitSubdivisions = b; }
 	unsigned int			GetGeometryCRC( void ) const;
+
+	virtual void			AdjustOrigin( idVec3 &delta );
 
 protected:
 	idStr					material;
@@ -184,14 +189,17 @@ protected:
 class idMapFile {
 public:
 							idMapFile( void );
-							~idMapFile( void ) { entities.DeleteContents( true ); }
+							~idMapFile( void );
 
 							// filename does not require an extension
 							// normally this will use a .reg file instead of a .map file if it exists,
 							// which is what the game and dmap want, but the editor will want to always
 							// load a .map file
 	bool					Parse( const char *filename, bool ignoreRegion = false, bool osPath = false );
+	void					Resolve( void );
+	bool					HasBeenResloved() { return mHasBeenResolved; }
 	bool					Write( const char *fileName, const char *ext, bool fromBasePath = true );
+
 							// get the number of entities in the map
 	int						GetNumEntities( void ) const { return entities.Num(); }
 							// get the specified entity
@@ -199,7 +207,7 @@ public:
 							// get the name without file extension
 	const char *			GetName( void ) const { return name; }
 							// get the file time
-	ID_TIME_T					GetFileTime( void ) const { return fileTime; }
+	ID_TIME_T				GetFileTime( void ) const { return fileTime; }
 							// get CRC for the map geometry
 							// texture coordinates and entity key/value pairs are not taken into account
 	unsigned int			GetGeometryCRC( void ) const { return geometryCRC; }
@@ -222,6 +230,9 @@ protected:
 	idStr					name;
 	bool					hasPrimitiveData;
 
+	bool					mHasFuncGroups;
+	bool					mHasBeenResolved;
+
 private:
 	void					SetGeometryCRC( void );
 };
@@ -232,6 +243,7 @@ ID_INLINE idMapFile::idMapFile( void ) {
 	geometryCRC = 0;
 	entities.Resize( 1024, 256 );
 	hasPrimitiveData = false;
+	mHasFuncGroups = false;
 }
 
 #endif /* !__MAPFILE_H__ */
