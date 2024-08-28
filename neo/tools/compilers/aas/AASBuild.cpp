@@ -119,10 +119,11 @@ void idAASBuild::ParseProcNodes( idLexer *src ) {
 idAASBuild::LoadProcBSP
 ================
 */
-bool idAASBuild::LoadProcBSP( const char *name, ID_TIME_T minFileTime ) {
+bool idAASBuild::LoadProcBSP( const char *name, unsigned int mapFileCRC, ID_TIME_T minFileTime ) {
 	idStr fileName;
 	idToken token;
 	idLexer *src;
+	unsigned int crc;
 
 	// load it
 	fileName = name;
@@ -142,6 +143,19 @@ bool idAASBuild::LoadProcBSP( const char *name, ID_TIME_T minFileTime ) {
 
 	if ( !src->ReadToken( &token ) || token.Icmp( PROC_FILE_ID ) ) {
 		common->Warning( "idAASBuild::LoadProcBSP: bad id '%s' instead of '%s'", token.c_str(), PROC_FILE_ID );
+		delete src;
+		return false;
+	}
+
+	if ( !src->ReadToken( &token ) || token.Icmp( PROC_FILEVERSION ) ) {
+		common->Printf( "idAASFileLocal::LoadProcBSP: bad version '%s' instead of '%s'\n", token.c_str(), PROC_FILEVERSION );
+		delete src;
+		return false;
+	}
+
+	crc = token.GetUnsignedIntValue();
+	if ( mapFileCRC && crc != mapFileCRC ) {
+		common->Printf( "%s is out of date\n", fileName.c_str() );
 		delete src;
 		return false;
 	}
@@ -685,7 +699,7 @@ bool idAASBuild::Build( const idStr &fileName, const idAASSettings *settings ) {
 	brushList.Merge( MergeAllowed );
 
 	// if there is a .proc file newer than the .map file
-	if ( LoadProcBSP( fileName, mapFile->GetFileTime() ) ) {
+	if ( LoadProcBSP( fileName, mapFile->GetFileTime(), mapFile->GetGeometryCRC() ) ) {
 		ClipBrushSidesWithProcBSP( brushList );
 		DeleteProcBSP();
 	}

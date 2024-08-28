@@ -29,6 +29,8 @@ If you have questions concerning this license or the applicable additional terms
 #include "precompiled.h"
 #pragma hdrstop
 
+// This MUST match CURRENT_MAP_VERSION
+#define MAP_VERSION 2
 
 /*
 ===============
@@ -144,7 +146,7 @@ idMapPatch *idMapPatch::Parse( idLexer &src, const idVec3 &origin, bool patchDef
 
 	idMapPatch *patch = new idMapPatch( info[0], info[1] );
 	patch->SetSize( info[0], info[1] );
-	if ( version < 2.0f ) {
+	if ( version < MAP_VERSION ) {
 		patch->SetMaterial( "textures/" + token );
 	} else {
 		patch->SetMaterial( token );
@@ -385,7 +387,7 @@ idMapBrush *idMapBrush::Parse( idLexer &src, const idVec3 &origin, bool newForma
 		}
 
 		// we had an implicit 'textures/' in the old format...
-		if ( version < 2.0f ) {
+		if ( version < MAP_VERSION ) {
 			side->material = "textures/" + token;
 		} else {
 			side->material = token;
@@ -813,7 +815,6 @@ bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 	idToken token;
 	idStr fullName;
 	idMapEntity *mapEnt;
-	int i, j, k;
 
 	name = filename;
 	name.StripFileExtension();
@@ -842,7 +843,7 @@ bool idMapFile::Parse( const char *filename, bool ignoreRegion, bool osPath ) {
 
 	if ( src.CheckTokenString( "Version" ) ) {
 		src.ReadTokenOnLine( &token );
-		version = token.GetFloatValue();
+		version = token.GetIntValue();
 	}
 
 	while( 1 ) {
