@@ -723,12 +723,6 @@ int idDeclFile::LoadAndParse() {
 			continue;
 		}
 
-		// FIXME: export decls are only used by the model exporter, they are skipped here for now
-		if ( identifiedType == DECL_MODELEXPORT ) {
-			src.SkipBracedSection();
-			continue;
-		}
-
 		name = token;
 
 		// make sure there's a '{'

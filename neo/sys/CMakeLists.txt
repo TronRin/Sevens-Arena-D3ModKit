@@ -354,10 +354,6 @@ if ( TOOLS )
 		# Particle Editor.
 		file( GLOB src_particleeditor ${CMAKE_SOURCE_DIR}/tools/particle/*.cpp )
 		add_globbed_headers(src_particleeditor "tools/particle" )
-	
-		# Ligth Editor.
-		file( GLOB src_ligth_editor ${CMAKE_SOURCE_DIR}/tools/ligtheditor/*.cpp )
-		add_globbed_headers( src_gui_editor "tools/ligtheditor" )
 
 		# Script Editor.
 		file( GLOB src_script_editor ${CMAKE_SOURCE_DIR}/tools/script/*.cpp )
@@ -396,7 +392,6 @@ if ( TOOLS )
 			${src_materialeditor}
 			${src_particleeditor}
 			${src_pdaeditor}
-			${src_ligth_editor}
 			${src_script_editor}
 			${src_sound_editor}
 			${src_script_debugger}

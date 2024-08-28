@@ -72,7 +72,6 @@ typedef enum {
 	DECL_FX,
 	DECL_PARTICLE,
 	DECL_AF,
-	DECL_MODELEXPORT,
 	DECL_MAPDEF,
 
 	// new decl types can be added here

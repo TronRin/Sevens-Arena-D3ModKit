@@ -41,10 +41,6 @@ If you have questions concerning this license or the applicable additional terms
 class	idProgram;
 class	idInterpreter;
 
-// in-game Light Editor
-void	LightEditorInit( const idDict *spawnArgs );
-void	LightEditorShutdown( void );
-
 // in-game Sound Editor
 void	SoundEditorInit( const idDict *spawnArgs );
 void	SoundEditorShutdown( void );
@@ -80,7 +76,6 @@ void	GUIEditorInit( void );
 void	GUIEditorShutdown( void );
 void	GUIEditorRun( void );
 bool	GUIEditorHandleMessage( void *msg );
-
 
 // Script Debugger
 void	DebuggerClientLaunch( void );
