@@ -41,7 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 #define CM_MAX_POLYGON_EDGES				64
 #define CIRCLE_APPROXIMATION_LENGTH			64.0f
 
-#define	MAX_SUBMODELS						2048
+#define	MAX_SUBMODELS						4096
 #define	TRACE_MODEL_HANDLE					MAX_SUBMODELS
 
 #define VERTEX_HASH_BOXSIZE					(1<<6)	// must be power of 2
@@ -436,7 +436,7 @@ private:			// CollisionMap_load.cpp
 	void			FindContainedEdges( idCollisionModelLocal *model, cm_polygon_t *p );
 					// loading of proc BSP tree
 	void			ParseProcNodes( idLexer *src );
-	void			LoadProcBSP( const char *name );
+	void			LoadProcBSP( const char *name, unsigned int mapFileCRC );
 					// removal of contained polygons
 	int				R_ChoppedAwayByProcBSP( int nodeNum, idFixedWinding *w, const idVec3 &normal, const idVec3 &origin, const float radius );
 	int				ChoppedAwayByProcBSP( const idFixedWinding &w, const idPlane &plane, int contents );
@@ -507,7 +507,7 @@ private:			// CollisionMap_debug
 	void			DrawEdge( idCollisionModelLocal *model, int edgeNum, const idVec3 &origin, const idMat3 &axis );
 	void			DrawPolygon( idCollisionModelLocal *model, cm_polygon_t *p, const idVec3 &origin, const idMat3 &axis,
 								const idVec3 &viewOrigin );
-	void			CheckProcModelSurfClip( bool isLegacyWorldFile, idLexer *src );
+	void			CheckProcModelSurfClip( idLexer *src );
 
 private:			// collision map data
 	idStr			mapName;

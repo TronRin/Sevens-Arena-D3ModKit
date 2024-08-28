@@ -114,7 +114,7 @@ struct basicSurf_t {
 idCollisionModelManagerLocal::CheckProcModelSurfClip
 ================
 */
-void idCollisionModelManagerLocal::CheckProcModelSurfClip( bool isLegacyWorldFile, idLexer *src ) {
+void idCollisionModelManagerLocal::CheckProcModelSurfClip( idLexer *src ) {
 	idToken				token;
 	int					i, j;
 	idList<basicSurf_t> basicSurfs;
@@ -139,9 +139,7 @@ void idCollisionModelManagerLocal::CheckProcModelSurfClip( bool isLegacyWorldFil
 	for ( i = 0; i < numSurfaces; i++ ) {
 		src->ExpectTokenString( "{" );
 
-		if( !isLegacyWorldFile ) {
-			mapEntityId = src->ParseInt();
-		}
+		//mapEntityId = src->ParseInt();
 
 		src->ExpectAnyToken( &token );
 
@@ -276,10 +274,11 @@ idCollisionModelManagerLocal::LoadProcBSP
   FIXME: if the nodes would be at the start of the .proc file it would speed things up considerably
 ================
 */
-void idCollisionModelManagerLocal::LoadProcBSP( const char *name ) {
+void idCollisionModelManagerLocal::LoadProcBSP( const char *name, unsigned int mapFileCRC ) {
 	idStr filename;
 	idToken token;
 	idLexer *src;
+	unsigned int crc;
 
 	// load it
 	filename = name;
@@ -297,6 +296,19 @@ void idCollisionModelManagerLocal::LoadProcBSP( const char *name ) {
 		return;
 	}
 
+	if ( !src->ReadToken( &token ) || token.Icmp( PROC_FILEVERSION ) ) {
+		common->Warning( "idCollisionModelManagerLocal::LoadProcBSP: bad version '%s' instead of '%s'", token.c_str(), PROC_FILEVERSION );
+		delete src;
+		return;
+	}
+
+	crc = token.GetUnsignedIntValue();
+	if ( mapFileCRC && crc != mapFileCRC ) {
+		common->Printf( "%s is out of date\n", filename.c_str() );
+		delete src;
+		return;
+	}
+
 	// parse the file
 	while ( 1 ) {
 		if ( !src->ReadToken( &token ) ) {
@@ -304,7 +316,7 @@ void idCollisionModelManagerLocal::LoadProcBSP( const char *name ) {
 		}
 
 		if ( token == "model" ) {
-			src->SkipBracedSection();
+			CheckProcModelSurfClip( src );
 			continue;
 		}
 
@@ -3447,7 +3459,7 @@ void idCollisionModelManagerLocal::BuildModels( const idMapFile *mapFile, bool f
 		}
 
 		// load the .proc file bsp for data optimisation
-		LoadProcBSP( mapFile->GetName() );
+		LoadProcBSP( mapFile->GetName(), mapFile->GetGeometryCRC() );
 
 		// convert brushes and patches to collision data
 		for ( i = 0; i < mapFile->GetNumEntities(); i++ ) {

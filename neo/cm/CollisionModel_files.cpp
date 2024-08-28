@@ -41,7 +41,7 @@ If you have questions concerning this license or the applicable additional terms
 
 #define CM_FILE_EXT			"cm"
 #define CM_FILEID			"CM"
-#define CM_FILEVERSION		"1.00"
+#define CM_FILEVERSION		"3"
 
 /*
 ===============================================================================
@@ -493,7 +493,7 @@ bool idCollisionModelManagerLocal::ParseCollisionModel( idLexer *src ) {
 	// parse the file
 	src->ExpectTokenType( TT_STRING, 0, &token );
 	model->name = token;
-	
+
 	if ( token.Cmpn( PROC_CLIPMODEL_STRING_PRFX, strlen( PROC_CLIPMODEL_STRING_PRFX ) ) == 0 ) {
 		numInlinedProcClipModels++;
 	}
