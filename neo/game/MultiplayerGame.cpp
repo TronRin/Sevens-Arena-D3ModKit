@@ -4092,7 +4092,7 @@ idMultiplayerGame::ClientReadStartState
 ================
 */
 void idMultiplayerGame::ClientReadStartState( const idBitMsg &msg ) {
-	int i, client;
+	int client;
 
 	// read the state in preparation for reading snapshot updates
 	gameState = (idMultiplayerGame::gameState_t)msg.ReadByte();
