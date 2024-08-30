@@ -564,7 +564,7 @@ void idSessionLocal::HandleMainMenuCommands( const char *menuCommand ) {
 			if ( icmd < args.Argc() ) {
 				StartNewGame( args.Argv( icmd++ ) );
 			} else {
-				StartNewGame( "game/mars_city1" );
+				StartNewGame( "game/dev" );
 			}
 			// need to do this here to make sure com_frameTime is correct or the gui activates with a time that
 			// is "however long map load took" time in the past

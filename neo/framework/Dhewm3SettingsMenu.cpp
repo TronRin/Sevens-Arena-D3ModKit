@@ -2504,30 +2504,8 @@ void Com_OpenCloseSettingsMenu( bool open ) {
 	}
 }
 
-void Com_Settings_f( const idCmdArgs &args ) {
-	bool menuOpen = ( imguiLocal.GetOpenWindowsMask() & idImGuiWindow::WINDOW_SETTINGS ) != 0;
-	if ( !menuOpen ) {
-		imguiLocal.OpenWindow( idImGuiWindow::WINDOW_SETTINGS );
-	} else {
-		if ( ImGui::IsWindowFocused( ImGuiFocusedFlags_AnyWindow ) ) {
-			// if the settings window is open and an ImGui window has focus,
-			// close the settings window when "settings" is executed
-			imguiLocal.CloseWindow( idImGuiWindow::WINDOW_SETTINGS );
-		} else {
-			// if the settings window is open but no ImGui window has focus,
-			// give focus to one of the ImGui windows.
-			// useful to get the cursor back when ingame..
-			ImGui::SetNextWindowFocus();
-		}
-	}
-}
-
 #else // IMGUI_DISABLE - just a stub function
 
 #include "Common.h"
-
-void Com_Settings_f( const idCmdArgs &args ) {
-	common->Warning( "Dear ImGui is disabled in this build, so the settings menu is not available!" );
-}
 
 #endif

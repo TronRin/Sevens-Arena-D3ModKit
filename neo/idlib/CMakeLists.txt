@@ -44,6 +44,7 @@ set( src_idlib
 	precompiled.cpp
 	MapFile.cpp
 	CmdArgs.cpp
+	CommandLink.cpp
 	Token.cpp
 	Base64.cpp
 	Timer.cpp
