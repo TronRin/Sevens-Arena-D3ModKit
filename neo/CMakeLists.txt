@@ -726,6 +726,7 @@ set(src_idlib
 	idlib/precompiled.cpp
 	idlib/MapFile.cpp
 	idlib/CmdArgs.cpp
+	idlib/CommandLink.cpp
 	idlib/Token.cpp
 	idlib/Base64.cpp
 	idlib/Timer.cpp

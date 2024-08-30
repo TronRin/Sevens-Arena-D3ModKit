@@ -75,7 +75,7 @@ void RandomizeStack( void ) {
 Session_RescanSI_f
 =================
 */
-void Session_RescanSI_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( rescanSI, "internal - rescan serverinfo cvars and tell game", idCmdSystem::ArgCompletion_MapName ) {
 	sessLocal.mapSpawnData.serverInfo = *cvarSystem->MoveCVarsToDict( CVAR_SERVERINFO );
 	if ( game && idAsyncNetwork::server.IsActive() ) {
 		game->SetServerInfo( sessLocal.mapSpawnData.serverInfo );
@@ -90,7 +90,7 @@ Session_Map_f
 Restart the server on a different map
 ==================
 */
-static void Session_Map_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( map, "loads a map", idCmdSystem::ArgCompletion_MapName ) {
 	idStr		map, string;
 	findFile_t	ff;
 	idCmdArgs	rl_args;
@@ -133,12 +133,23 @@ static void Session_Map_f( const idCmdArgs &args ) {
 
 /*
 ==================
+Session_RestartMap_f
+==================
+*/
+CONSOLE_COMMAND_SHIP( restartMap, "restarts the current map", NULL ) {
+	/*if ( g_demoMode.GetBool() )*/ {
+		cmdSystem->AppendCommandText( va( "devmap %s %d\n", sessLocal.GetCurrentMapName(), 0 ) );
+	}
+}
+
+/*
+==================
 Session_DevMap_f
 
 Restart the server on a different map in developer mode
 ==================
 */
-static void Session_DevMap_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( devmap, "loads a map in developer mode", idCmdSystem::ArgCompletion_MapName ) {
 	idStr map, string;
 	findFile_t	ff;
 	idCmdArgs	rl_args;
@@ -177,7 +188,7 @@ static void Session_DevMap_f( const idCmdArgs &args ) {
 Session_TestMap_f
 ==================
 */
-static void Session_TestMap_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( testmap, "tests a map", idCmdSystem::ArgCompletion_MapName ) {
 	idStr map, string;
 
 	map = args.Argv(1);
@@ -201,7 +212,7 @@ static void Session_TestMap_f( const idCmdArgs &args ) {
 Sess_WritePrecache_f
 ==================
 */
-static void Sess_WritePrecache_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( writePrecache, "writes precache commands", NULL ) {
 	if ( args.Argc() != 2 ) {
 		common->Printf( "USAGE: writePrecache <execFile>\n" );
 		return;
@@ -235,7 +246,7 @@ bool idSessionLocal::MaybeWaitOnCDKey( void ) {
 Session_PromptKey_f
 ===================
 */
-static void Session_PromptKey_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( promptKey, "prompt and sets the CD Key", NULL ) {
 	const char	*retkey;
 	bool		valid[ 2 ];
 	static bool recursed = false;
@@ -571,7 +582,7 @@ void idSessionLocal::ClearWipe( void ) {
 Session_TestGUI_f
 ================
 */
-static void Session_TestGUI_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( testGUI, "tests a gui", idCmdSystem::ArgCompletion_GuiName ) {
 	sessLocal.TestGUI( args.Argv(1) );
 }
 
@@ -613,7 +624,7 @@ static idStr FindUnusedFileName( const char *format ) {
 Session_DemoShot_f
 ================
 */
-static void Session_DemoShot_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( demoShot, "writes a screenshot as a demo", NULL ) {
 	if ( args.Argc() != 2 ) {
 		idStr filename = FindUnusedFileName( "demos/shot%03i.demo" );
 		sessLocal.DemoShot( filename );
@@ -628,7 +639,7 @@ static void Session_DemoShot_f( const idCmdArgs &args ) {
 Session_RecordDemo_f
 ================
 */
-static void Session_RecordDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( recordDemo, "records a demo", NULL ) {
 	if ( args.Argc() != 2 ) {
 		idStr filename = FindUnusedFileName( "demos/demo%03i.demo" );
 		sessLocal.StartRecordingRenderDemo( filename );
@@ -642,7 +653,7 @@ static void Session_RecordDemo_f( const idCmdArgs &args ) {
 Session_CompressDemo_f
 ================
 */
-static void Session_CompressDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( compressDemo, "compresses a demo file", idCmdSystem::ArgCompletion_DemoName ) {
 	if ( args.Argc() == 2 ) {
 		sessLocal.CompressDemoFile( "2", args.Argv(1) );
 	} else if ( args.Argc() == 3 ) {
@@ -657,7 +668,7 @@ static void Session_CompressDemo_f( const idCmdArgs &args ) {
 Session_StopRecordingDemo_f
 ================
 */
-static void Session_StopRecordingDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( stopRecording, "stops demo recording", NULL ) {
 	sessLocal.StopRecordingRenderDemo();
 }
 
@@ -666,7 +677,7 @@ static void Session_StopRecordingDemo_f( const idCmdArgs &args ) {
 Session_PlayDemo_f
 ================
 */
-static void Session_PlayDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( playDemo, "plays back a demo", idCmdSystem::ArgCompletion_DemoName ) {
 	if ( args.Argc() >= 2 ) {
 		sessLocal.StartPlayingRenderDemo( va( "demos/%s", args.Argv(1) ) );
 	}
@@ -677,7 +688,7 @@ static void Session_PlayDemo_f( const idCmdArgs &args ) {
 Session_TimeDemo_f
 ================
 */
-static void Session_TimeDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( timeDemo, "times a demo", idCmdSystem::ArgCompletion_DemoName ) {
 	if ( args.Argc() >= 2 ) {
 		sessLocal.TimeRenderDemo( va( "demos/%s", args.Argv(1) ), ( args.Argc() > 2 ) );
 	}
@@ -688,7 +699,7 @@ static void Session_TimeDemo_f( const idCmdArgs &args ) {
 Session_TimeDemoQuit_f
 ================
 */
-static void Session_TimeDemoQuit_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( timeDemoQuit, "times a demo and quits", idCmdSystem::ArgCompletion_DemoName ) {
 	sessLocal.TimeRenderDemo( va( "demos/%s", args.Argv(1) ) );
 	if ( sessLocal.timeDemo == TD_YES ) {
 		// this allows hardware vendors to automate some testing
@@ -701,7 +712,7 @@ static void Session_TimeDemoQuit_f( const idCmdArgs &args ) {
 Session_AVIDemo_f
 ================
 */
-static void Session_AVIDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( aviDemo, "writes AVIs for a demo", idCmdSystem::ArgCompletion_DemoName ) {
 	sessLocal.AVIRenderDemo( va( "demos/%s", args.Argv(1) ) );
 }
 
@@ -710,7 +721,7 @@ static void Session_AVIDemo_f( const idCmdArgs &args ) {
 Session_AVIGame_f
 ================
 */
-static void Session_AVIGame_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( aviGame, "writes AVIs for the current game", NULL ) {
 	sessLocal.AVIGame( args.Argv(1) );
 }
 
@@ -719,7 +730,7 @@ static void Session_AVIGame_f( const idCmdArgs &args ) {
 Session_AVICmdDemo_f
 ================
 */
-static void Session_AVICmdDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( aviCmdDemo, "writes writes AVIs for a command demo", NULL ) {
 	sessLocal.AVICmdDemo( args.Argv(1) );
 }
 
@@ -728,7 +739,7 @@ static void Session_AVICmdDemo_f( const idCmdArgs &args ) {
 Session_WriteCmdDemo_f
 ================
 */
-static void Session_WriteCmdDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( writeCmdDemo, "writes a command demo", NULL ) {
 	if ( args.Argc() == 1 ) {
 		idStr	filename = FindUnusedFileName( "demos/cmdDemo%03i.cdemo" );
 		sessLocal.WriteCmdDemo( filename );
@@ -744,7 +755,7 @@ static void Session_WriteCmdDemo_f( const idCmdArgs &args ) {
 Session_PlayCmdDemo_f
 ================
 */
-static void Session_PlayCmdDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( playCmdDemo, "plays back a command demo", NULL ) {
 	sessLocal.StartPlayingCmdDemo( args.Argv(1) );
 }
 
@@ -753,7 +764,7 @@ static void Session_PlayCmdDemo_f( const idCmdArgs &args ) {
 Session_TimeCmdDemo_f
 ================
 */
-static void Session_TimeCmdDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( timeCmdDemo, "times a command demo", NULL ) {
 	sessLocal.TimeCmdDemo( args.Argv(1) );
 }
 #endif
@@ -763,7 +774,7 @@ static void Session_TimeCmdDemo_f( const idCmdArgs &args ) {
 Session_Disconnect_f
 ================
 */
-static void Session_Disconnect_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( disconnect, "disconnects from a game", NULL ) {
 	sessLocal.Stop();
 	sessLocal.StartMenu();
 	if ( soundSystem ) {
@@ -777,7 +788,7 @@ static void Session_Disconnect_f( const idCmdArgs &args ) {
 Session_ExitCmdDemo_f
 ================
 */
-static void Session_ExitCmdDemo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( exitCmdDemo, "exits a command demo", NULL ) {
 	if ( !sessLocal.cmdDemoFile ) {
 		common->Printf( "not reading from a cmdDemo\n" );
 		return;
@@ -1749,12 +1760,13 @@ void idSessionLocal::ExecuteMapChange( bool noFadeWipe ) {
 	Sys_ClearEvents();
 }
 
+#ifndef ID_DEDICATED
 /*
 ===============
-LoadGame_f
+Session_LoadGame_f
 ===============
 */
-void LoadGame_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( loadGame, "loads a game", idCmdSystem::ArgCompletion_SaveGame ) {
 	console->Close();
 	if ( args.Argc() < 2 || idStr::Icmp(args.Argv(1), "quick" ) == 0 ) {
 		sessLocal.QuickLoad();
@@ -1765,10 +1777,10 @@ void LoadGame_f( const idCmdArgs &args ) {
 
 /*
 ===============
-SaveGame_f
+Session_SaveGame_f
 ===============
 */
-void SaveGame_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( saveGame, "saves a game", NULL ) {
 	if ( args.Argc() < 2 || idStr::Icmp( args.Argv(1), "quick" ) == 0 ) {
 		sessLocal.QuickSave();
 	} else {
@@ -1783,7 +1795,7 @@ void SaveGame_f( const idCmdArgs &args ) {
 Session_Hitch_f
 ===============
 */
-void Session_Hitch_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( hitch, "hitches the game", NULL ) {
 	idSoundWorld *sw = soundSystem->GetPlayingSoundWorld();
 	if ( sw ) {
 		soundSystem->SetMute(true);
@@ -1801,6 +1813,7 @@ void Session_Hitch_f( const idCmdArgs &args ) {
 		soundSystem->SetMute(false);
 	}
 }
+#endif
 
 /*
 ===============
@@ -2847,45 +2860,6 @@ so commands, cvars, files, etc are all available
 void idSessionLocal::Init() {
 
 	common->Printf( "----- Initializing Session -----\n" );
-
-	cmdSystem->AddCommand( "writePrecache", Sess_WritePrecache_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "writes precache commands" );
-
-#ifndef	ID_DEDICATED
-	cmdSystem->AddCommand( "map", Session_Map_f, CMD_FL_SYSTEM, "loads a map", idCmdSystem::ArgCompletion_MapName );
-	cmdSystem->AddCommand( "devmap", Session_DevMap_f, CMD_FL_SYSTEM, "loads a map in developer mode", idCmdSystem::ArgCompletion_MapName );
-	cmdSystem->AddCommand( "testmap", Session_TestMap_f, CMD_FL_SYSTEM, "tests a map", idCmdSystem::ArgCompletion_MapName );
-
-	cmdSystem->AddCommand( "writeCmdDemo", Session_WriteCmdDemo_f, CMD_FL_SYSTEM, "writes a command demo" );
-	cmdSystem->AddCommand( "playCmdDemo", Session_PlayCmdDemo_f, CMD_FL_SYSTEM, "plays back a command demo" );
-	cmdSystem->AddCommand( "timeCmdDemo", Session_TimeCmdDemo_f, CMD_FL_SYSTEM, "times a command demo" );
-	cmdSystem->AddCommand( "exitCmdDemo", Session_ExitCmdDemo_f, CMD_FL_SYSTEM, "exits a command demo" );
-	cmdSystem->AddCommand( "aviCmdDemo", Session_AVICmdDemo_f, CMD_FL_SYSTEM, "writes AVIs for a command demo" );
-	cmdSystem->AddCommand( "aviGame", Session_AVIGame_f, CMD_FL_SYSTEM, "writes AVIs for the current game" );
-
-	cmdSystem->AddCommand( "recordDemo", Session_RecordDemo_f, CMD_FL_SYSTEM, "records a demo" );
-	cmdSystem->AddCommand( "stopRecording", Session_StopRecordingDemo_f, CMD_FL_SYSTEM, "stops demo recording" );
-	cmdSystem->AddCommand( "playDemo", Session_PlayDemo_f, CMD_FL_SYSTEM, "plays back a demo", idCmdSystem::ArgCompletion_DemoName );
-	cmdSystem->AddCommand( "timeDemo", Session_TimeDemo_f, CMD_FL_SYSTEM, "times a demo", idCmdSystem::ArgCompletion_DemoName );
-	cmdSystem->AddCommand( "timeDemoQuit", Session_TimeDemoQuit_f, CMD_FL_SYSTEM, "times a demo and quits", idCmdSystem::ArgCompletion_DemoName );
-	cmdSystem->AddCommand( "aviDemo", Session_AVIDemo_f, CMD_FL_SYSTEM, "writes AVIs for a demo", idCmdSystem::ArgCompletion_DemoName );
-	cmdSystem->AddCommand( "compressDemo", Session_CompressDemo_f, CMD_FL_SYSTEM, "compresses a demo file", idCmdSystem::ArgCompletion_DemoName );
-#endif
-
-	cmdSystem->AddCommand( "disconnect", Session_Disconnect_f, CMD_FL_SYSTEM, "disconnects from a game" );
-
-	cmdSystem->AddCommand( "demoShot", Session_DemoShot_f, CMD_FL_SYSTEM, "writes a screenshot for a demo" );
-	cmdSystem->AddCommand( "testGUI", Session_TestGUI_f, CMD_FL_SYSTEM, "tests a gui" );
-
-#ifndef	ID_DEDICATED
-	cmdSystem->AddCommand( "saveGame", SaveGame_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "saves a game" );
-	cmdSystem->AddCommand( "loadGame", LoadGame_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "loads a game", idCmdSystem::ArgCompletion_SaveGame );
-#endif
-
-	cmdSystem->AddCommand( "rescanSI", Session_RescanSI_f, CMD_FL_SYSTEM, "internal - rescan serverinfo cvars and tell game" );
-
-	cmdSystem->AddCommand( "promptKey", Session_PromptKey_f, CMD_FL_SYSTEM, "prompt and sets the CD Key" );
-
-	cmdSystem->AddCommand( "hitch", Session_Hitch_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "hitches the game" );
 
 	// the same idRenderWorld will be used for all games
 	// and demos, insuring that level specific models

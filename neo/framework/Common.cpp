@@ -1219,7 +1219,7 @@ idCmdSystemLocal::PrintMemInfo_f
 This prints out memory debugging data
 ============
 */
-static void PrintMemInfo_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( printMemInfo, "prints memory debugging data", NULL ) {
 	MemInfo_t mi;
 
 	memset( &mi, 0, sizeof( mi ) );
@@ -1320,6 +1320,7 @@ static void Com_EditPDAs_f( const idCmdArgs &args ) {
 }
 #endif // ID_ALLOW_TOOLS
 
+#ifdef _DEBUG
 /*
 ==================
 Com_Error_f
@@ -1327,12 +1328,7 @@ Com_Error_f
 Just throw a fatal error to test error shutdown procedures.
 ==================
 */
-static void Com_Error_f( const idCmdArgs &args ) {
-	if ( !com_developer.GetBool() ) {
-		commonLocal.Printf( "error may only be used in developer mode\n" );
-		return;
-	}
-
+CONSOLE_COMMAND( error, "causes an error", NULL ) {
 	if ( args.Argc() > 1 ) {
 		commonLocal.FatalError( "Testing fatal error" );
 	} else {
@@ -1347,17 +1343,12 @@ Com_Freeze_f
 Just freeze in place for a given number of seconds to test error recovery.
 ==================
 */
-static void Com_Freeze_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( freeze, "freezes the game for a number of seconds", NULL ) {
 	float	s;
 	int		start, now;
 
 	if ( args.Argc() != 2 ) {
 		commonLocal.Printf( "freeze <seconds>\n" );
-		return;
-	}
-
-	if ( !com_developer.GetBool() ) {
-		commonLocal.Printf( "freeze may only be used in developer mode\n" );
 		return;
 	}
 
@@ -1380,12 +1371,7 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( const idCmdArgs &args ) {
-	if ( !com_developer.GetBool() ) {
-		commonLocal.Printf( "crash may only be used in developer mode\n" );
-		return;
-	}
-
+CONSOLE_COMMAND( crash, "causes a crash", NULL ) {
 #ifdef __GNUC__
 	__builtin_trap();
 #else
@@ -1398,7 +1384,7 @@ static void Com_Crash_f( const idCmdArgs &args ) {
 Com_Quit_f
 =================
 */
-static void Com_Quit_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( quit, "quits the game", NULL ) {
 	commonLocal.Quit();
 }
 
@@ -1409,7 +1395,7 @@ Com_WriteConfig_f
 Write the config file to a specific name
 ===============
 */
-void Com_WriteConfig_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( writeConfig, "writes a config file", NULL ) {
 	idStr	filename;
 
 	if ( args.Argc() != 2 ) {
@@ -1428,7 +1414,7 @@ void Com_WriteConfig_f( const idCmdArgs &args ) {
 Com_SetMachineSpecs_f
 =================
 */
-void Com_SetMachineSpec_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( setMachineSpec, "detects system capabilities and sets com_machineSpec to appropriate value", NULL ) {
 	commonLocal.SetMachineSpec();
 }
 
@@ -1441,7 +1427,7 @@ Com_ExecMachineSpecs_f
 void OSX_GetVideoCard( int& outVendorId, int& outDeviceId );
 bool OSX_GetCPUIdentification( int& cpuId, bool& oldArchitecture );
 #endif
-void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( execMachineSpec, "execs the appropriate config files and sets cvars based on com_machineSpec", NULL ) {
 	// DG: add an optional "nores" argument for "don't change the resolution" (r_mode)
 	bool nores = args.Argc() > 1 && idStr::Icmp( args.Argv(1), "nores" ) == 0;
 	cvarSystem->SetCVarInteger( "r_useSoftParticles", 0, CVAR_ARCHIVE ); // DG: disable soft particles for all but ultra
@@ -1560,7 +1546,7 @@ void Com_ExecMachineSpec_f( const idCmdArgs &args ) {
 Com_ReloadEngine_f
 =================
 */
-void Com_ReloadEngine_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( reloadEngine, "reloads the engine down to including the file system", NULL ) {
 	bool menu = false;
 
 	if ( !commonLocal.IsInitialized() ) {
@@ -1826,7 +1812,7 @@ void idCommonLocal::LocalizeGui( const char *fileName, idLangDict &langDict ) {
 ReloadLanguage_f
 =================
 */
-void Com_ReloadLanguage_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( reloadLanguage, "reload language dict", NULL ) {
 	commonLocal.InitLanguageDict();
 }
 
@@ -2033,7 +2019,7 @@ int LocalizeMap(const char* mapName, idLangDict &langDict, ListHash& listHash, i
 LocalizeMaps_f
 =================
 */
-void Com_LocalizeMaps_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( localizeMaps, "localize maps", NULL ) {
 	if ( args.Argc() < 2 ) {
 		common->Printf( "Usage: localizeMaps <count | dictupdate | all> <map>\n" );
 		return;
@@ -2104,7 +2090,7 @@ void Com_LocalizeMaps_f( const idCmdArgs &args ) {
 LocalizeGuis_f
 =================
 */
-void Com_LocalizeGuis_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( localizeGuis, "localize guis", NULL ) {
 
 	if ( args.Argc() != 2 ) {
 		common->Printf( "Usage: localizeGuis <all | gui>\n" );
@@ -2149,7 +2135,12 @@ void Com_LocalizeGuis_f( const idCmdArgs &args ) {
 	strTable.Save( filename );
 }
 
-void Com_LocalizeGuiParmsTest_f( const idCmdArgs &args ) {
+/*
+=================
+LocalizeGuiParmsTest_f
+=================
+*/
+CONSOLE_COMMAND( localizeGuiParmsTest, "Create test files that show gui parms localized and ignored.", NULL ) {
 
 	common->SetRefreshOnPrint( true );
 
@@ -2195,8 +2186,12 @@ void Com_LocalizeGuiParmsTest_f( const idCmdArgs &args ) {
 	common->SetRefreshOnPrint( false );
 }
 
-
-void Com_LocalizeMapsTest_f( const idCmdArgs &args ) {
+/*
+=================
+LocalizeMapsTest_f
+=================
+*/
+CONSOLE_COMMAND( localizeMapsTest, "Create test files that shows which strings will be localized.", NULL ) {
 
 	ListHash listHash;
 	LoadMapLocalizeData(listHash);
@@ -2284,7 +2279,7 @@ void Com_LocalizeMapsTest_f( const idCmdArgs &args ) {
 Com_StartBuild_f
 =================
 */
-void Com_StartBuild_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( StartBuild, "prepares to make a build.", NULL ) {
 	globalImages->StartBuild();
 }
 
@@ -2293,7 +2288,7 @@ void Com_StartBuild_f( const idCmdArgs &args ) {
 Com_FinishBuild_f
 =================
 */
-void Com_FinishBuild_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND( finishBuild, "finishes the build process.", NULL ) {
 	if ( game ) {
 		game->CacheDictionaryMedia( NULL );
 	}
@@ -2301,11 +2296,76 @@ void Com_FinishBuild_f( const idCmdArgs &args ) {
 }
 
 /*
+=================
+ShowMemoryUsage_f
+=================
+*/
+CONSOLE_COMMAND( memoryDump, "creates a memory dump", NULL ) {
+	Mem_Dump_f( args );
+}
+
+/*
+=================
+ShowMemoryUsage_f
+=================
+*/
+CONSOLE_COMMAND( memoryDumpCompressed, "creates a compressed memory dump", NULL ) {
+	Mem_DumpCompressed_f( args );
+}
+
+
+/*
+=================
+ShowMemoryUsage_f
+=================
+*/
+CONSOLE_COMMAND( showStringMemory, "shows memory used by strings", NULL ) {
+	idStr::ShowMemoryUsage_f( args );
+}
+
+/*
+=================
+ShowMemoryUsage_f
+=================
+*/
+CONSOLE_COMMAND( showDictMemory, "shows memory used by dictionaries", NULL ) {
+	idDict::ShowMemoryUsage_f( args );
+}
+
+/*
+=================
+ListKeys_f
+=================
+*/
+CONSOLE_COMMAND( listDictKeys, "lists all keys used by dictionaries", NULL ) {
+	idDict::ListKeys_f( args );
+}
+
+/*
+=================
+ListValues_f
+=================
+*/
+CONSOLE_COMMAND( listDictValues, "lists all values used by dictionaries", NULL ) {
+	idDict::ListValues_f( args );
+}
+
+/*
+=================
+Test_f
+=================
+*/
+CONSOLE_COMMAND( testSIMD, "test SIMD code", NULL ) {
+	idSIMD::Test_f( args );
+}
+
+#ifdef ID_DEDICATED
+/*
 ==============
 Com_Help_f
 ==============
 */
-void Com_Help_f( const idCmdArgs &args ) {
+CONSOLE_COMMAND_SHIP( help, "shows help", NULL ) {
 	common->Printf( "\nCommonly used commands:\n" );
 	common->Printf( "  spawnServer      - start the server.\n" );
 	common->Printf( "  disconnect       - shut down the server.\n" );
@@ -2326,6 +2386,7 @@ void Com_Help_f( const idCmdArgs &args ) {
 	common->Printf( "  g_mapCycle       - name of .scriptcfg file for cycling maps.\n" );
 	common->Printf( "See mapcycle.scriptcfg for an example of a mapcyle script.\n\n" );
 }
+#endif
 
 /*
 =================
@@ -2333,16 +2394,6 @@ idCommonLocal::InitCommands
 =================
 */
 void idCommonLocal::InitCommands( void ) {
-	cmdSystem->AddCommand( "error", Com_Error_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes an error" );
-	cmdSystem->AddCommand( "crash", Com_Crash_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "causes a crash" );
-	cmdSystem->AddCommand( "freeze", Com_Freeze_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "freezes the game for a number of seconds" );
-	cmdSystem->AddCommand( "quit", Com_Quit_f, CMD_FL_SYSTEM, "quits the game" );
-	cmdSystem->AddCommand( "exit", Com_Quit_f, CMD_FL_SYSTEM, "exits the game" );
-	cmdSystem->AddCommand( "writeConfig", Com_WriteConfig_f, CMD_FL_SYSTEM, "writes a config file" );
-	cmdSystem->AddCommand( "reloadEngine", Com_ReloadEngine_f, CMD_FL_SYSTEM, "reloads the engine down to including the file system" );
-	cmdSystem->AddCommand( "setMachineSpec", Com_SetMachineSpec_f, CMD_FL_SYSTEM, "detects system capabilities and sets com_machineSpec to appropriate value" );
-	cmdSystem->AddCommand( "execMachineSpec", Com_ExecMachineSpec_f, CMD_FL_SYSTEM, "execs the appropriate config files and sets cvars based on com_machineSpec" );
-
 	cmdSystem->AddCommand( "dhewm3Settings", Com_Dhewm3Settings_f, CMD_FL_SYSTEM, "Toggles (opens/closes) the (advanced) dhewm3 settings menu" );
 
 #if	!defined( ID_DEDICATED )
@@ -2372,34 +2423,6 @@ void idCommonLocal::InitCommands( void ) {
 
 	//BSM Nerve: Add support for the material editor
 	cmdSystem->AddCommand( "materialEditor", Com_MaterialEditor_f, CMD_FL_TOOL, "launches the Material Editor" );
-#endif
-
-	cmdSystem->AddCommand( "printMemInfo", PrintMemInfo_f, CMD_FL_SYSTEM, "prints memory debugging data" );
-
-	// idLib commands
-	cmdSystem->AddCommand( "memoryDump", Mem_Dump_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "creates a memory dump" );
-	cmdSystem->AddCommand( "memoryDumpCompressed", Mem_DumpCompressed_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "creates a compressed memory dump" );
-	cmdSystem->AddCommand( "showStringMemory", idStr::ShowMemoryUsage_f, CMD_FL_SYSTEM, "shows memory used by strings" );
-	cmdSystem->AddCommand( "showDictMemory", idDict::ShowMemoryUsage_f, CMD_FL_SYSTEM, "shows memory used by dictionaries" );
-	cmdSystem->AddCommand( "listDictKeys", idDict::ListKeys_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "lists all keys used by dictionaries" );
-	cmdSystem->AddCommand( "listDictValues", idDict::ListValues_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "lists all values used by dictionaries" );
-	cmdSystem->AddCommand( "testSIMD", idSIMD::Test_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "test SIMD code" );
-
-	// localization
-	cmdSystem->AddCommand( "localizeGuis", Com_LocalizeGuis_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "localize guis" );
-	cmdSystem->AddCommand( "localizeMaps", Com_LocalizeMaps_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "localize maps" );
-	cmdSystem->AddCommand( "reloadLanguage", Com_ReloadLanguage_f, CMD_FL_SYSTEM, "reload language dict" );
-
-	//D3XP Localization
-	cmdSystem->AddCommand( "localizeGuiParmsTest", Com_LocalizeGuiParmsTest_f, CMD_FL_SYSTEM, "Create test files that show gui parms localized and ignored." );
-	cmdSystem->AddCommand( "localizeMapsTest", Com_LocalizeMapsTest_f, CMD_FL_SYSTEM, "Create test files that shows which strings will be localized." );
-
-	// build helpers
-	cmdSystem->AddCommand( "startBuild", Com_StartBuild_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "prepares to make a build" );
-	cmdSystem->AddCommand( "finishBuild", Com_FinishBuild_f, CMD_FL_SYSTEM|CMD_FL_CHEAT, "finishes the build process" );
-
-#ifdef ID_DEDICATED
-	cmdSystem->AddCommand( "help", Com_Help_f, CMD_FL_SYSTEM, "shows help" );
 #endif
 }
 
@@ -3202,7 +3225,7 @@ void idCommonLocal::InitGame( void ) {
 	idCmdArgs args;
 	if ( sysDetect ) {
 		SetMachineSpec();
-		Com_ExecMachineSpec_f( args );
+		cmdSystem->BufferCommandText( CMD_EXEC_NOW, va( "execMachineSpec %s", args ) );
 	}
 
 	// initialize the renderSystem data structures, but don't start OpenGL yet
@@ -3291,7 +3314,7 @@ void idCommonLocal::InitGame( void ) {
 	// to mess with all the gl init at this point.. an old vid card will never qualify for
 	if ( sysDetect ) {
 		SetMachineSpec();
-		Com_ExecMachineSpec_f( args );
+		cmdSystem->BufferCommandText( CMD_EXEC_NOW, va( "execMachineSpec %s", args ) );
 		cvarSystem->SetCVarInteger( "s_numberOfSpeakers", 6 );
 		cmdSystem->BufferCommandText( CMD_EXEC_NOW, "s_restart\n" );
 		cmdSystem->ExecuteCommandBuffer();
