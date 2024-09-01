@@ -1378,6 +1378,7 @@ CONSOLE_COMMAND( crash, "causes a crash", NULL ) {
 	* ( int * ) 0 = 0x12345678;
 #endif
 }
+#endif
 
 /*
 =================
