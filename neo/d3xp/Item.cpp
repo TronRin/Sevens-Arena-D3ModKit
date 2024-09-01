@@ -1676,6 +1676,7 @@ void idMoveableItem::Spawn( void ) {
 	idTraceModel trm;
 	float density, friction, bouncyness, tsize;
 	idStr clipModelName;
+	bool setClipModel = false;
 	idBounds bounds;
 #ifdef _D3XP
 	SetTimeState ts( timeGroup );

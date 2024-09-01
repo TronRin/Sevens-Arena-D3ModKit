@@ -699,7 +699,7 @@ bool idAASBuild::Build( const idStr &fileName, const idAASSettings *settings ) {
 	brushList.Merge( MergeAllowed );
 
 	// if there is a .proc file newer than the .map file
-	if ( LoadProcBSP( fileName, mapFile->GetFileTime(), mapFile->GetGeometryCRC() ) ) {
+	if ( LoadProcBSP( fileName, mapFile->GetGeometryCRC(), mapFile->GetFileTime() ) ) {
 		ClipBrushSidesWithProcBSP( brushList );
 		DeleteProcBSP();
 	}

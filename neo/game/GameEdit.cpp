@@ -586,6 +586,9 @@ void idEditEntities::DisplayEntities( void ) {
 	viewBounds.ExpandSelf( g_editEntityDistance.GetFloat() );
 	viewTextBounds.ExpandSelf( g_editEntityTextDistance.GetFloat() );
 
+	cvarSystem->SetCVarInteger( "r_singleLight", -1 );
+	cvarSystem->SetCVarInteger( "r_showLights", 0 );
+
 	idStr textKey;
 	idStr textKey2;
 	idStr strOutput;
