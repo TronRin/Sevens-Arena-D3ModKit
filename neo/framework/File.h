@@ -96,7 +96,11 @@ public:
 	virtual int				ReadMat3( idMat3 &mat );
 	virtual bool			ReadToken( idStr &token );
 	virtual bool			ReadLine( idStr &line );
-
+	unsigned char			ReadUnsignedChar( void ) {
+		unsigned char value;
+		ReadUnsignedChar( value );
+		return value;
+	}
 	// Endian portable alternatives to Write(...)
 	virtual int				WriteInt( const int value );
 	virtual int				WriteUnsignedInt( const unsigned int value );
@@ -112,6 +116,32 @@ public:
 	virtual int				WriteVec4( const idVec4 &vec );
 	virtual int				WriteVec6( const idVec6 &vec );
 	virtual int				WriteMat3( const idMat3 &mat );
+
+	template<class type> ID_INLINE size_t ReadBig( type &c ) {
+		size_t r = Read( &c, sizeof( c ) );
+		idSwap::Big( c );
+		return r;
+	}
+
+	template<class type> ID_INLINE size_t ReadBigArray( type *c, int count ) {
+		size_t r = Read( c, sizeof( c[0] ) * count );
+		idSwap::BigArray( c, count );
+		return r;
+	}
+
+	template<class type> ID_INLINE size_t WriteBig( const type &c ) {
+		type b = c;
+		idSwap::Big( b );
+		return Write( &b, sizeof( b ) );
+	}
+
+	template<class type> ID_INLINE size_t WriteBigArray( const type *c, int count ) {
+		size_t r = 0;
+		for ( int i = 0; i < count; i++ ) {
+			r += WriteBig( c[i] );
+		}
+		return r;
+	}
 };
 
 

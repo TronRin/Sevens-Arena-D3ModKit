@@ -684,9 +684,15 @@ add_globbed_headers(src_ui "ui")
 
 set(src_idlib
 	idlib/bv/Bounds.cpp
+	idlib/bv/Bounds2D.cpp
 	idlib/bv/Frustum.cpp
 	idlib/bv/Sphere.cpp
 	idlib/bv/Box.cpp
+	idlib/decoders/BareDCTDecoder.cpp
+	idlib/decoders/ColorSpace.cpp
+	idlib/decoders/DXTDecoder.cpp
+	idlib/decoders/IDCT_AP922.cpp
+	idlib/encoders/DXTEncoder.cpp
 	idlib/geometry/DrawVert.cpp
 	idlib/geometry/Winding2D.cpp
 	idlib/geometry/Surface_SweptSpline.cpp
@@ -695,9 +701,14 @@ set(src_idlib
 	idlib/geometry/Surface_Patch.cpp
 	idlib/geometry/TraceModel.cpp
 	idlib/geometry/JointTransform.cpp
+	idlib/hashing/CRC8.cpp
+	idlib/hashing/CRC16.cpp
 	idlib/hashing/CRC32.cpp
+	idlib/hashing/Honeyman.cpp
 	idlib/hashing/MD4.cpp
 	idlib/hashing/MD5.cpp
+	idlib/images/Filter.cpp
+	idlib/images/MipMap.cpp
 	idlib/math/Angles.cpp
 	idlib/math/Lcp.cpp
 	idlib/math/Math.cpp
